@@ -19,13 +19,13 @@ public class OrganizationQueryController {
     private GXFSCatalogRestService gxfsCatalogRestService;
 
 
-    @GetMapping("/getAll")
+    @GetMapping("")
     public List<OrganizationModel> getAllOrganizations(Principal principal,
                                                        HttpServletResponse response) throws Exception {
         return gxfsCatalogRestService.getParticipants();
     }
 
-    @GetMapping("/get/{orgaId}")
+    @GetMapping("/organization/{orgaId}")
     public List<OrganizationModel> getOrganizationById(Principal principal,
                                             @PathVariable(value="orgaId") String orgaId,
                                             HttpServletResponse response) throws Exception {

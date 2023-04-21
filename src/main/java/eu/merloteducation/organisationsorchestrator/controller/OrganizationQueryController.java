@@ -1,5 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
+import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
 import eu.merloteducation.organisationsorchestrator.models.ParticipantItem;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,13 +20,13 @@ public class OrganizationQueryController {
 
 
     @GetMapping("/getAll")
-    public List<ParticipantItem> getAllOrganizations(Principal principal,
-                                                     HttpServletResponse response) throws Exception {
+    public List<OrganizationModel> getAllOrganizations(Principal principal,
+                                                       HttpServletResponse response) throws Exception {
         return gxfsCatalogRestService.getParticipants();
     }
 
     @GetMapping("/get/{orgaId}")
-    public List<ParticipantItem> getOrganizationById(Principal principal,
+    public List<OrganizationModel> getOrganizationById(Principal principal,
                                             @PathVariable(value="orgaId") String orgaId,
                                             HttpServletResponse response) throws Exception {
         return gxfsCatalogRestService.getParticipants();

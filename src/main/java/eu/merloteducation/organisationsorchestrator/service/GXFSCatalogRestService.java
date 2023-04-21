@@ -2,6 +2,7 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
 import eu.merloteducation.organisationsorchestrator.models.ParticipantItem;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class GXFSCatalogRestService {
@@ -71,7 +73,7 @@ public class GXFSCatalogRestService {
         String result = restTemplate.postForObject(keycloakLogout, request, String.class);
     }
 
-    public List<ParticipantItem> getParticipants() throws Exception {
+    public List<OrganizationModel> getParticipants() throws Exception {
         Map<String, Object> gxfscatalogLoginResponse = loginGXFScatalog();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + gxfscatalogLoginResponse.get("access_token"));
@@ -92,8 +94,9 @@ public class GXFSCatalogRestService {
                 mapper.getTypeFactory().constructCollectionType(List.class, ParticipantItem.class));
 
         System.out.println(ud);
+        List<OrganizationModel> orgaModelList = ud.stream().map(OrganizationModel::new).toList();
         this.logoutGXFScatalog((String) gxfscatalogLoginResponse.get("refresh_token"));
-        return ud;
+        return orgaModelList;
     }
 
 }

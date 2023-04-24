@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
 import eu.merloteducation.organisationsorchestrator.models.ParticipantItem;
+import eu.merloteducation.organisationsorchestrator.models.ParticipantsResponse;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,54 +75,67 @@ public class GXFSCatalogRestService {
         map.add("refresh_token", refreshToken);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, null);
-        String result = restTemplate.postForObject(keycloakLogoutUri, request, String.class);
+        restTemplate.postForObject(keycloakLogoutUri, request, String.class);
     }
 
     public OrganizationModel getParticipantById(String id) throws Exception {
 
+        // input sanetization, for now we defined that ids must only consist of numbers
         if (!id.matches("\\d+")) {
             throw new IllegalArgumentException("Provided id is not a number.");
         }
 
+        // log in as the gxfscatalog user and add the token to the header
         Map<String, Object> gxfscatalogLoginResponse = loginGXFScatalog();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + gxfscatalogLoginResponse.get("access_token"));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
 
+        // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
+        // since ids are required to be an uri in the gxfs catalog, we need to pad it with an encoded http://
         // TODO check if the gxfs catalog returns multiple entries if their id starts with the same characters
         String response = restTemplate.exchange(URI.create(gxfscatalogParticipantsUri + "/http%3A%2F%2F" + id),
                 HttpMethod.GET, request, String.class).getBody();
+        // as the catalog returns nested but escaped jsons, we need to manually unescape to properly use it
         response = StringEscapeUtils.unescapeJson(response)
                 .replace("\"{", "{")
                 .replace("}\"", "}");
 
+        // create a mapper to the ParticipantItem class
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ParticipantItem participantItem = mapper.readValue(response, ParticipantItem.class);
 
+        // map the ParticipantItem to an OrganizationModel
         OrganizationModel orgaModel= new OrganizationModel(participantItem);
+
+        // log out with the gxfscatalog user
         this.logoutGXFScatalog((String) gxfscatalogLoginResponse.get("refresh_token"));
         return orgaModel;
     }
 
     public List<OrganizationModel> getParticipants() throws Exception {
+        // log in as the gxfscatalog user and add the token to the header
         Map<String, Object> gxfscatalogLoginResponse = loginGXFScatalog();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + gxfscatalogLoginResponse.get("access_token"));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
 
+        // get on the participants endpoint of the gxfs catalog to get all enrolled participants
         String response = restTemplate.exchange(gxfscatalogParticipantsUri,
                 HttpMethod.GET, request, String.class).getBody();
+        // as the catalog returns nested but escaped jsons, we need to manually unescape to properly use it
         response = StringEscapeUtils.unescapeJson(response)
                 .replace("\"{", "{")
                 .replace("}\"", "}");
 
-        JSONObject jsonObject = new JSONObject(response);
-
+        // create a mapper to map the response to the ParticipantsResponse class
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        List<ParticipantItem> ud = mapper.readValue(jsonObject.get("items").toString(),
-                mapper.getTypeFactory().constructCollectionType(List.class, ParticipantItem.class));
+        ParticipantsResponse participantsResponse = mapper.readValue(response, ParticipantsResponse.class);
 
-        List<OrganizationModel> orgaModelList = ud.stream().map(OrganizationModel::new).toList();
+        // extract the items from the ParticipantsResponse and map them to OrganizationModel instances
+        List<OrganizationModel> orgaModelList = participantsResponse.getItems().stream().map(OrganizationModel::new).toList();
+
+        // log out with the gxfscatalog user
         this.logoutGXFScatalog((String) gxfscatalogLoginResponse.get("refresh_token"));
         return orgaModelList;
     }

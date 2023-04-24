@@ -18,6 +18,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,8 +31,8 @@ public class GXFSCatalogRestService {
     @Value("${keycloak.token-uri}")
     private String keycloakTokenUri;
 
-    @Value("${keycloak.logout}")
-    private String keycloakLogout;
+    @Value("${keycloak.logout-uri}")
+    private String keycloakLogoutUri;
 
     @Value("${keycloak.client-id}")
     private String clientId;
@@ -47,6 +48,9 @@ public class GXFSCatalogRestService {
 
     @Value("${keycloak.gxfscatalog-pass}")
     private String keycloakGXFScatalogPass;
+
+    @Value("${gxfscatalog.participants-uri}")
+    private String gxfscatalogParticipantsUri;
 
     private Map<String, Object> loginGXFScatalog() {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
@@ -70,7 +74,33 @@ public class GXFSCatalogRestService {
         map.add("refresh_token", refreshToken);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, null);
-        String result = restTemplate.postForObject(keycloakLogout, request, String.class);
+        String result = restTemplate.postForObject(keycloakLogoutUri, request, String.class);
+    }
+
+    public OrganizationModel getParticipantById(String id) throws Exception {
+
+        if (!id.matches("\\d+")) {
+            throw new IllegalArgumentException("Provided id is not a number.");
+        }
+
+        Map<String, Object> gxfscatalogLoginResponse = loginGXFScatalog();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + gxfscatalogLoginResponse.get("access_token"));
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
+
+        // TODO check if the gxfs catalog returns multiple entries if their id starts with the same characters
+        String response = restTemplate.exchange(URI.create(gxfscatalogParticipantsUri + "/http%3A%2F%2F" + id),
+                HttpMethod.GET, request, String.class).getBody();
+        response = StringEscapeUtils.unescapeJson(response)
+                .replace("\"{", "{")
+                .replace("}\"", "}");
+
+        ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ParticipantItem participantItem = mapper.readValue(response, ParticipantItem.class);
+
+        OrganizationModel orgaModel= new OrganizationModel(participantItem);
+        this.logoutGXFScatalog((String) gxfscatalogLoginResponse.get("refresh_token"));
+        return orgaModel;
     }
 
     public List<OrganizationModel> getParticipants() throws Exception {
@@ -79,13 +109,11 @@ public class GXFSCatalogRestService {
         headers.add("Authorization", "Bearer " + gxfscatalogLoginResponse.get("access_token"));
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
 
-        String response = restTemplate.exchange("http://localhost:8081/participants",
+        String response = restTemplate.exchange(gxfscatalogParticipantsUri,
                 HttpMethod.GET, request, String.class).getBody();
         response = StringEscapeUtils.unescapeJson(response)
                 .replace("\"{", "{")
                 .replace("}\"", "}");
-
-        System.out.println(response);
 
         JSONObject jsonObject = new JSONObject(response);
 
@@ -93,7 +121,6 @@ public class GXFSCatalogRestService {
         List<ParticipantItem> ud = mapper.readValue(jsonObject.get("items").toString(),
                 mapper.getTypeFactory().constructCollectionType(List.class, ParticipantItem.class));
 
-        System.out.println(ud);
         List<OrganizationModel> orgaModelList = ud.stream().map(OrganizationModel::new).toList();
         this.logoutGXFScatalog((String) gxfscatalogLoginResponse.get("refresh_token"));
         return orgaModelList;

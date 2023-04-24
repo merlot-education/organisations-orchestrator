@@ -6,3 +6,20 @@ server:
   port: '8082'
   servlet:
     context-path: /api
+
+gxfscatalog:
+  base-uri: "http://localhost:8081"
+  participants-uri: "${gxfscatalog.base-uri}/participants"
+
+keycloak:
+  client-id: "federated-catalogue"
+  authorization-grant-type: "password"
+  base-uri: "http://key-server:8080"
+  oidc-base-uri: "${keycloak.base-uri}/realms/gaia-x/protocol/openid-connect"
+  authorization-uri: "${keycloak.oidc-base-uri}/auth"
+  token-uri: "${keycloak.oidc-base-uri}/token"
+  logout-uri: "${keycloak.oidc-base-uri}/logout"
+  jwk-set-uri: "${keycloak.oidc-base-uri}/certs"
+  client-secret: "KEJER0ZJAc7iTdXOtLFePgbphuuEFFu9"
+  gxfscatalog-user: "gxfscatalog"
+  gxfscatalog-pass: "gxfscatalog"

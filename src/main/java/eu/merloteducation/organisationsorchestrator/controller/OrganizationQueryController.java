@@ -6,9 +6,13 @@ import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestServi
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @CrossOrigin
@@ -26,10 +30,15 @@ public class OrganizationQueryController {
     }
 
     @GetMapping("/organization/{orgaId}")
-    public List<OrganizationModel> getOrganizationById(Principal principal,
+    public OrganizationModel getOrganizationById(Principal principal,
                                             @PathVariable(value="orgaId") String orgaId,
                                             HttpServletResponse response) throws Exception {
-        return gxfsCatalogRestService.getParticipants();
+        try {
+            return gxfsCatalogRestService.getParticipantById(orgaId);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
+        }
+
     }
 
 

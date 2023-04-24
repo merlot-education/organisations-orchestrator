@@ -14,8 +14,8 @@ gxfscatalog:
 keycloak:
   client-id: "federated-catalogue"
   authorization-grant-type: "password"
-  base-uri: "http://key-server:8080"
-  oidc-base-uri: "${keycloak.base-uri}/realms/gaia-x/protocol/openid-connect"
+  base-uri: "https://sso.common.merlot-education.eu"
+  oidc-base-uri: "${keycloak.base-uri}/realms/gxfscatalog/protocol/openid-connect"
   authorization-uri: "${keycloak.oidc-base-uri}/auth"
   token-uri: "${keycloak.oidc-base-uri}/token"
   logout-uri: "${keycloak.oidc-base-uri}/logout"

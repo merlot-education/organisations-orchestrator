@@ -6,6 +6,8 @@ server:
   port: '8082'
   servlet:
     context-path: /api
+  error:
+    include-stacktrace: "never"
 
 gxfscatalog:
   base-uri: "http://localhost:8081"

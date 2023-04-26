@@ -1,4 +1,4 @@
-FROM maven:3.8-jdk-17-slim AS build
+FROM maven:3-eclipse-temurin-17-alpine AS build
 COPY . /opt/
 RUN mvn -f /opt/pom.xml clean package
 

@@ -22,6 +22,8 @@ public class OrganizationQueryController {
     @Autowired
     private GXFSCatalogRestService gxfsCatalogRestService;
 
+    // TODO health endpoint, return 200 at /health
+
 
     @GetMapping("")
     public List<OrganizationModel> getAllOrganizations(Principal principal,

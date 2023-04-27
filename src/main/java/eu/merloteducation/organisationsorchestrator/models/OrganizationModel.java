@@ -21,7 +21,7 @@ public class OrganizationModel {
         this.merlotId = sub.getMerlotId();
         this.organizationName = sub.getOrgaName();
         this.organizationLegalName = sub.getLegalName();
-        this.registrationNumber = sub.getRegistrationNumber();
+        this.registrationNumber = sub.getRegistrationNumber().getLocal().getValue();
         this.termsAndConditionsLink = sub.getTermsAndConditionsLink();
         this.legalAddress = new AddressModel(sub.getLegalAddress(), sub.getAddressCode());
     }

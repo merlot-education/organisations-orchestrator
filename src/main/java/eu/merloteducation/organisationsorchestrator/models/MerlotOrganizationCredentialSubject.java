@@ -13,29 +13,27 @@ public class MerlotOrganizationCredentialSubject {
     @JsonProperty("@id")
     private String id;
 
-    private String registrationNumber;
+    @JsonProperty("gax-trust-framework:registrationNumber")
+    private RegistrationNumber registrationNumber;
     private String legalName;
     private String merlotId;
     private String orgaName;
     private String addressCode;
+
     private String termsAndConditionsLink;
 
-    @JsonProperty("merlot:legalAddress")
+    @JsonProperty("gax-trust-framework:legalAddress")
     private VCard legalAddress;
 
+    @JsonProperty("gax-trust-framework:headquarterAddress")
+    private VCard headquarterAddress;
 
-
-    @JsonProperty("merlot:registrationNumber")
-    private void unpackRegistrationNumber(Map<String, String> m) {
-        registrationNumber = m.get("@value");
-    }
-
-    @JsonProperty("merlot:legalName")
+    @JsonProperty("gax-trust-framework:legalName")
     private void unpackLegalName(Map<String, String> m) {
         legalName = m.get("@value");
     }
 
-    @JsonProperty("merlot:merlotID")
+    @JsonProperty("merlot:merlotId")
     private void unpackMerlotId(Map<String, String> m) {
         merlotId = m.get("@value");
     }
@@ -49,7 +47,7 @@ public class MerlotOrganizationCredentialSubject {
     private void unpackAddressCode(Map<String, String> m) {
         addressCode = m.get("@value");
     }
-    @JsonProperty("merlot:termsAndConditionsLink")
+    @JsonProperty("merlot:termsConditionsLink")
     private void unpackTermsAndConditionsLink(Map<String, String> m) {
         termsAndConditionsLink = m.get("@value");
     }

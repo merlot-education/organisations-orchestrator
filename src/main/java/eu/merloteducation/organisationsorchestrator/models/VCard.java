@@ -17,9 +17,6 @@ public class VCard {
     @JsonProperty("vcard:street-address")
     private StringTypeValue streetAddress;
 
-    @JsonProperty("vcard:gps")
-    private StringTypeValue gps;
-
     @JsonProperty("vcard:locality")
     private StringTypeValue locality;
 

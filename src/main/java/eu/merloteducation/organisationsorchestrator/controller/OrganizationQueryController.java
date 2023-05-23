@@ -16,7 +16,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/organizations")
+@RequestMapping("/organizations")  // TODO replace with root mapping
 public class OrganizationQueryController {
 
     @Autowired

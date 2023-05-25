@@ -16,13 +16,16 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/organizations")  // TODO replace with root mapping
+@RequestMapping("/")
 public class OrganizationQueryController {
 
     @Autowired
     private GXFSCatalogRestService gxfsCatalogRestService;
 
-    // TODO health endpoint, return 200 at /health
+    @GetMapping("health")
+    public void getHealth() {
+        // always return code 200
+    }
 
 
     @GetMapping("")

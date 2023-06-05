@@ -94,7 +94,7 @@ public class GXFSCatalogRestService {
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
         // since ids are required to be an uri in the gxfs catalog, we need to pad it with an encoded http://
         // TODO check if the gxfs catalog returns multiple entries if their id starts with the same characters
-        String response = restTemplate.exchange(URI.create(gxfscatalogParticipantsUri + "/http%3A%2F%2F" + id),
+        String response = restTemplate.exchange(URI.create(gxfscatalogParticipantsUri + "/Participant:" + id),
                 HttpMethod.GET, request, String.class).getBody();
         // as the catalog returns nested but escaped jsons, we need to manually unescape to properly use it
         response = StringEscapeUtils.unescapeJson(response)

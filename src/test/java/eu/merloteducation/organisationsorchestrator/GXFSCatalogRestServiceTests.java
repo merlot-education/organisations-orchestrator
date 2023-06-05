@@ -94,7 +94,7 @@ public class GXFSCatalogRestServiceTests {
         lenient().when(restTemplate.exchange(eq(gxfscatalogParticipantsUri),
                         eq(HttpMethod.GET), any(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(mockUserResponse, HttpStatus.OK));
-        lenient().when(restTemplate.exchange(eq(URI.create(gxfscatalogParticipantsUri + "/http%3A%2F%2F10")),
+        lenient().when(restTemplate.exchange(eq(URI.create(gxfscatalogParticipantsUri + "/Participant:10")),
                 eq(HttpMethod.GET), any(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(mockParticipant, HttpStatus.OK));
 

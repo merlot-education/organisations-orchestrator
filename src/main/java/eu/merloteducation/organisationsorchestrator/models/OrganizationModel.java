@@ -15,9 +15,6 @@ public class OrganizationModel {
     private String registrationNumber;
     private String termsAndConditionsLink;
     private AddressModel legalAddress;
-    private String connectorId;
-    private String connectorPublicKey;
-    private String connectorBaseUrl;
 
 
     public OrganizationModel(ParticipantItem participantItem) {
@@ -30,8 +27,5 @@ public class OrganizationModel {
         this.registrationNumber = sub.getRegistrationNumber().getLocal().getValue();
         this.termsAndConditionsLink = sub.getTermsAndConditionsLink().getValue();
         this.legalAddress = new AddressModel(sub.getLegalAddress(), sub.getAddressCode().getValue());
-        this.connectorId = sub.getConnectorId().getValue();
-        this.connectorPublicKey = sub.getConnectorPublicKey().getValue();
-        this.connectorBaseUrl = sub.getConnectorBaseUrl().getValue();
     }
 }

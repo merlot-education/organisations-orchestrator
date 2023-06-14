@@ -1,7 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
 import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
-import eu.merloteducation.organisationsorchestrator.models.ParticipantItem;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;

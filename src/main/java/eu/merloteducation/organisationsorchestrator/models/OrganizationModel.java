@@ -2,12 +2,14 @@ package eu.merloteducation.organisationsorchestrator.models;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Optional;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class OrganizationModel {
     @JsonView(OrganiationViews.PublicView.class)
     private String id;

@@ -16,7 +16,7 @@ public class MessageQueueService {
     private final Logger logger = LoggerFactory.getLogger(MessageQueueService.class);
 
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATION_REQUEST_QUEUE)
-    private OrganizationModel listen(String orgaId) throws Exception {
+    public OrganizationModel organizationRequest(String orgaId) throws Exception {
         logger.info("Organization request message: {}", orgaId);
         try {
             return gxfsCatalogRestService.getParticipantById(orgaId);

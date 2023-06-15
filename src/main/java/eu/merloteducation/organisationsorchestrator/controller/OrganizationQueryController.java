@@ -1,7 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import eu.merloteducation.organisationsorchestrator.models.OrganiationViews;
 import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
-import eu.merloteducation.organisationsorchestrator.models.ParticipantItem;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,14 @@ public class OrganizationQueryController {
 
 
     @GetMapping("")
+    @JsonView(OrganiationViews.PublicView.class)
     public List<OrganizationModel> getAllOrganizations(Principal principal,
                                                        HttpServletResponse response) throws Exception {
         return gxfsCatalogRestService.getParticipants();
     }
 
     @GetMapping("/organization/{orgaId}")
+    @JsonView(OrganiationViews.PublicView.class)
     public OrganizationModel getOrganizationById(Principal principal,
                                             @PathVariable(value="orgaId") String orgaId,
                                             HttpServletResponse response) throws Exception {

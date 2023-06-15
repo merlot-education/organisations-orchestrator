@@ -1,56 +1,68 @@
 package eu.merloteducation.organisationsorchestrator.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Map;
-
 @Getter
+@Setter
 public class MerlotOrganizationCredentialSubject {
+
+    // base fields
 
     @JsonProperty("@id")
     private String id;
 
-    @JsonProperty("gax-trust-framework:registrationNumber")
-    private RegistrationNumber registrationNumber;
-    private String legalName;
-    private String merlotId;
-    private String orgaName;
-    private String addressCode;
+    // inherited from gax-trust-framework:LegalPerson
+    @JsonProperty("gax-trust-framework:legalName")
+    private StringTypeValue legalName;
 
-    private String termsAndConditionsLink;
+    @JsonProperty("gax-trust-framework:legalForm")
+    private StringTypeValue legalForm;
+
+    @JsonProperty("gax-trust-framework:description")
+    private StringTypeValue description;
+
+    @JsonProperty("gax-trust-framework:registrationNumber")
+    @NotNull
+    private RegistrationNumber registrationNumber;
 
     @JsonProperty("gax-trust-framework:legalAddress")
+    @NotNull
     private VCard legalAddress;
 
     @JsonProperty("gax-trust-framework:headquarterAddress")
+    @NotNull
     private VCard headquarterAddress;
 
-    @JsonProperty("gax-trust-framework:legalName")
-    private void unpackLegalName(Map<String, String> m) {
-        legalName = m.get("@value");
-    }
-
-    @JsonProperty("merlot:merlotId")
-    private void unpackMerlotId(Map<String, String> m) {
-        merlotId = m.get("@value");
-    }
+    // inherited from merlot:MerlotOrganization
 
     @JsonProperty("merlot:orgaName")
-    private void unpackOrgaName(Map<String, String> m) {
-        orgaName = m.get("@value");
-    }
+    @NotNull
+    private StringTypeValue orgaName;
+
+    @JsonProperty("merlot:merlotId")
+    @NotNull
+    private StringTypeValue merlotId;
 
     @JsonProperty("merlot:addressCode")
-    private void unpackAddressCode(Map<String, String> m) {
-        addressCode = m.get("@value");
-    }
+    @NotNull
+    private StringTypeValue addressCode;
+
     @JsonProperty("merlot:termsConditionsLink")
-    private void unpackTermsAndConditionsLink(Map<String, String> m) {
-        termsAndConditionsLink = m.get("@value");
-    }
+    @NotNull
+    private StringTypeValue termsAndConditionsLink;
 
+    @JsonProperty("merlot:connectorId")
+    @NotNull
+    private StringTypeValue connectorId;
 
+    @JsonProperty("merlot:connectorPublicKey")
+    @NotNull
+    private StringTypeValue connectorPublicKey;
+
+    @JsonProperty("merlot:connectorBaseUrl")
+    @NotNull
+    private StringTypeValue connectorBaseUrl;
 }

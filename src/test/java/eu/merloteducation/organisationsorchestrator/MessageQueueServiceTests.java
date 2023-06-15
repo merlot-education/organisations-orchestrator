@@ -16,6 +16,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -32,7 +35,8 @@ class MessageQueueServiceTests {
     @BeforeAll
     void beforeAll() throws Exception {
         ReflectionTestUtils.setField(messageQueueService, "gxfsCatalogRestService", gxfsCatalogRestService);
-        when(gxfsCatalogRestService.getParticipantById("10")).thenReturn(new OrganizationModel());
+        when(gxfsCatalogRestService.getParticipantById(any())).thenThrow(Exception.class);
+        doReturn(new OrganizationModel()).when(gxfsCatalogRestService).getParticipantById("10");
     }
 
 

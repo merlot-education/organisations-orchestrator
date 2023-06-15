@@ -2,6 +2,18 @@ logging:
   level:
     org.springframework.security: DEBUG
 
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+  cloud:
+    bus:
+      enabled: true
+      refresh:
+        enabled: true
+
 server:
   port: '8082'
   servlet:

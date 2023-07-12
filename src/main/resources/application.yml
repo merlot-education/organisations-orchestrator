@@ -34,6 +34,6 @@ keycloak:
   token-uri: "${keycloak.oidc-base-uri}/token"
   logout-uri: "${keycloak.oidc-base-uri}/logout"
   jwk-set-uri: "${keycloak.oidc-base-uri}/certs"
-  client-secret: "510kJDtoXbEmiPNwBacCnLmDGgtB0gjm"
+  client-secret: "XWG42JPKLH5ycFgPWdeQBiyBF1oPqukO"
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"

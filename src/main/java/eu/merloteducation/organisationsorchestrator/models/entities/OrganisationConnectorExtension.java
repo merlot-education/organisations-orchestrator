@@ -18,6 +18,7 @@ import java.util.List;
 public class OrganisationConnectorExtension {
     @Id
     private String id;
+    private String orgaId;
     private String connectorEndpoint;
     private String ConnectorAccessToken;
     private List<String> bucketNames;

@@ -1,39 +1,56 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import eu.merloteducation.organisationsorchestrator.models.OrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import eu.merloteducation.organisationsorchestrator.repositories.IOrganisationConnectorsExtensionRepository;
+import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;
 
-import java.security.Principal;
 import java.util.List;
 
 public class OrganisationConnectorsService {
 
     @Autowired
-    private IOrganisationConnectorsExtensionRepository connectorsRepo;
+    private OrganisationConnectorsExtensionRepository connectorsRepo;
 
 
-    public List<OrganisationConnectorModel> getAllConnectors(String orgaId) throws Exception {
-        return null;
+    public List<OrganisationConnectorExtension> getAllConnectors(String orgaId) throws Exception {
+        List<OrganisationConnectorExtension> connectors = connectorsRepo.findAllByOrganisation(orgaId);
+
+        return connectors;
     }
 
-    public OrganisationConnectorModel getConnector(String connectorId) throws Exception {
-        return null;
+    public OrganisationConnectorExtension getConnector(String orgaId, String connectorId) throws Exception {
+        OrganisationConnectorExtension connector =  connectorsRepo.findById(connectorId).orElse(null);
+
+        return connector;
     }
 
-    public OrganisationConnectorModel postConnector(PostOrganisationConnectorModel postModel) throws Exception {
-        return null;
+    public OrganisationConnectorExtension postConnector(String orgaId, PostOrganisationConnectorModel postModel) throws Exception {
+        OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
+        connector.setOrgaId(orgaId);
+        connector.setId((postModel.getId()));
+        connector.setConnectorEndpoint(postModel.getConnectorEndpoint());
+        connector.setConnectorAccessToken(postModel.getConnectorAccessToken());
+        connector.setBucketNames(postModel.getBucketNames());
+
+        connectorsRepo.save(connector);
+        return connector;
     }
 
-    public OrganisationConnectorModel updateConnector(String connectorId, PatchOrganisationConnectorModel patchModel) throws Exception {
-        return null;
+    public OrganisationConnectorExtension updateConnector(String orgaIdId, String connectorId, PatchOrganisationConnectorModel patchModel) throws Exception {
+
+        OrganisationConnectorExtension connector =  connectorsRepo.findById(connectorId).orElse(null);
+        if(connector == null){
+            return null;
+        }
+
+        connector.setConnectorEndpoint(patchModel.getConnectorEndpoint());
+        connector.setConnectorAccessToken(patchModel.getConnectorAccessToken());
+        connector.setBucketNames(patchModel.getBucketNames());
+
+        connectorsRepo.save(connector);
+        return connector;
     }
 
     public void deleteConnector(String connectorId) throws Exception {

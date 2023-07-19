@@ -3,6 +3,7 @@ package eu.merloteducation.organisationsorchestrator;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -65,6 +66,7 @@ public class OrganisationConnectorsTests {
         }
     }
 
+    @Transactional
     @Test
     void postConnectorForOrganisation() throws Exception {
         try {
@@ -87,6 +89,7 @@ public class OrganisationConnectorsTests {
         }
     }
 
+    @Transactional
     @Test
     void patchConnectorForOrganisation() throws Exception {
         try {
@@ -120,6 +123,7 @@ public class OrganisationConnectorsTests {
         }
     }
 
+    @Transactional
     @Test
     void getAllConnectorsForOrganisation() throws Exception {
         try {
@@ -132,7 +136,7 @@ public class OrganisationConnectorsTests {
         }
     }
 
-
+    @Transactional
     @Test
     void deleteConnector() throws Exception {
         try {

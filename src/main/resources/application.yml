@@ -3,6 +3,12 @@ logging:
     org.springframework.security: DEBUG
 
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://key-server:8080/realms/POC1
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   rabbitmq:
     host: localhost
     port: 5672
@@ -25,6 +31,12 @@ gxfscatalog:
   base-uri: "http://localhost:8081"
   participants-uri: "${gxfscatalog.base-uri}/participants"
 
+jwt:
+  auth:
+    converter:
+      resource-id: MARKETPLACE
+      principal-attribute: preferred_username
+
 keycloak:
   client-id: "federated-catalogue"
   authorization-grant-type: "password"
@@ -34,6 +46,6 @@ keycloak:
   token-uri: "${keycloak.oidc-base-uri}/token"
   logout-uri: "${keycloak.oidc-base-uri}/logout"
   jwk-set-uri: "${keycloak.oidc-base-uri}/certs"
-  client-secret: "510kJDtoXbEmiPNwBacCnLmDGgtB0gjm"
+  client-secret: "oV0GOkc0XWUoDwNV38qjqWfri6Uk7tTQ"
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"

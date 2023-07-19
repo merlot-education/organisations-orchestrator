@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @EnableConfigurationProperties
 @SpringBootTest
 public class OrganisationConnectorsTests {
+
     @Autowired
     private OrganisationConnectorsService connectorsService;
 
@@ -58,7 +59,7 @@ public class OrganisationConnectorsTests {
 
         PostOrganisationConnectorModel postModel = new PostOrganisationConnectorModel();
         postModel.setId("Connector:911");
-        postModel.setConnectorEndpoint("https://google.de");
+        postModel.setConnectorEndpoint("https://edc1.edchub.dev");
         postModel.setConnectorAccessToken("token$123?");
         postModel.setBucketNames(buckets);
         OrganisationConnectorExtension connector = connectorsService.postConnector("Orga:110", postModel);
@@ -89,7 +90,7 @@ public class OrganisationConnectorsTests {
         assertEquals("Connector:112", connector.getId());
         assertEquals("Orga:110", connector.getOrgaId());
         assertEquals("https://edc1.edchub.dev", connector.getConnectorEndpoint());
-        assertEquals("token$123?", connector.getConnectorAccessToken());
+        assertEquals("token$ABC?", connector.getConnectorAccessToken());
         assertEquals(buckets, connector.getBucketNames());
     }
 

@@ -20,6 +20,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
                 .requestMatchers("/health").permitAll()
+                .requestMatchers("/").permitAll()
                 .anyRequest().authenticated();
         http.oauth2ResourceServer()
                 .jwt()

@@ -13,7 +13,9 @@ public class MessageQueueConfig {
 
     public static final String ORCHESTRATOR_EXCHANGE = "orchestrator.exchange";
     public static final String ORGANIZATION_REQUEST_KEY = "request.organization";
+    public static final String ORGANIZATIONCONNECTOR_REQUEST_KEY = "request.organizationconnector";
     public static final String ORGANIZATION_REQUEST_QUEUE = "organization.request.organization.queue";
+    public static final String ORGANIZATIONCONNECTOR_REQUEST_QUEUE = "organizationconnector.request.organizationconnector.queue";
     @Bean
     DirectExchange orchestratorExchange() {
         return new DirectExchange(ORCHESTRATOR_EXCHANGE);
@@ -25,8 +27,18 @@ public class MessageQueueConfig {
     }
 
     @Bean
+    Binding requestedOrgaConnectorBinding(Queue orgaConnectorRequestedQueue, DirectExchange orchestratorExchange) {
+        return BindingBuilder.bind(orgaConnectorRequestedQueue).to(orchestratorExchange).with(ORGANIZATIONCONNECTOR_REQUEST_KEY);
+    }
+
+    @Bean
     public Queue orgaRequestedQueue() {
         return new Queue(ORGANIZATION_REQUEST_QUEUE, false);
+    }
+
+    @Bean
+    public Queue orgaConnectorRequestedQueue() {
+        return new Queue(ORGANIZATIONCONNECTOR_REQUEST_QUEUE, false);
     }
     @Bean
     public MessageConverter converter(){

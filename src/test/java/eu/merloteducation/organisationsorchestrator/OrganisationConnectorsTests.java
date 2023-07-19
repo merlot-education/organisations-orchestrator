@@ -47,105 +47,68 @@ public class OrganisationConnectorsTests {
     void beforeAll() throws Exception {
         ReflectionTestUtils.setField(connectorsService, "connectorsRepo", connectorsRepo);
 
-        try {
-            List<String> buckets = new ArrayList<String>();
-            buckets.add("bucket1");
-            buckets.add("bucket2");
-            buckets.add("bucket3");
+        List<String> buckets = new ArrayList<String>();
+        buckets.add("bucket1");
+        buckets.add("bucket2");
+        buckets.add("bucket3");
 
-            PostOrganisationConnectorModel postModel = new PostOrganisationConnectorModel();
-            postModel.setId("Connector:112");
-            postModel.setConnectorEndpoint("https://google.de");
-            postModel.setConnectorAccessToken("token$123?");
-            postModel.setBucketNames(buckets);
-            OrganisationConnectorExtension connector = connectorsService.postConnector("Oraga:110", postModel);
-        }
-        catch (Exception ex)
-        {
-
-        }
+        PostOrganisationConnectorModel postModel = new PostOrganisationConnectorModel();
+        postModel.setId("Connector:112");
+        postModel.setConnectorEndpoint("https://google.de");
+        postModel.setConnectorAccessToken("token$123?");
+        postModel.setBucketNames(buckets);
+        OrganisationConnectorExtension connector = connectorsService.postConnector("Oraga:110", postModel);
     }
 
     @Transactional
     @Test
     void postConnectorForOrganisation() throws Exception {
-        try {
-            List<String> buckets = new ArrayList<String>();
-            buckets.add("bucket1");
-            buckets.add("bucket2");
-            buckets.add("bucket3");
+        List<String> buckets = new ArrayList<String>();
+        buckets.add("bucket1");
+        buckets.add("bucket2");
+        buckets.add("bucket3");
 
-            PostOrganisationConnectorModel postModel = new PostOrganisationConnectorModel();
-            postModel.setId("Connector:911");
-            postModel.setConnectorEndpoint("https://google.de");
-            postModel.setConnectorAccessToken("token$123?");
-            postModel.setBucketNames(buckets);
-            OrganisationConnectorExtension connector = connectorsService.postConnector("Oraga:110", postModel);
-            assertNotNull(connector);
-        }
-        catch (Exception ex)
-        {
-
-        }
+        PostOrganisationConnectorModel postModel = new PostOrganisationConnectorModel();
+        postModel.setId("Connector:911");
+        postModel.setConnectorEndpoint("https://google.de");
+        postModel.setConnectorAccessToken("token$123?");
+        postModel.setBucketNames(buckets);
+        OrganisationConnectorExtension connector = connectorsService.postConnector("Oraga:110", postModel);
+        assertNotNull(connector);
     }
 
     @Transactional
     @Test
     void patchConnectorForOrganisation() throws Exception {
-        try {
-            List<String> buckets = new ArrayList<String>();
-            buckets.add("bucketA");
-            buckets.add("bucketB");
-            buckets.add("bucketC");
+        List<String> buckets = new ArrayList<String>();
+        buckets.add("bucketA");
+        buckets.add("bucketB");
+        buckets.add("bucketC");
 
-            PatchOrganisationConnectorModel patchModel = new PatchOrganisationConnectorModel();
-            patchModel.setConnectorEndpoint("https://google.com");
-            patchModel.setConnectorAccessToken("token$ABC?");
-            patchModel.setBucketNames(buckets);
-            OrganisationConnectorExtension connector = connectorsService.patchConnector("Oraga:110", "Connector:911", patchModel);
-            assertNotNull(connector);
-        }
-        catch (Exception ex)
-        {
-
-        }
+        PatchOrganisationConnectorModel patchModel = new PatchOrganisationConnectorModel();
+        patchModel.setConnectorEndpoint("https://google.com");
+        patchModel.setConnectorAccessToken("token$ABC?");
+        patchModel.setBucketNames(buckets);
+        OrganisationConnectorExtension connector = connectorsService.patchConnector("Oraga:110", "Connector:112", patchModel);
+        assertNotNull(connector);
     }
 
     @Test
     void getConnectorForOrganisation() throws Exception {
-        try {
-            OrganisationConnectorExtension connector = connectorsService.getConnector("Oraga:110", "Connector:112");
-            assertNotNull(connector);
-        }
-        catch (Exception ex)
-        {
-
-        }
+        OrganisationConnectorExtension connector = connectorsService.getConnector("Oraga:110", "Connector:112");
     }
 
     @Transactional
     @Test
     void getAllConnectorsForOrganisation() throws Exception {
-        try {
-            List<OrganisationConnectorExtension> connectors = connectorsService.getAllConnectors("Oraga:110");
-            assertNotNull(connectors);
-        }
-        catch (Exception ex)
-        {
-
-        }
+        List<OrganisationConnectorExtension> connectors = connectorsService.getAllConnectors("Oraga:110");
+        assertNotNull(connectors);
     }
 
     @Transactional
     @Test
     void deleteConnector() throws Exception {
-        try {
-            connectorsService.deleteConnector("Connector:112");
-        }
-        catch (Exception ex)
-        {
-
-        }
+        connectorsService.deleteConnector("Connector:112");
     }
 
 }

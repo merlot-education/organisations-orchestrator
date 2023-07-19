@@ -20,7 +20,7 @@ import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConn
 
 @RestController
 @CrossOrigin
-@RequestMapping("/organization/{orgaId}/Connectors/")
+@RequestMapping("/organization/{orgaId}/connectors/")
 public class OrganisationConnectorsController {
 
     @Autowired
@@ -67,7 +67,7 @@ public class OrganisationConnectorsController {
          return connectorsService.getAllConnectors(orgaId);
     }
 
-    @GetMapping("Connector/{connectorId}")
+    @GetMapping("connector/{connectorId}")
     public OrganisationConnectorExtension getConnector(Principal principal,
                                                        @PathVariable(value="orgaId") String orgaId,
                                                        @PathVariable(value="orgaId") String connectorId,
@@ -82,7 +82,7 @@ public class OrganisationConnectorsController {
         return connectorsService.getConnector(orgaId, connectorId);
     }
 
-    @PostMapping("Connector")
+    @PostMapping("connector")
     public OrganisationConnectorExtension postConnector(Principal principal,
                                                         @PathVariable(value="orgaId") String orgaId,
                                                         @Valid @RequestBody PostOrganisationConnectorModel postModel,
@@ -97,7 +97,7 @@ public class OrganisationConnectorsController {
         return connectorsService.postConnector(orgaId, postModel);
     }
 
-    @PatchMapping("Connector/{connectorId}")
+    @PatchMapping("connector/{connectorId}")
     public OrganisationConnectorExtension patchConnector(Principal principal,
                                                           @PathVariable(value="orgaId") String orgaId,
                                                           @PathVariable(value="connectorId") String connectorId,
@@ -113,7 +113,7 @@ public class OrganisationConnectorsController {
         return connectorsService.patchConnector(orgaId, connectorId, patchModel);
     }
 
-    @DeleteMapping("Connector/{connectorId}")
+    @DeleteMapping("connector/{connectorId}")
     public void deleteConnector(Principal principal,
                                 @PathVariable(value="orgaId") String orgaId,
                                 @PathVariable(value="connectorId") String connectorId,

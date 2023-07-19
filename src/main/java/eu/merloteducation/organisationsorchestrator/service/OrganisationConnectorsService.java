@@ -15,7 +15,6 @@ public class OrganisationConnectorsService {
     @Autowired
     private OrganisationConnectorsExtensionRepository connectorsRepo;
 
-
     public List<OrganisationConnectorExtension> getAllConnectors(String orgaId) throws Exception {
         List<OrganisationConnectorExtension> connectors = connectorsRepo.findAllByOrgaId(orgaId);
 
@@ -40,7 +39,7 @@ public class OrganisationConnectorsService {
         return connector;
     }
 
-    public OrganisationConnectorExtension patchConnector(String orgaIdId, String connectorId, PatchOrganisationConnectorModel patchModel) throws Exception {
+    public OrganisationConnectorExtension patchConnector(String orgaId, String connectorId, PatchOrganisationConnectorModel patchModel) throws Exception {
 
         OrganisationConnectorExtension connector =  connectorsRepo.findById(connectorId).orElse(null);
         if(connector == null){

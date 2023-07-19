@@ -10,6 +10,6 @@ import java.util.List;
 public class PostOrganisationConnectorModel {
     private String id;
     private String connectorEndpoint;
-    private String ConnectorAccessToken;
+    private String connectorAccessToken;
     private List<String> bucketNames;
 }

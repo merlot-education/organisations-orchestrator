@@ -9,6 +9,6 @@ import java.util.List;
 @Setter
 public class PatchOrganisationConnectorModel {
     private String connectorEndpoint;
-    private String ConnectorAccessToken;
+    private String connectorAccessToken;
     private List<String> bucketNames;
 }

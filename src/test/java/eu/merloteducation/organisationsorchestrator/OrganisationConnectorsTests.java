@@ -57,7 +57,7 @@ public class OrganisationConnectorsTests {
         postModel.setConnectorEndpoint("https://google.de");
         postModel.setConnectorAccessToken("token$123?");
         postModel.setBucketNames(buckets);
-        OrganisationConnectorExtension connector = connectorsService.postConnector("Oraga:110", postModel);
+        OrganisationConnectorExtension connector = connectorsService.postConnector("Orga:110", postModel);
     }
 
     @Transactional
@@ -73,8 +73,9 @@ public class OrganisationConnectorsTests {
         postModel.setConnectorEndpoint("https://google.de");
         postModel.setConnectorAccessToken("token$123?");
         postModel.setBucketNames(buckets);
-        OrganisationConnectorExtension connector = connectorsService.postConnector("Oraga:110", postModel);
+        OrganisationConnectorExtension connector = connectorsService.postConnector("Orga:110", postModel);
         assertNotNull(connector);
+        //TODO: Check fields
     }
 
     @Transactional
@@ -89,20 +90,24 @@ public class OrganisationConnectorsTests {
         patchModel.setConnectorEndpoint("https://google.com");
         patchModel.setConnectorAccessToken("token$ABC?");
         patchModel.setBucketNames(buckets);
-        OrganisationConnectorExtension connector = connectorsService.patchConnector("Oraga:110", "Connector:112", patchModel);
+        OrganisationConnectorExtension connector = connectorsService.patchConnector("Orga:110", "Connector:112", patchModel);
         assertNotNull(connector);
+        //TODO: Check fields
     }
 
     @Test
     void getConnectorForOrganisation() throws Exception {
-        OrganisationConnectorExtension connector = connectorsService.getConnector("Oraga:110", "Connector:112");
+        OrganisationConnectorExtension connector = connectorsService.getConnector("Orga:110", "Connector:112");
+        //TODO: Check fields
     }
 
     @Transactional
     @Test
     void getAllConnectorsForOrganisation() throws Exception {
-        List<OrganisationConnectorExtension> connectors = connectorsService.getAllConnectors("Oraga:110");
+        List<OrganisationConnectorExtension> connectors = connectorsService.getAllConnectors("Orga:110");
         assertNotNull(connectors);
+
+        //TODO: Check fields
     }
 
     @Transactional

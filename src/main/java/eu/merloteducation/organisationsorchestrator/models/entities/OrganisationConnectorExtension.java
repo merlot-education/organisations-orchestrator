@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 
 import java.security.Provider;
 import java.time.OffsetDateTime;
@@ -18,8 +17,12 @@ import java.util.List;
 public class OrganisationConnectorExtension {
     @Id
     private String id;
+
     private String orgaId;
+
     private String connectorEndpoint;
-    private String ConnectorAccessToken;
+
+    private String connectorAccessToken;
+
     private List<String> bucketNames;
 }

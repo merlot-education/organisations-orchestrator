@@ -5,9 +5,11 @@ import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConne
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class OrganisationConnectorsService {
 
     @Autowired
@@ -15,7 +17,7 @@ public class OrganisationConnectorsService {
 
 
     public List<OrganisationConnectorExtension> getAllConnectors(String orgaId) throws Exception {
-        List<OrganisationConnectorExtension> connectors = connectorsRepo.findAllByOrganisation(orgaId);
+        List<OrganisationConnectorExtension> connectors = connectorsRepo.findAllByOrgaId(orgaId);
 
         return connectors;
     }
@@ -38,7 +40,7 @@ public class OrganisationConnectorsService {
         return connector;
     }
 
-    public OrganisationConnectorExtension updateConnector(String orgaIdId, String connectorId, PatchOrganisationConnectorModel patchModel) throws Exception {
+    public OrganisationConnectorExtension patchConnector(String orgaIdId, String connectorId, PatchOrganisationConnectorModel patchModel) throws Exception {
 
         OrganisationConnectorExtension connector =  connectorsRepo.findById(connectorId).orElse(null);
         if(connector == null){

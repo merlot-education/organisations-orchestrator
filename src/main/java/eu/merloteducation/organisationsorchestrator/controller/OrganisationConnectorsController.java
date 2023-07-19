@@ -55,8 +55,8 @@ public class OrganisationConnectorsController {
 
     @GetMapping("")
     public List<OrganisationConnectorExtension> getAllConnectors(Principal principal,
-                                                             @PathVariable(value="orgaId") String orgaId,
-                                                             HttpServletResponse response) throws Exception {
+                                                                 @PathVariable(value="orgaId") String orgaId,
+                                                                 HttpServletResponse response) throws Exception {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds(principal).contains(orgaId)) {
@@ -69,9 +69,9 @@ public class OrganisationConnectorsController {
 
     @GetMapping("Connector/{connectorId}")
     public OrganisationConnectorExtension getConnector(Principal principal,
-                                                   @PathVariable(value="orgaId") String orgaId,
-                                                   @PathVariable(value="orgaId") String connectorId,
-                                                   HttpServletResponse response) throws Exception {
+                                                       @PathVariable(value="orgaId") String orgaId,
+                                                       @PathVariable(value="orgaId") String connectorId,
+                                                       HttpServletResponse response) throws Exception {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds(principal).contains(orgaId)) {
@@ -84,9 +84,9 @@ public class OrganisationConnectorsController {
 
     @PostMapping("Connector")
     public OrganisationConnectorExtension postConnector(Principal principal,
-                                                    @PathVariable(value="orgaId") String orgaId,
-                                                    @Valid @RequestBody PostOrganisationConnectorModel postModel,
-                                                    HttpServletResponse response) throws Exception {
+                                                        @PathVariable(value="orgaId") String orgaId,
+                                                        @Valid @RequestBody PostOrganisationConnectorModel postModel,
+                                                        HttpServletResponse response) throws Exception {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds(principal).contains(orgaId)) {
@@ -98,7 +98,7 @@ public class OrganisationConnectorsController {
     }
 
     @PatchMapping("Connector/{connectorId}")
-    public OrganisationConnectorExtension updateConnector(Principal principal,
+    public OrganisationConnectorExtension patchConnector(Principal principal,
                                                           @PathVariable(value="orgaId") String orgaId,
                                                           @PathVariable(value="connectorId") String connectorId,
                                                           @Valid @RequestBody PatchOrganisationConnectorModel patchModel,
@@ -110,7 +110,7 @@ public class OrganisationConnectorsController {
             return null;
         }
 
-        return connectorsService.updateConnector(orgaId, connectorId, patchModel);
+        return connectorsService.patchConnector(orgaId, connectorId, patchModel);
     }
 
     @DeleteMapping("Connector/{connectorId}")

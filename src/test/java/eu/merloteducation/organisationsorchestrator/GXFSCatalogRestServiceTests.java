@@ -115,9 +115,6 @@ public class GXFSCatalogRestServiceTests {
         assertThat(organization, isA(OrganizationModel.class));
         assertEquals("10", organization.getMerlotId());
         assertEquals("Gaia-X European Association for Data and Cloud AISBL", organization.getOrganizationLegalName());
-        assertEquals("connector123", organization.getConnectorId());
-        assertEquals("key123", organization.getConnectorPublicKey());
-        assertEquals("http://example.com/connector", organization.getConnectorBaseUrl());
     }
 
     @Test

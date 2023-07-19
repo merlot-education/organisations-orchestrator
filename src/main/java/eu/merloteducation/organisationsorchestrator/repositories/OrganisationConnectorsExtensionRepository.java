@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface OrganisationConnectorsExtensionRepository extends JpaRepository<OrganisationConnectorExtension, String> {
-    List<OrganisationConnectorExtension> findAllByOrganisation(String orgaId);
+    List<OrganisationConnectorExtension> findAllByOrgaId(String orgaId);
 }

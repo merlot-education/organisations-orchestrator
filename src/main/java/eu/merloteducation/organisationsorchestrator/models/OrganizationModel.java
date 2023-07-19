@@ -26,13 +26,6 @@ public class OrganizationModel {
     @JsonView(OrganiationViews.PublicView.class)
     private AddressModel legalAddress;
 
-    @JsonView(OrganiationViews.InternalView.class)
-    private String connectorId;
-    @JsonView(OrganiationViews.InternalView.class)
-    private String connectorPublicKey;
-    @JsonView(OrganiationViews.InternalView.class)
-    private String connectorBaseUrl;
-
     public OrganizationModel(ParticipantItem participantItem) {
         this.id = participantItem.getId();
         MerlotOrganizationCredentialSubject sub = participantItem.getSelfDescription().getVerifiableCredential()
@@ -43,8 +36,5 @@ public class OrganizationModel {
         this.registrationNumber = sub.getRegistrationNumber().getLocal().getValue();
         this.termsAndConditionsLink = sub.getTermsAndConditionsLink().getValue();
         this.legalAddress = new AddressModel(sub.getLegalAddress(), sub.getAddressCode().getValue());
-        this.connectorId = sub.getConnectorId().getValue();
-        this.connectorPublicKey = sub.getConnectorPublicKey().getValue();
-        this.connectorBaseUrl = sub.getConnectorBaseUrl().getValue();
     }
 }

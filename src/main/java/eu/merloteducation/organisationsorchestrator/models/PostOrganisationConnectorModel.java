@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class PostOrganisationConnectorModel {
-    private String id;
+    private String connectorId;
     private String connectorEndpoint;
     private String connectorAccessToken;
     private List<String> bucketNames;

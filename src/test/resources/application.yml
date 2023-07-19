@@ -1,0 +1,63 @@
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+spring:
+  datasource:
+    driverClassName: org.h2.Driver
+    initialization-mode: always
+  jpa:
+    generate-ddl: true
+    ddl:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        use_sql_comments: true
+        format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://key-server:8080/realms/POC1
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+  cloud:
+    bus:
+      enabled: true
+      refresh:
+        enabled: true
+
+server:
+  port: '8082'
+  servlet:
+    context-path: /api
+  error:
+    include-stacktrace: "never"
+
+gxfscatalog:
+  base-uri: "http://localhost:8081"
+  participants-uri: "${gxfscatalog.base-uri}/participants"
+
+jwt:
+  auth:
+    converter:
+      resource-id: MARKETPLACE
+      principal-attribute: preferred_username
+
+keycloak:
+  client-id: "federated-catalogue"
+  authorization-grant-type: "password"
+  base-uri: "http://key-server:8080"
+  oidc-base-uri: "${keycloak.base-uri}/realms/gxfscatalog/protocol/openid-connect"
+  authorization-uri: "${keycloak.oidc-base-uri}/auth"
+  token-uri: "${keycloak.oidc-base-uri}/token"
+  logout-uri: "${keycloak.oidc-base-uri}/logout"
+  jwk-set-uri: "${keycloak.oidc-base-uri}/certs"
+  client-secret: "oV0GOkc0XWUoDwNV38qjqWfri6Uk7tTQ"
+  gxfscatalog-user: "gxfscatalog"
+  gxfscatalog-pass: "gxfscatalog"

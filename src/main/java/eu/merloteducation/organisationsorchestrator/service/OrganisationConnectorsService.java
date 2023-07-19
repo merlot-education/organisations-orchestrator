@@ -22,7 +22,7 @@ public class OrganisationConnectorsService {
     }
 
     public OrganisationConnectorExtension getConnector(String orgaId, String connectorId) throws Exception {
-        OrganisationConnectorExtension connector =  connectorsRepo.findById(connectorId).orElse(null);
+        OrganisationConnectorExtension connector =  connectorsRepo.findByOrgaIdAndConnectorId(orgaId, connectorId).orElse(null);
 
         return connector;
     }
@@ -30,7 +30,7 @@ public class OrganisationConnectorsService {
     public OrganisationConnectorExtension postConnector(String orgaId, PostOrganisationConnectorModel postModel) throws Exception {
         OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
         connector.setOrgaId(orgaId);
-        connector.setId((postModel.getId()));
+        connector.setConnectorId((postModel.getConnectorId()));
         connector.setConnectorEndpoint(postModel.getConnectorEndpoint());
         connector.setConnectorAccessToken(postModel.getConnectorAccessToken());
         connector.setBucketNames(postModel.getBucketNames());
@@ -41,7 +41,7 @@ public class OrganisationConnectorsService {
 
     public OrganisationConnectorExtension patchConnector(String orgaId, String connectorId, PatchOrganisationConnectorModel patchModel) throws Exception {
 
-        OrganisationConnectorExtension connector =  connectorsRepo.findById(connectorId).orElse(null);
+        OrganisationConnectorExtension connector =  connectorsRepo.findByOrgaIdAndConnectorId(orgaId, connectorId).orElse(null);
         if(connector == null){
             return null;
         }

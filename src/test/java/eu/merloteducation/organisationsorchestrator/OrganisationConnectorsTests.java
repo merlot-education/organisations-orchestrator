@@ -42,7 +42,7 @@ public class OrganisationConnectorsTests {
         buckets.add("bucket3");
 
         PostOrganisationConnectorModel postModel = new PostOrganisationConnectorModel();
-        postModel.setId("Connector:112");
+        postModel.setConnectorId("Connector:112");
         postModel.setConnectorEndpoint("https://edc1.edchub.dev");
         postModel.setConnectorAccessToken("token$123?");
         postModel.setBucketNames(buckets);
@@ -58,14 +58,14 @@ public class OrganisationConnectorsTests {
         buckets.add("bucket3");
 
         PostOrganisationConnectorModel postModel = new PostOrganisationConnectorModel();
-        postModel.setId("Connector:911");
+        postModel.setConnectorId("Connector:911");
         postModel.setConnectorEndpoint("https://edc1.edchub.dev");
         postModel.setConnectorAccessToken("token$123?");
         postModel.setBucketNames(buckets);
         OrganisationConnectorExtension connector = connectorsService.postConnector("Orga:110", postModel);
 
         assertNotNull(connector);
-        assertEquals("Connector:911", connector.getId());
+        assertEquals("Connector:911", connector.getConnectorId());
         assertEquals("Orga:110", connector.getOrgaId());
         assertEquals("https://edc1.edchub.dev", connector.getConnectorEndpoint());
         assertEquals("token$123?", connector.getConnectorAccessToken());
@@ -87,7 +87,7 @@ public class OrganisationConnectorsTests {
         OrganisationConnectorExtension connector = connectorsService.patchConnector("Orga:110", "Connector:112", patchModel);
 
         assertNotNull(connector);
-        assertEquals("Connector:112", connector.getId());
+        assertEquals("Connector:112", connector.getConnectorId());
         assertEquals("Orga:110", connector.getOrgaId());
         assertEquals("https://edc1.edchub.dev", connector.getConnectorEndpoint());
         assertEquals("token$ABC?", connector.getConnectorAccessToken());
@@ -99,7 +99,7 @@ public class OrganisationConnectorsTests {
         OrganisationConnectorExtension connector = connectorsService.getConnector("Orga:110", "Connector:112");
 
         assertNotNull(connector);
-        assertEquals("Connector:112", connector.getId());
+        assertEquals("Connector:112", connector.getConnectorId());
         assertEquals("Orga:110", connector.getOrgaId());
         assertEquals("https://edc1.edchub.dev", connector.getConnectorEndpoint());
         assertEquals("token$123?", connector.getConnectorAccessToken());
@@ -114,7 +114,7 @@ public class OrganisationConnectorsTests {
         assertEquals(1, connectors.size());
 
         var connector = connectors.get(0);
-        assertEquals("Connector:112", connector.getId());
+        assertEquals("Connector:112", connector.getConnectorId());
         assertEquals("Orga:110", connector.getOrgaId());
         assertEquals("https://edc1.edchub.dev", connector.getConnectorEndpoint());
         assertEquals("token$123?", connector.getConnectorAccessToken());

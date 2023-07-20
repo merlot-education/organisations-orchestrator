@@ -1,5 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
+import eu.merloteducation.organisationsorchestrator.models.ConnectorDetailsRequest;
 import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import org.slf4j.Logger;
@@ -33,10 +34,10 @@ public class MessageQueueService {
     }
 
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATIONCONNECTOR_REQUEST_QUEUE)
-    public List<OrganisationConnectorExtension> organizationConnectorRequest(String orgaId) throws Exception {
-        logger.info("Organization Connector request message: {}", orgaId);
+    public OrganisationConnectorExtension organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) throws Exception {
+        logger.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
         try {
-            return organisationConnectorsService.getAllConnectors(orgaId);
+            return organisationConnectorsService.getConnector(connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());
         } catch (Exception e) {
             logger.error("Failed to find participant with this id, error: {}", e.getMessage());
             return null;

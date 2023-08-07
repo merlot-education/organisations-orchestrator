@@ -61,3 +61,9 @@ keycloak:
   client-secret: "oV0GOkc0XWUoDwNV38qjqWfri6Uk7tTQ"
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"
+
+cors:
+  global:
+    origins:
+    patterns: >
+      http://localhost:[*]

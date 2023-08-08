@@ -19,7 +19,6 @@ import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConne
 import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/organization/{orgaId}/connectors/")
 public class OrganisationConnectorsController {
 

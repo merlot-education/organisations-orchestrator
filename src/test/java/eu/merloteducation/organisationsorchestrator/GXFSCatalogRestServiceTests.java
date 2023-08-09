@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -104,9 +105,9 @@ public class GXFSCatalogRestServiceTests {
     @Test
     public void getAllParticipants() throws Exception {
 
-        List<OrganizationModel> organizations = gxfsCatalogRestService.getParticipants(PageRequest.of(0, 9));
-        assertThat(organizations, isA(List.class));
-        assertThat(organizations, not(empty()));
+        Page<OrganizationModel> organizations = gxfsCatalogRestService.getParticipants(PageRequest.of(0, 9));
+        assertThat(organizations.getContent(), isA(List.class));
+        assertThat(organizations.getContent(), not(empty()));
 
     }
 

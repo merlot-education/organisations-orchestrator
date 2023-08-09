@@ -6,6 +6,7 @@ import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -31,10 +32,8 @@ public class OrganizationQueryController {
 
     @GetMapping("")
     @JsonView(OrganiationViews.PublicView.class)
-    public List<OrganizationModel> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
-                                                       @RequestParam(value = "size", defaultValue = "9") int size,
-                                                       Principal principal,
-                                                       HttpServletResponse response) throws Exception {
+    public Page<OrganizationModel> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                       @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
         return gxfsCatalogRestService.getParticipants(PageRequest.of(page, size));
     }
 

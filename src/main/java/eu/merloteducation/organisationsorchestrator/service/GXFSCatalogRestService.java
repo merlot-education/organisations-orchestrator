@@ -8,9 +8,10 @@ import eu.merloteducation.organisationsorchestrator.models.ParticipantsResponse;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,7 +24,6 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class GXFSCatalogRestService {
@@ -114,7 +114,7 @@ public class GXFSCatalogRestService {
         return orgaModel;
     }
 
-    public List<OrganizationModel> getParticipants(Pageable pageable) throws Exception {
+    public Page<OrganizationModel> getParticipants(Pageable pageable) throws Exception {
         // log in as the gxfscatalog user and add the token to the header
         Map<String, Object> gxfscatalogLoginResponse = loginGXFScatalog();
         HttpHeaders headers = new HttpHeaders();
@@ -138,7 +138,7 @@ public class GXFSCatalogRestService {
 
         // log out with the gxfscatalog user
         this.logoutGXFScatalog((String) gxfscatalogLoginResponse.get("refresh_token"));
-        return orgaModelList;
+        return new PageImpl<>(orgaModelList, pageable, participantsResponse.getTotalCount());
     }
 
 }

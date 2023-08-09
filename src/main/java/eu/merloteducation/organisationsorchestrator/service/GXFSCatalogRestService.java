@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -113,7 +114,7 @@ public class GXFSCatalogRestService {
         return orgaModel;
     }
 
-    public List<OrganizationModel> getParticipants() throws Exception {
+    public List<OrganizationModel> getParticipants(Pageable pageable) throws Exception {
         // log in as the gxfscatalog user and add the token to the header
         Map<String, Object> gxfscatalogLoginResponse = loginGXFScatalog();
         HttpHeaders headers = new HttpHeaders();
@@ -121,7 +122,7 @@ public class GXFSCatalogRestService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
 
         // get on the participants endpoint of the gxfs catalog to get all enrolled participants
-        String response = restTemplate.exchange(gxfscatalogParticipantsUri,
+        String response = restTemplate.exchange(gxfscatalogParticipantsUri + "?offset=" + pageable.getOffset() + "&limit=" + pageable.getPageSize(),
                 HttpMethod.GET, request, String.class).getBody();
         // as the catalog returns nested but escaped jsons, we need to manually unescape to properly use it
         response = StringEscapeUtils.unescapeJson(response)

@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,7 +92,7 @@ public class GXFSCatalogRestServiceTests {
                 }
                 """;
         // for participant endpoint return a dummy list of one item
-        lenient().when(restTemplate.exchange(eq(gxfscatalogParticipantsUri),
+        lenient().when(restTemplate.exchange(startsWith(gxfscatalogParticipantsUri),
                         eq(HttpMethod.GET), any(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(mockUserResponse, HttpStatus.OK));
         lenient().when(restTemplate.exchange(eq(URI.create(gxfscatalogParticipantsUri + "/Participant:10")),
@@ -103,7 +104,7 @@ public class GXFSCatalogRestServiceTests {
     @Test
     public void getAllParticipants() throws Exception {
 
-        List<OrganizationModel> organizations = gxfsCatalogRestService.getParticipants();
+        List<OrganizationModel> organizations = gxfsCatalogRestService.getParticipants(PageRequest.of(0, 9));
         assertThat(organizations, isA(List.class));
         assertThat(organizations, not(empty()));
 

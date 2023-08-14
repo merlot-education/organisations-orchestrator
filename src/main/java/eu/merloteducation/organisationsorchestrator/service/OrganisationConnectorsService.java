@@ -15,19 +15,35 @@ public class OrganisationConnectorsService {
     @Autowired
     private OrganisationConnectorsExtensionRepository connectorsRepo;
 
-    public List<OrganisationConnectorExtension> getAllConnectors(String orgaId) throws Exception {
-        List<OrganisationConnectorExtension> connectors = connectorsRepo.findAllByOrgaId(orgaId);
-
-        return connectors;
+    /**
+     * Given an organization id, return all related connectors.
+     *
+     * @param orgaId organization id
+     * @return connectors of organization
+     */
+    public List<OrganisationConnectorExtension> getAllConnectors(String orgaId) {
+        return connectorsRepo.findAllByOrgaId(orgaId);
     }
 
-    public OrganisationConnectorExtension getConnector(String orgaId, String connectorId) throws Exception {
-        OrganisationConnectorExtension connector =  connectorsRepo.findByOrgaIdAndConnectorId(orgaId, connectorId).orElse(null);
-
-        return connector;
+    /**
+     * Given an organization id and a connector id, return the specific connector.
+     *
+     * @param orgaId organization id
+     * @param connectorId connector id
+     * @return connector
+     */
+    public OrganisationConnectorExtension getConnector(String orgaId, String connectorId) {
+        return connectorsRepo.findByOrgaIdAndConnectorId(orgaId, connectorId).orElse(null);
     }
 
-    public OrganisationConnectorExtension postConnector(String orgaId, PostOrganisationConnectorModel postModel) throws Exception {
+    /**
+     * Given an organization id and a model of a new connector, create the connector entry in the database.
+     *
+     * @param orgaId organization id
+     * @param postModel model of new connector
+     * @return newly created connector
+     */
+    public OrganisationConnectorExtension postConnector(String orgaId, PostOrganisationConnectorModel postModel) {
         OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
         connector.setOrgaId(orgaId);
         connector.setConnectorId((postModel.getConnectorId()));
@@ -35,11 +51,19 @@ public class OrganisationConnectorsService {
         connector.setConnectorAccessToken(postModel.getConnectorAccessToken());
         connector.setBucketNames(postModel.getBucketNames());
 
-        connectorsRepo.save(connector);
-        return connector;
+        return connectorsRepo.save(connector);
     }
 
-    public OrganisationConnectorExtension patchConnector(String orgaId, String connectorId, PatchOrganisationConnectorModel patchModel) throws Exception {
+    /**
+     * Given an organization id, a connector id and a model of an updated connector, update the respective fields
+     * of the connector in the database.
+     *
+     * @param orgaId organization id
+     * @param connectorId connector id
+     * @param patchModel updated model of connector
+     * @return updated connector
+     */
+    public OrganisationConnectorExtension patchConnector(String orgaId, String connectorId, PatchOrganisationConnectorModel patchModel) {
 
         OrganisationConnectorExtension connector =  connectorsRepo.findByOrgaIdAndConnectorId(orgaId, connectorId).orElse(null);
         if(connector == null){
@@ -50,12 +74,16 @@ public class OrganisationConnectorsService {
         connector.setConnectorAccessToken(patchModel.getConnectorAccessToken());
         connector.setBucketNames(patchModel.getBucketNames());
 
-        connectorsRepo.save(connector);
-        return connector;
+        return connectorsRepo.save(connector);
     }
 
-    public void deleteConnector(String connectorId) throws Exception {
-        connectorsRepo.deleteById(connectorId);
+    /**
+     * Delete the connector by the given database connector id.
+     *
+     * @param id database connector id
+     */
+    public void deleteConnector(String id) {
+        connectorsRepo.deleteById(id);
     }
 
 }

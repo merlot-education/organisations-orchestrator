@@ -22,24 +22,37 @@ public class OrganizationQueryController {
     @Autowired
     private GXFSCatalogRestService gxfsCatalogRestService;
 
+    /**
+     * GET health endpoint.
+     */
     @GetMapping("health")
     public void getHealth() {
         // always return code 200
     }
 
 
+    /**
+     * GET endpoint for retrieving all enrolled organizations.
+     *
+     * @return list of all enrolled organizations
+     * @throws Exception exception during participant retrieval
+     */
     @GetMapping("")
     @JsonView(OrganiationViews.PublicView.class)
-    public List<OrganizationModel> getAllOrganizations(Principal principal,
-                                                       HttpServletResponse response) throws Exception {
+    public List<OrganizationModel> getAllOrganizations() throws Exception {
         return gxfsCatalogRestService.getParticipants();
     }
 
+    /**
+     * GET endpoint for retrieving a specific organization by its id.
+     *
+     * @param orgaId organization id
+     * @return organization data
+     * @throws Exception exception during participant retrieval
+     */
     @GetMapping("/organization/{orgaId}")
     @JsonView(OrganiationViews.PublicView.class)
-    public OrganizationModel getOrganizationById(Principal principal,
-                                            @PathVariable(value="orgaId") String orgaId,
-                                            HttpServletResponse response) throws Exception {
+    public OrganizationModel getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
         try {
             return gxfsCatalogRestService.getParticipantById(orgaId);
         } catch (HttpClientErrorException.NotFound e) {

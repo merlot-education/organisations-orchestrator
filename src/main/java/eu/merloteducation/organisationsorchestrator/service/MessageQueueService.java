@@ -22,8 +22,14 @@ public class MessageQueueService {
 
     private final Logger logger = LoggerFactory.getLogger(MessageQueueService.class);
 
+    /**
+     * Listen to requests of organization details on the message bus and return the organization.
+     *
+     * @param orgaId id of the organization to request details for
+     * @return organization details
+     */
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATION_REQUEST_QUEUE)
-    public OrganizationModel organizationRequest(String orgaId) throws Exception {
+    public OrganizationModel organizationRequest(String orgaId) {
         logger.info("Organization request message: {}", orgaId);
         try {
             return gxfsCatalogRestService.getParticipantById(orgaId);
@@ -33,8 +39,14 @@ public class MessageQueueService {
         }
     }
 
+    /**
+     * Listen to requests of organization connector details on the message bus and return the organization connector.
+     *
+     * @param connectorDetailsRequest request of organization connector details
+     * @return connector details
+     */
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATIONCONNECTOR_REQUEST_QUEUE)
-    public OrganisationConnectorExtension organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) throws Exception {
+    public OrganisationConnectorExtension organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
         logger.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
         try {
             return organisationConnectorsService.getConnector(connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());

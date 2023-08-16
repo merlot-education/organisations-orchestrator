@@ -39,9 +39,7 @@ public class OrganizationQueryController {
 
     @GetMapping("/organization/{orgaId}")
     @JsonView(OrganiationViews.PublicView.class)
-    public OrganizationModel getOrganizationById(Principal principal,
-                                                 @PathVariable(value = "orgaId") String orgaId,
-                                                 HttpServletResponse response) throws Exception {
+    public OrganizationModel getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
         try {
             return gxfsCatalogRestService.getParticipantById(orgaId);
         } catch (HttpClientErrorException.NotFound e) {

@@ -41,7 +41,7 @@ public class OrganizationQueryController {
     @JsonView(OrganiationViews.PublicView.class)
     public OrganizationModel getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
         try {
-            return gxfsCatalogRestService.getParticipantById(orgaId);
+            return gxfsCatalogRestService.getParticipantById(orgaId.replace("Participant:", ""));
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
         }

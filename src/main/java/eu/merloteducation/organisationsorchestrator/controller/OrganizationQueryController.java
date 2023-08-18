@@ -3,6 +3,8 @@ package eu.merloteducation.organisationsorchestrator.controller;
 import com.fasterxml.jackson.annotation.JsonView;
 import eu.merloteducation.organisationsorchestrator.models.OrganiationViews;
 import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
+import eu.merloteducation.organisationsorchestrator.models.ParticipantSelfDescription;
+import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +34,14 @@ public class OrganizationQueryController {
 
     @GetMapping("")
     @JsonView(OrganiationViews.PublicView.class)
-    public Page<OrganizationModel> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
-                                                       @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
+    public Page<MerlotParticipantDto> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                          @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
         return gxfsCatalogRestService.getParticipants(PageRequest.of(page, size));
     }
 
     @GetMapping("/organization/{orgaId}")
     @JsonView(OrganiationViews.PublicView.class)
-    public OrganizationModel getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
+    public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
         try {
             return gxfsCatalogRestService.getParticipantById(orgaId.replace("Participant:", ""));
         } catch (HttpClientErrorException.NotFound e) {

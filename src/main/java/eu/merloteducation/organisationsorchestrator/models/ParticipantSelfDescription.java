@@ -13,10 +13,13 @@ public class ParticipantSelfDescription {
     @JsonProperty("@id")
     private String id;
 
+    private SDProof proof;
+
     private List<String> type;
 
     @JsonProperty("@context")
     private List<String> context;
+
 
     private MerlotOrganizationVerifiableCredential verifiableCredential;
 

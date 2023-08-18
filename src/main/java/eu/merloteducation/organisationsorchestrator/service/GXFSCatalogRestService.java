@@ -2,9 +2,11 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
+import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.ParticipantItem;
+import eu.merloteducation.organisationsorchestrator.models.ParticipantSelfDescription;
 import eu.merloteducation.organisationsorchestrator.models.ParticipantsResponse;
+import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,9 @@ import java.util.Map;
 
 @Service
 public class GXFSCatalogRestService {
+
+    @Autowired
+    private OrganizationMapper organizationMapper;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -79,7 +84,7 @@ public class GXFSCatalogRestService {
         restTemplate.postForObject(keycloakLogoutUri, request, String.class);
     }
 
-    public OrganizationModel getParticipantById(String id) throws Exception {
+    public MerlotParticipantDto getParticipantById(String id) throws Exception {
 
         // input sanetization, for now we defined that ids must only consist of numbers
         if (!id.matches("\\d+")) {
@@ -106,15 +111,12 @@ public class GXFSCatalogRestService {
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ParticipantItem participantItem = mapper.readValue(response, ParticipantItem.class);
 
-        // map the ParticipantItem to an OrganizationModel
-        OrganizationModel orgaModel= new OrganizationModel(participantItem);
-
         // log out with the gxfscatalog user
         this.logoutGXFScatalog((String) gxfscatalogLoginResponse.get("refresh_token"));
-        return orgaModel;
+        return organizationMapper.selfDescriptionToMerlotParticipantDto(participantItem.getSelfDescription());
     }
 
-    public Page<OrganizationModel> getParticipants(Pageable pageable) throws Exception {
+    public Page<MerlotParticipantDto> getParticipants(Pageable pageable) throws Exception {
         // log in as the gxfscatalog user and add the token to the header
         Map<String, Object> gxfscatalogLoginResponse = loginGXFScatalog();
         HttpHeaders headers = new HttpHeaders();
@@ -130,15 +132,14 @@ public class GXFSCatalogRestService {
                 .replace("}\"", "}");
 
         // create a mapper to map the response to the ParticipantsResponse class
-        ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper mapper = new ObjectMapper();//.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ParticipantsResponse participantsResponse = mapper.readValue(response, ParticipantsResponse.class);
-
-        // extract the items from the ParticipantsResponse and map them to OrganizationModel instances
-        List<OrganizationModel> orgaModelList = participantsResponse.getItems().stream().map(OrganizationModel::new).toList();
+        List<MerlotParticipantDto> selfDescriptions = participantsResponse.getItems().stream()
+                .map(item -> organizationMapper.selfDescriptionToMerlotParticipantDto(item.getSelfDescription())).toList();
 
         // log out with the gxfscatalog user
         this.logoutGXFScatalog((String) gxfscatalogLoginResponse.get("refresh_token"));
-        return new PageImpl<>(orgaModelList, pageable, participantsResponse.getTotalCount());
+        return new PageImpl<>(selfDescriptions, pageable, participantsResponse.getTotalCount());
     }
 
 }

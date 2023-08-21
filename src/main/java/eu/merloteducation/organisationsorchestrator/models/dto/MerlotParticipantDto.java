@@ -1,6 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.models.dto;
 
-import eu.merloteducation.organisationsorchestrator.models.ParticipantSelfDescription;
+import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.ParticipantSelfDescription;
 import lombok.Getter;
 import lombok.Setter;
 

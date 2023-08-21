@@ -1,6 +1,5 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
 import org.junit.jupiter.api.BeforeAll;

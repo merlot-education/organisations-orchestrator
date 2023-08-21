@@ -2,11 +2,8 @@ package eu.merloteducation.organisationsorchestrator.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import eu.merloteducation.organisationsorchestrator.models.OrganiationViews;
-import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
-import eu.merloteducation.organisationsorchestrator.models.ParticipantSelfDescription;
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

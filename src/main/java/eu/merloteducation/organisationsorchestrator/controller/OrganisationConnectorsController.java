@@ -4,7 +4,9 @@ import eu.merloteducation.organisationsorchestrator.models.entities.Organisation
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.security.Principal;
 import java.util.List;
 import java.util.Set;
@@ -17,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
 import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/organization/{orgaId}/connectors/")
@@ -24,11 +27,6 @@ public class OrganisationConnectorsController {
 
     @Autowired
     private OrganisationConnectorsService connectorsService;
-
-    @GetMapping("health")
-    public void getHealth() {
-        // always return code 200
-    }
 
     // TODO refactor to library
     private Set<String> getMerlotRoles(Principal principal) {
@@ -52,79 +50,107 @@ public class OrganisationConnectorsController {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * GET endpoint for retrieving all connectors to a given organization id.
+     *
+     * @param principal user auth data
+     * @param orgaId    organization id
+     * @return list of connectors of this organization
+     */
     @GetMapping("")
     public List<OrganisationConnectorExtension> getAllConnectors(Principal principal,
-                                                                 @PathVariable(value="orgaId") String orgaId,
-                                                                 HttpServletResponse response) throws Exception {
+                                                                 @PathVariable(value = "orgaId") String orgaId) {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds(principal).contains(orgaId)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return null;
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-         return connectorsService.getAllConnectors(orgaId);
+        return connectorsService.getAllConnectors(orgaId);
     }
 
+    /**
+     * GET endpoint for given a connector id and organization id, return this specific connector.
+     *
+     * @param principal   user auth data
+     * @param orgaId      organization id
+     * @param connectorId connector id
+     * @return connector
+     */
     @GetMapping("connector/{connectorId}")
     public OrganisationConnectorExtension getConnector(Principal principal,
-                                                       @PathVariable(value="orgaId") String orgaId,
-                                                       @PathVariable(value="orgaId") String connectorId,
-                                                       HttpServletResponse response) throws Exception {
+                                                       @PathVariable(value = "orgaId") String orgaId,
+                                                       @PathVariable(value = "orgaId") String connectorId) {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds(principal).contains(orgaId)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return null;
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         return connectorsService.getConnector(orgaId, connectorId);
     }
 
+    /**
+     * POST endpoint for creating a new connector for the respective organization.
+     *
+     * @param principal user auth data
+     * @param orgaId    organization id
+     * @param postModel connector model
+     * @return newly created connector
+     */
     @PostMapping("connector")
     public OrganisationConnectorExtension postConnector(Principal principal,
-                                                        @PathVariable(value="orgaId") String orgaId,
-                                                        @Valid @RequestBody PostOrganisationConnectorModel postModel,
-                                                        HttpServletResponse response) throws Exception {
+                                                        @PathVariable(value = "orgaId") String orgaId,
+                                                        @Valid @RequestBody PostOrganisationConnectorModel postModel) {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds(principal).contains(orgaId)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return null;
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         return connectorsService.postConnector(orgaId, postModel);
     }
 
+    /**
+     * PATCH endpoint for updating an existing connector.
+     *
+     * @param principal   user auth data
+     * @param orgaId      organization id
+     * @param connectorId connector id
+     * @param patchModel  update for connector
+     * @return updated connector
+     */
     @PatchMapping("connector/{connectorId}")
     public OrganisationConnectorExtension patchConnector(Principal principal,
-                                                          @PathVariable(value="orgaId") String orgaId,
-                                                          @PathVariable(value="connectorId") String connectorId,
-                                                          @Valid @RequestBody PatchOrganisationConnectorModel patchModel,
-                                                          HttpServletResponse response) throws Exception {
+                                                         @PathVariable(value = "orgaId") String orgaId,
+                                                         @PathVariable(value = "connectorId") String connectorId,
+                                                         @Valid @RequestBody PatchOrganisationConnectorModel patchModel) {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds(principal).contains(orgaId)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return null;
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         return connectorsService.patchConnector(orgaId, connectorId, patchModel);
     }
 
-    @DeleteMapping("connector/{connectorId}")
+    /**
+     * DELETE endpoint for deleting a connector by its database id.
+     *
+     * @param principal user auth data
+     * @param orgaId    organization id
+     * @param id        connector database id
+     */
+    @DeleteMapping("connector/{id}")
     public void deleteConnector(Principal principal,
-                                @PathVariable(value="orgaId") String orgaId,
-                                @PathVariable(value="connectorId") String connectorId,
-                                HttpServletResponse response) throws Exception {
+                                @PathVariable(value = "orgaId") String orgaId,
+                                @PathVariable(value = "id") String id) {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds(principal).contains(orgaId)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return;
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        connectorsService.deleteConnector(connectorId);
-        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        connectorsService.deleteConnector(id);
     }
 }

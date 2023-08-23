@@ -73,7 +73,7 @@ public class GXFSCatalogRestService {
         return loginResult;
     }
 
-    private void logoutGXFScatalog(String refreshToken) throws Exception {
+    private void logoutGXFScatalog(String refreshToken) {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("client_id", clientId);
         map.add("client_secret", clientSecret);
@@ -83,6 +83,14 @@ public class GXFSCatalogRestService {
         restTemplate.postForObject(keycloakLogoutUri, request, String.class);
     }
 
+
+    /**
+     * Given a participant ID, return the organization data from the GXFS catalog.
+     *
+     * @param id participant id
+     * @return organization data
+     * @throws Exception mapping exception
+     */
     public MerlotParticipantDto getParticipantById(String id) throws Exception {
 
         // input sanetization, for now we defined that ids must only consist of numbers
@@ -115,6 +123,12 @@ public class GXFSCatalogRestService {
         return organizationMapper.selfDescriptionToMerlotParticipantDto(participantItem.getSelfDescription());
     }
 
+    /**
+     * Return all participants enrolled in the GXFS catalog.
+     *
+     * @return list of organizations
+     * @throws Exception mapping exception
+     */
     public Page<MerlotParticipantDto> getParticipants(Pageable pageable) throws Exception {
         // log in as the gxfscatalog user and add the token to the header
         Map<String, Object> gxfscatalogLoginResponse = loginGXFScatalog();

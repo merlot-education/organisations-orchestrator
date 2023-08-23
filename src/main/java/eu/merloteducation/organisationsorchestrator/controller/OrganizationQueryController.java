@@ -23,12 +23,21 @@ public class OrganizationQueryController {
     @Autowired
     private GXFSCatalogRestService gxfsCatalogRestService;
 
+    /**
+     * GET health endpoint.
+     */
     @GetMapping("health")
     public void getHealth() {
         // always return code 200
     }
 
 
+    /**
+     * GET endpoint for retrieving all enrolled organizations.
+     *
+     * @return list of all enrolled organizations
+     * @throws Exception exception during participant retrieval
+     */
     @GetMapping("")
     @JsonView(OrganiationViews.PublicView.class)
     public Page<MerlotParticipantDto> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
@@ -36,6 +45,13 @@ public class OrganizationQueryController {
         return gxfsCatalogRestService.getParticipants(PageRequest.of(page, size));
     }
 
+    /**
+     * GET endpoint for retrieving a specific organization by its id.
+     *
+     * @param orgaId organization id
+     * @return organization data
+     * @throws Exception exception during participant retrieval
+     */
     @GetMapping("/organization/{orgaId}")
     @JsonView(OrganiationViews.PublicView.class)
     public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {

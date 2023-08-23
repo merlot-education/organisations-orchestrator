@@ -76,16 +76,12 @@ public class OrganizationQueryControllerTests {
     }
 
     @Test
-    void getOrganisationByIdAuthenticatedTest() throws Exception {
+    void getOrganisationByIdUnauthenticatedTest() throws Exception {
         mvc.perform(MockMvcRequestBuilders
                         .get("/organization/10")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "")
                         .accept(MediaType.APPLICATION_JSON)
-                        .with(csrf())
-                        .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_10")
-                        )))
+                        .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -95,12 +91,8 @@ public class OrganizationQueryControllerTests {
         mvc.perform(MockMvcRequestBuilders
                         .get("/organization/garbage")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "")
                         .accept(MediaType.APPLICATION_JSON)
-                        .with(csrf())
-                        .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_10")
-                        )))
+                        .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }

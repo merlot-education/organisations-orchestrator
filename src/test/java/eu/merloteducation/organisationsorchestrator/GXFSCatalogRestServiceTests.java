@@ -108,7 +108,7 @@ public class GXFSCatalogRestServiceTests {
     }
 
     @Test
-    public void getAllParticipants() throws Exception {
+    void getAllParticipants() throws Exception {
 
         Page<MerlotParticipantDto> organizations = gxfsCatalogRestService.getParticipants(PageRequest.of(0, 9));
         assertThat(organizations.getContent(), isA(List.class));
@@ -117,7 +117,7 @@ public class GXFSCatalogRestServiceTests {
     }
 
     @Test
-    public void getParticipantById() throws Exception {
+    void getParticipantById() throws Exception {
         MerlotParticipantDto organization = gxfsCatalogRestService.getParticipantById("10");
         assertThat(organization, isA(MerlotParticipantDto.class));
         assertEquals("10", organization.getSelfDescription().getVerifiableCredential().getCredentialSubject()
@@ -127,12 +127,12 @@ public class GXFSCatalogRestServiceTests {
     }
 
     @Test
-    public void getParticipantByInvalidId() {
+    void getParticipantByInvalidId() {
         assertThrows(IllegalArgumentException.class, () -> gxfsCatalogRestService.getParticipantById("asdf"));
     }
 
     @Test
-    public void getParticipantByNonexistentId() {
+    void getParticipantByNonexistentId() {
         assertThrows(HttpClientErrorException.NotFound.class, () -> gxfsCatalogRestService.getParticipantById("11"));
     }
 

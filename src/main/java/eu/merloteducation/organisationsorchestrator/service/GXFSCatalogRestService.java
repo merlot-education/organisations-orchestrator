@@ -115,7 +115,7 @@ public class GXFSCatalogRestService {
                 .replace("}\"", "}");
 
         // create a mapper to the ParticipantItem class
-        ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper mapper = new ObjectMapper();
         ParticipantItem participantItem = mapper.readValue(response, ParticipantItem.class);
 
         // log out with the gxfscatalog user
@@ -145,7 +145,7 @@ public class GXFSCatalogRestService {
                 .replace("}\"", "}");
 
         // create a mapper to map the response to the ParticipantsResponse class
-        ObjectMapper mapper = new ObjectMapper();//.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper mapper = new ObjectMapper();
         ParticipantsResponse participantsResponse = mapper.readValue(response, ParticipantsResponse.class);
         List<MerlotParticipantDto> selfDescriptions = participantsResponse.getItems().stream()
                 .map(item -> organizationMapper.selfDescriptionToMerlotParticipantDto(item.getSelfDescription())).toList();

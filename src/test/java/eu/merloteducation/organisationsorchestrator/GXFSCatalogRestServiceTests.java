@@ -3,6 +3,8 @@ package eu.merloteducation.organisationsorchestrator;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
+import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
+import org.apache.commons.text.StringEscapeUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpMethod;
@@ -43,35 +46,20 @@ public class GXFSCatalogRestServiceTests {
     @Autowired
     private OrganizationMapper organizationMapper;
 
-    @Mock
-    private RestTemplate restTemplate;
-
-    @Value("${keycloak.token-uri}")
-    private String keycloakTokenUri;
-
-    @Value("${keycloak.logout-uri}")
-    private String keycloakLogoutUri;
-
-
     @Value("${gxfscatalog.participants-uri}")
     private String gxfscatalogParticipantsUri;
-    @InjectMocks
+    @Autowired
     private GXFSCatalogRestService gxfsCatalogRestService;
+
+    @MockBean
+    private KeycloakAuthService keycloakAuthService;
 
     @BeforeEach
     public void setUp() {
-        ReflectionTestUtils.setField(gxfsCatalogRestService, "keycloakTokenUri", keycloakTokenUri);
-        ReflectionTestUtils.setField(gxfsCatalogRestService, "keycloakLogoutUri", keycloakLogoutUri);
-        ReflectionTestUtils.setField(gxfsCatalogRestService, "gxfscatalogParticipantsUri", gxfscatalogParticipantsUri);
         ReflectionTestUtils.setField(gxfsCatalogRestService, "organizationMapper", organizationMapper);
-        lenient().when(restTemplate.postForObject(eq(keycloakTokenUri), any(), eq(String.class)))
-                .thenReturn("{\"access_token\": \"1234\", \"refresh_token\": \"5678\"}");
+        ReflectionTestUtils.setField(gxfsCatalogRestService, "keycloakAuthService", keycloakAuthService);
 
-        lenient().when(restTemplate.postForObject(eq(keycloakLogoutUri), any(), eq(String.class)))
-                .thenReturn("");
-
-        lenient().when(restTemplate.exchange(any(URI.class),
-                        eq(HttpMethod.GET), any(), eq(String.class)))
+        lenient().when(keycloakAuthService.webCallAuthenticated(eq(HttpMethod.GET), any(), any(), any()))
                 .thenThrow(HttpClientErrorException.NotFound.class);
 
         String mockParticipant = """
@@ -82,6 +70,9 @@ public class GXFSCatalogRestServiceTests {
                     "selfDescription":"{\\"@id\\": \\"http://example.edu/verifiablePresentation/self-description1\\", \\"proof\\": {\\"created\\": \\"2023-04-27T13:48:11Z\\", \\"jws\\": \\"dummy\\", \\"proofPurpose\\": \\"assertionMethod\\", \\"type\\": \\"JsonWebSignature2020\\", \\"verificationMethod\\": \\"did:web:compliance.lab.gaia-x.eu\\"}, \\"type\\": [\\"VerifiablePresentation\\"], \\"@context\\": [\\"https://www.w3.org/2018/credentials/v1\\"], \\"verifiableCredential\\": {\\"credentialSubject\\": {\\"gax-trust-framework:registrationNumber\\": {\\"gax-trust-framework:local\\": {\\"@value\\": \\"0762747721\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"gax-trust-framework:RegistrationNumber\\"}, \\"gax-trust-framework:legalName\\": {\\"@value\\": \\"Gaia-X European Association for Data and Cloud AISBL\\", \\"@type\\": \\"xsd:string\\"}, \\"merlot:connectorId\\": {\\"@value\\": \\"connector123\\", \\"@type\\": \\"xsd:string\\"}, \\"merlot:connectorPublicKey\\": {\\"@value\\": \\"key123\\", \\"@type\\": \\"xsd:string\\"}, \\"merlot:connectorBaseUrl\\": {\\"@value\\": \\"http://example.com/connector\\", \\"@type\\": \\"xsd:string\\"}, \\"gax-trust-framework:headquarterAddress\\": {\\"vcard:country-name\\": {\\"@value\\": \\"BE\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"vcard:Address\\", \\"vcard:street-address\\": {\\"@value\\": \\"Avenue des Arts 6-9\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:locality\\": {\\"@value\\": \\"Br\\üssel\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:postal-code\\": {\\"@value\\": \\"1210\\", \\"@type\\": \\"xsd:string\\"}}, \\"merlot:termsConditionsLink\\": {\\"@value\\": \\"http://example.com\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"merlot:MerlotOrganization\\", \\"merlot:merlotId\\": {\\"@value\\": \\"10\\", \\"@type\\": \\"xsd:string\\"}, \\"gax-trust-framework:legalAddress\\": {\\"vcard:country-name\\": {\\"@value\\": \\"BE\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"vcard:Address\\", \\"vcard:street-address\\": {\\"@value\\": \\"Avenue des Arts 6-9\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:locality\\": {\\"@value\\": \\"Br\\üssel\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:postal-code\\": {\\"@value\\": \\"1210\\", \\"@type\\": \\"xsd:string\\"}}, \\"merlot:orgaName\\": {\\"@value\\": \\"Gaia-X AISBL\\", \\"@type\\": \\"xsd:string\\"}, \\"@id\\": \\"Participant:10\\", \\"@context\\": {\\"merlot\\": \\"http://w3id.org/gaia-x/merlot#\\", \\"gax-trust-framework\\": \\"http://w3id.org/gaia-x/gax-trust-framework#\\", \\"rdf\\": \\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\\", \\"sh\\": \\"http://www.w3.org/ns/shacl#\\", \\"xsd\\": \\"http://www.w3.org/2001/XMLSchema#\\", \\"gax-validation\\": \\"http://w3id.org/gaia-x/validation#\\", \\"skos\\": \\"http://www.w3.org/2004/02/skos/core#\\", \\"vcard\\": \\"http://www.w3.org/2006/vcard/ns#\\"}, \\"merlot:addressCode\\": {\\"@value\\": \\"BE-BRU\\", \\"@type\\": \\"xsd:string\\"}}, \\"issuanceDate\\": \\"2022-10-19T18:48:09Z\\", \\"@type\\": [\\"VerifiableCredential\\"], \\"@id\\": \\"https://www.example.org/legalPerson.json\\", \\"proof\\": {\\"created\\": \\"2023-04-27T13:48:10Z\\", \\"jws\\": \\"dummy\\", \\"proofPurpose\\": \\"assertionMethod\\", \\"type\\": \\"JsonWebSignature2020\\", \\"verificationMethod\\": \\"did:web:compliance.lab.gaia-x.eu\\"}, \\"@context\\": [\\"https://www.w3.org/2018/credentials/v1\\"], \\"issuer\\": \\"Participant:10\\"}}"
                 }
                 """;
+        mockParticipant = StringEscapeUtils.unescapeJson(mockParticipant);
+        if (mockParticipant != null)
+            mockParticipant = mockParticipant.replace("\"{", "{").replace("}\"", "}");
 
 
         String mockUserResponse = """
@@ -97,13 +88,17 @@ public class GXFSCatalogRestServiceTests {
                     ]
                 }
                 """;
+        mockUserResponse = StringEscapeUtils.unescapeJson(mockUserResponse);
+        if (mockUserResponse != null)
+            mockUserResponse = mockUserResponse.replace("\"{", "{").replace("}\"", "}");
+
         // for participant endpoint return a dummy list of one item
-        lenient().when(restTemplate.exchange(startsWith(gxfscatalogParticipantsUri),
-                        eq(HttpMethod.GET), any(), eq(String.class)))
-                .thenReturn(new ResponseEntity<>(mockUserResponse, HttpStatus.OK));
-        lenient().when(restTemplate.exchange(eq(URI.create(gxfscatalogParticipantsUri + "/Participant:10")),
-                eq(HttpMethod.GET), any(), eq(String.class)))
-                .thenReturn(new ResponseEntity<>(mockParticipant, HttpStatus.OK));
+        lenient().when(keycloakAuthService.webCallAuthenticated(eq(HttpMethod.GET),
+                        startsWith(gxfscatalogParticipantsUri + "?offset="), any(), any()))
+                .thenReturn(mockUserResponse);
+        lenient().when(keycloakAuthService.webCallAuthenticated(eq(HttpMethod.GET),
+                        eq(URI.create(gxfscatalogParticipantsUri + "/Participant:10").toString()), any(), any()))
+                .thenReturn(mockParticipant);
 
     }
 

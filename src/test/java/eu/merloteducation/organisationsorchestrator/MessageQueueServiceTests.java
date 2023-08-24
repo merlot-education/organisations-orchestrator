@@ -3,6 +3,7 @@ package eu.merloteducation.organisationsorchestrator;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
+import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,6 +34,9 @@ class MessageQueueServiceTests {
 
     @Mock
     GXFSCatalogRestService gxfsCatalogRestService;
+
+    @MockBean
+    KeycloakAuthService keycloakAuthService;
 
     @BeforeAll
     void beforeAll() throws Exception {

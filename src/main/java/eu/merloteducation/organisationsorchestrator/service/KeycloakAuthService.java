@@ -1,6 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -108,6 +109,7 @@ public class KeycloakAuthService {
                 .body(BodyInserters.fromValue(body))
                 .retrieve()
                 .bodyToMono(String.class).block();
+        response = StringEscapeUtils.unescapeJson(response);
         if (response != null)
             response = response.replace("\"{", "{").replace("}\"", "}");
         return response;

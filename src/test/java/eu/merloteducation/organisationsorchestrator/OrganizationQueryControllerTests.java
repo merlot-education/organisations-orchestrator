@@ -6,6 +6,7 @@ import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
+import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +46,9 @@ public class OrganizationQueryControllerTests {
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;
+
+    @MockBean
+    private KeycloakAuthService keycloakAuthService;
 
     @Autowired
     private MockMvc mvc;

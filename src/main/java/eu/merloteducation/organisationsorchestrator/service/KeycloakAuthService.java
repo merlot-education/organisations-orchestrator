@@ -10,8 +10,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -61,23 +59,20 @@ public class KeycloakAuthService {
         map.add("client_id", clientId);
         map.add("client_secret", clientSecret);
         map.add("grant_type", grantType);
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, new HttpHeaders());
+
         JsonNode loginResult = webClient.post()
                 .uri(keycloakTokenUri)
                 .body(BodyInserters.fromValue(map))
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-        if (loginResult != null) {
-            if (loginResult.has("access_token")) {
-                String previousRefreshToken = this.refreshToken;
-                // store new tokens
-                this.authToken = loginResult.get("access_token").asText();
-                this.refreshToken = loginResult.get("refresh_token").asText();
-                // end previous session
-                logoutAsGXFSCatalog(previousRefreshToken);
-
-            }
+        if (loginResult != null && loginResult.has("access_token")) {
+            String previousRefreshToken = this.refreshToken;
+            // store new tokens
+            this.authToken = loginResult.get("access_token").asText();
+            this.refreshToken = loginResult.get("refresh_token").asText();
+            // end previous session
+            logoutAsGXFSCatalog(previousRefreshToken);
         }
     }
 

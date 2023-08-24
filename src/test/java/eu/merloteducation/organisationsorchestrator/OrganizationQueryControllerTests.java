@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest({OrganizationQueryController.class, WebSecurityConfig.class})
 @AutoConfigureMockMvc()
-public class OrganizationQueryControllerTests {
+class OrganizationQueryControllerTests {
 
     @MockBean
     private GXFSCatalogRestService gxfsCatalogRestService;

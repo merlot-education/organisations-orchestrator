@@ -22,7 +22,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class KeycloakAuthServiceTests {
+class KeycloakAuthServiceTests {
 
 
     @Mock
@@ -78,7 +78,7 @@ public class KeycloakAuthServiceTests {
         keycloakLogoutUri = "http://example.com/logout";
         String loginResponse = """
                 {
-                    "auth_token": "1234",
+                    "access_token": "1234",
                     "refresh_token": "5678"
                 }
                 """;

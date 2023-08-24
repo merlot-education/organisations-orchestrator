@@ -1,4 +1,4 @@
-package eu.merloteducation.organisationsorchestrator.models;
+package eu.merloteducation.organisationsorchestrator.models.messagequeue;
 
 import lombok.Getter;
 import lombok.Setter;

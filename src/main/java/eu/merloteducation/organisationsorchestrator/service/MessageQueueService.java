@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import eu.merloteducation.organisationsorchestrator.models.ConnectorDetailsRequest;
-import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
+import eu.merloteducation.organisationsorchestrator.models.messagequeue.ConnectorDetailsRequest;
+import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +9,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.merloteducation.organisationsorchestrator.config.MessageQueueConfig;
-
-import java.util.List;
 
 @Service
 public class MessageQueueService {
@@ -29,7 +27,7 @@ public class MessageQueueService {
      * @return organization details
      */
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATION_REQUEST_QUEUE)
-    public OrganizationModel organizationRequest(String orgaId) {
+    public MerlotParticipantDto organizationRequest(String orgaId) throws Exception {
         logger.info("Organization request message: {}", orgaId);
         try {
             return gxfsCatalogRestService.getParticipantById(orgaId);

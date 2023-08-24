@@ -11,6 +11,9 @@ spring:
     password:
     driverClassName: org.h2.Driver
     initialization-mode: always
+  jackson:
+    mapper:
+      DEFAULT_VIEW_INCLUSION: true
   jpa:
     generate-ddl: true
     ddl:

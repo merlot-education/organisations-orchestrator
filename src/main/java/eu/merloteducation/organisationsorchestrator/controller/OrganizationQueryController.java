@@ -2,10 +2,11 @@ package eu.merloteducation.organisationsorchestrator.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import eu.merloteducation.organisationsorchestrator.models.OrganiationViews;
-import eu.merloteducation.organisationsorchestrator.models.OrganizationModel;
+import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,8 +40,9 @@ public class OrganizationQueryController {
      */
     @GetMapping("")
     @JsonView(OrganiationViews.PublicView.class)
-    public List<OrganizationModel> getAllOrganizations() throws Exception {
-        return gxfsCatalogRestService.getParticipants();
+    public Page<MerlotParticipantDto> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                          @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
+        return gxfsCatalogRestService.getParticipants(PageRequest.of(page, size));
     }
 
     /**
@@ -52,9 +54,9 @@ public class OrganizationQueryController {
      */
     @GetMapping("/organization/{orgaId}")
     @JsonView(OrganiationViews.PublicView.class)
-    public OrganizationModel getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
+    public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
         try {
-            return gxfsCatalogRestService.getParticipantById(orgaId);
+            return gxfsCatalogRestService.getParticipantById(orgaId.replace("Participant:", ""));
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
         }

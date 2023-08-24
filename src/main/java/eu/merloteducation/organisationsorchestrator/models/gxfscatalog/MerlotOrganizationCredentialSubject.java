@@ -1,9 +1,11 @@
-package eu.merloteducation.organisationsorchestrator.models;
+package eu.merloteducation.organisationsorchestrator.models.gxfscatalog;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Map;
 
 @Getter
 @Setter
@@ -13,6 +15,12 @@ public class MerlotOrganizationCredentialSubject {
 
     @JsonProperty("@id")
     private String id;
+
+    @JsonProperty("@type")
+    private String type;
+
+    @JsonProperty("@context")
+    private Map<String, String> context;
 
     // inherited from gax-trust-framework:LegalPerson
     @JsonProperty("gax-trust-framework:legalName")

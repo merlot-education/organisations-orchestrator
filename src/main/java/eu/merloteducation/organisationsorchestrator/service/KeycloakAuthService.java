@@ -29,7 +29,7 @@ public class KeycloakAuthService {
     private String authToken;
     private String refreshToken;
 
-    public KeycloakAuthService(WebClient.Builder webClientBuilder,
+    public KeycloakAuthService(WebClient webClient,
                                @Value("${keycloak.token-uri}") String keycloakTokenUri,
                                @Value("${keycloak.logout-uri}") String keycloakLogoutUri,
                                @Value("${keycloak.client-id}") String clientId,
@@ -44,12 +44,12 @@ public class KeycloakAuthService {
         this.grantType = grantType;
         this.keycloakGXFScatalogUser = keycloakGXFScatalogUser;
         this.keycloakGXFScatalogPass = keycloakGXFScatalogPass;
-        this.webClient = webClientBuilder.baseUrl("").build();
+        this.webClient = webClient;
         this.loginAsGXFSCatalog();
     }
 
     @Scheduled(fixedDelay = 120 * 1000)
-    private void scheduledLogin() {
+    public void refreshLogin() {
         // TODO compute delay dynamically from token
         loginAsGXFSCatalog();
     }
@@ -100,13 +100,13 @@ public class KeycloakAuthService {
     public String webCallAuthenticated(HttpMethod method, String uri, String body, List<MediaType> mediaTypes) {
         String response = webClient.method(method)
                 .uri(uri)
+                .body(BodyInserters.fromValue(body))
                 .headers(h -> {
                     h.setBearerAuth(this.authToken);
                     if (mediaTypes != null) {
                         h.setAccept(mediaTypes);
                     }
                 })
-                .body(BodyInserters.fromValue(body))
                 .retrieve()
                 .bodyToMono(String.class).block();
         response = StringEscapeUtils.unescapeJson(response);

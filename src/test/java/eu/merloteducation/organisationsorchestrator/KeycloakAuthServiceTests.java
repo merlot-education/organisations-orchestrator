@@ -93,7 +93,8 @@ class KeycloakAuthServiceTests {
 
         lenient().when(webClient.method(any())).thenReturn(webRequestBodyUriSpec);
         lenient().when(webRequestBodyUriSpec.uri(any(String.class))).thenReturn(webRequestBodySpec);
-        lenient().when(webRequestBodySpec.body(any())).thenReturn(webRequestHeadersSpec);
+        lenient().when(webRequestBodySpec.contentType(any())).thenReturn(webRequestBodySpec);
+        lenient().when(webRequestBodySpec.bodyValue(any())).thenReturn(webRequestHeadersSpec);
         lenient().when(webRequestHeadersSpec.headers(any())).thenReturn(webRequestHeadersSpec);
         lenient().when(webRequestHeadersSpec.retrieve()).thenReturn(webResponseSpec);
         lenient().when(webResponseSpec.bodyToMono(eq(String.class)))

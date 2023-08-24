@@ -92,15 +92,13 @@ public class KeycloakAuthService {
                 .retrieve().toBodilessEntity().subscribe();
     }
 
-    public String webCallAuthenticated(HttpMethod method, String uri, String body, List<MediaType> mediaTypes) {
+    public String webCallAuthenticated(HttpMethod method, String uri, String body, MediaType mediaType) {
         String response = webClient.method(method)
                 .uri(uri)
-                .body(BodyInserters.fromValue(body))
+                .contentType(mediaType)
+                .bodyValue(body)
                 .headers(h -> {
                     h.setBearerAuth(this.authToken);
-                    if (mediaTypes != null) {
-                        h.setAccept(mediaTypes);
-                    }
                 })
                 .retrieve()
                 .bodyToMono(String.class).block();

@@ -51,6 +51,9 @@ gxfscatalog:
   base-uri: "http://localhost:8081"
   participants-uri: "${gxfscatalog.base-uri}/participants"
 
+gxfswizard:
+  base-uri: "http://localhost:8085"
+
 jwt:
   auth:
     converter:

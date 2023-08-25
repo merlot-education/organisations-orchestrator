@@ -58,19 +58,12 @@ public class MerlotOrganizationCredentialSubject {
     @NotNull
     private StringTypeValue addressCode;
 
-    @JsonProperty("merlot:termsConditionsLink")
+    @JsonProperty("merlot:mailAddress")
     @NotNull
-    private StringTypeValue termsAndConditionsLink;
+    private StringTypeValue mailAddress;
 
-    @JsonProperty("merlot:connectorId")
+    @JsonProperty("gax-trust-framework:termsAndConditions")
     @NotNull
-    private StringTypeValue connectorId;
+    private TermsAndConditions termsAndConditions;
 
-    @JsonProperty("merlot:connectorPublicKey")
-    @NotNull
-    private StringTypeValue connectorPublicKey;
-
-    @JsonProperty("merlot:connectorBaseUrl")
-    @NotNull
-    private StringTypeValue connectorBaseUrl;
 }

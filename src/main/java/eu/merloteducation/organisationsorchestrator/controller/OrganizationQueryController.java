@@ -81,13 +81,14 @@ public class OrganizationQueryController {
      * @throws Exception exception during participant update
      * @return updated organization
      */
-    @PutMapping("")
+    @PutMapping("/organization/{orgaId}")
     @JsonView(OrganiationViews.PublicView.class)
-    public MerlotParticipantDto updateOrganization(@Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject) throws Exception {
+    public MerlotParticipantDto updateOrganization(@Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject,
+                                                   @PathVariable(value = "orgaId") String orgaId) throws Exception {
         if (!getRepresentedOrgaIds().contains(credentialSubject.getId().replace("Participant:", ""))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        return gxfsCatalogRestService.updateParticipant(credentialSubject);
+        return gxfsCatalogRestService.updateParticipant(credentialSubject, orgaId.replace("Participant:", ""));
     }
 
     /**

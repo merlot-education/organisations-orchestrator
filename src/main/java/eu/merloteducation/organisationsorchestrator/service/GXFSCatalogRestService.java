@@ -163,15 +163,15 @@ public class GXFSCatalogRestService {
     /**
      * Given a new credential subject, attempt to update the self description in the gxfs catalog.
      *
-     * @param credentialSubject subject with updated fields
+     * @param id id of the participant to update
+     * @param editedCredentialSubject subject with updated fields
      * @return update response from catalog
      * @throws Exception mapping exception
      */
-    public MerlotParticipantDto updateParticipant(MerlotOrganizationCredentialSubject credentialSubject) throws Exception {
-        MerlotOrganizationCredentialSubject targetCredentialSubject = getParticipantById(credentialSubject.getId()
-                .replace("Participant:", ""))
+    public MerlotParticipantDto updateParticipant(MerlotOrganizationCredentialSubject editedCredentialSubject, String id) throws Exception {
+        MerlotOrganizationCredentialSubject targetCredentialSubject = getParticipantById(id)
                 .getSelfDescription().getVerifiableCredential().getCredentialSubject();
-        organizationMapper.updateSelfDescriptionAsParticipant(credentialSubject, targetCredentialSubject);
+        organizationMapper.updateSelfDescriptionAsParticipant(editedCredentialSubject, targetCredentialSubject);
         // prepare a json to send to the gxfs catalog, sign it and read the response
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

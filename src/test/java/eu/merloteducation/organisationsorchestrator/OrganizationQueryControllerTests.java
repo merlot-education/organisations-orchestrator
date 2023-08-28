@@ -102,4 +102,14 @@ class OrganizationQueryControllerTests {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void updateOrganizationAuthorized() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                        .put("")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
 }

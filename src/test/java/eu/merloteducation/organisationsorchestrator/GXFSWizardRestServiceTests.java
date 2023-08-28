@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
-public class GXFSWizardRestServiceTests {
+class GXFSWizardRestServiceTests {
 
     private GXFSWizardRestService gxfsWizardRestService;
 

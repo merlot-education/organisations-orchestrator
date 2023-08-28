@@ -32,6 +32,8 @@ public class OrganizationQueryController {
     @Autowired
     private GXFSCatalogRestService gxfsCatalogRestService;
 
+    private static final String PARTICIPANT = "Participant:";
+
     /**
      * GET health endpoint.
      */
@@ -85,10 +87,10 @@ public class OrganizationQueryController {
     @JsonView(OrganiationViews.PublicView.class)
     public MerlotParticipantDto updateOrganization(@Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject,
                                                    @PathVariable(value = "orgaId") String orgaId) throws Exception {
-        if (!getRepresentedOrgaIds().contains(credentialSubject.getId().replace("Participant:", ""))) {
+        if (!getRepresentedOrgaIds().contains(credentialSubject.getId().replace(PARTICIPANT, ""))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        return gxfsCatalogRestService.updateParticipant(credentialSubject, orgaId.replace("Participant:", ""));
+        return gxfsCatalogRestService.updateParticipant(credentialSubject, orgaId.replace(PARTICIPANT, ""));
     }
 
     /**
@@ -102,7 +104,7 @@ public class OrganizationQueryController {
     @JsonView(OrganiationViews.PublicView.class)
     public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
         try {
-            return gxfsCatalogRestService.getParticipantById(orgaId.replace("Participant:", ""));
+            return gxfsCatalogRestService.getParticipantById(orgaId.replace(PARTICIPANT, ""));
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
         }

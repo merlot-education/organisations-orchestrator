@@ -31,7 +31,6 @@ public class GXFSWizardRestService {
                     .bodyToMono(String.class)
                     .block();
         } catch (WebClientResponseException e) {
-            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
         }
 

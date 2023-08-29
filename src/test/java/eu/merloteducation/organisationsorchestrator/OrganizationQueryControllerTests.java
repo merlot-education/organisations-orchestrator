@@ -1,10 +1,13 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.organisationsorchestrator.config.JwtAuthConverter;
 import eu.merloteducation.organisationsorchestrator.config.JwtAuthConverterProperties;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
+import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,6 +56,16 @@ class OrganizationQueryControllerTests {
     @Autowired
     private MockMvc mvc;
 
+    private String objectAsJsonString(final Object obj) {
+        try {
+            return JsonMapper.builder()
+                    .addModule(new JavaTimeModule())
+                    .build().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @BeforeEach
     public void beforeEach() throws Exception {
         List<MerlotParticipantDto> participants = new ArrayList<>();
@@ -67,6 +80,9 @@ class OrganizationQueryControllerTests {
                 .thenReturn(participantDto);
         lenient().when(gxfsCatalogRestService.getParticipantById(eq("garbage")))
                 .thenThrow(HttpClientErrorException.NotFound.class);
+        lenient().when(gxfsCatalogRestService.updateParticipant(any(), eq("10")))
+                .thenReturn(participantDto);
+
     }
 
     @Test
@@ -102,4 +118,73 @@ class OrganizationQueryControllerTests {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void updateOrganizationAuthorizedExistent() throws Exception {
+        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
+        credentialSubject.setId("Participant:10");
+        RegistrationNumber registrationNumber = new RegistrationNumber();
+        registrationNumber.setLocal(new StringTypeValue("localRegNum"));
+        credentialSubject.setRegistrationNumber(registrationNumber);
+        VCard address = new VCard();
+        address.setStreetAddress(new StringTypeValue("address"));
+        address.setLocality(new StringTypeValue("Berlin"));
+        address.setCountryName(new StringTypeValue("DE"));
+        address.setPostalCode(new StringTypeValue("12345"));
+        credentialSubject.setLegalAddress(address);
+        credentialSubject.setHeadquarterAddress(address);
+        credentialSubject.setAddressCode(new StringTypeValue("DE-BER"));
+        credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
+        credentialSubject.setMerlotId(new StringTypeValue("10"));
+        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
+        TermsAndConditions termsAndConditions = new TermsAndConditions();
+        termsAndConditions.setContent(new StringTypeValue("http://example.com"));
+        termsAndConditions.setHash(new StringTypeValue("1234"));
+        credentialSubject.setTermsAndConditions(termsAndConditions);
+        mvc.perform(MockMvcRequestBuilders
+                        .put("/organization/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectAsJsonString(credentialSubject))
+                        .with(csrf())
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_OrgLegRep_10")
+                        )))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateOrganizationUnauthorizedExistent() throws Exception {
+        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
+        credentialSubject.setId("Participant:10");
+        RegistrationNumber registrationNumber = new RegistrationNumber();
+        registrationNumber.setLocal(new StringTypeValue("localRegNum"));
+        credentialSubject.setRegistrationNumber(registrationNumber);
+        VCard address = new VCard();
+        address.setStreetAddress(new StringTypeValue("address"));
+        address.setLocality(new StringTypeValue("Berlin"));
+        address.setCountryName(new StringTypeValue("DE"));
+        address.setPostalCode(new StringTypeValue("12345"));
+        credentialSubject.setLegalAddress(address);
+        credentialSubject.setHeadquarterAddress(address);
+        credentialSubject.setAddressCode(new StringTypeValue("DE-BER"));
+        credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
+        credentialSubject.setMerlotId(new StringTypeValue("10"));
+        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
+        TermsAndConditions termsAndConditions = new TermsAndConditions();
+        termsAndConditions.setContent(new StringTypeValue("http://example.com"));
+        termsAndConditions.setHash(new StringTypeValue("1234"));
+        credentialSubject.setTermsAndConditions(termsAndConditions);
+        mvc.perform(MockMvcRequestBuilders
+                        .put("/organization/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectAsJsonString(credentialSubject))
+                        .with(csrf())
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                        )))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
 }

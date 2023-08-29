@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MerlotParticipantDto {
+    private String id;
     private MerlotParticipantMetaDto metadata;
     private ParticipantSelfDescription selfDescription;
 }

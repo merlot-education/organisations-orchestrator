@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.security.Principal;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 

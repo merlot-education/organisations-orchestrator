@@ -2,7 +2,6 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
@@ -15,19 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.json.JsonParser;
-import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,9 +27,8 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class GXFSCatalogRestService {
@@ -91,7 +82,6 @@ public class GXFSCatalogRestService {
             throw new IllegalArgumentException("Provided id is not a number.");
         }
 
-        // TODO check if the gxfs catalog returns multiple entries if their id starts with the same characters
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
         String response = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
                 URI.create(gxfscatalogParticipantsUri + "/Participant:" + id).toString(),

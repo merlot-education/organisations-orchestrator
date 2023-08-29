@@ -1,6 +1,5 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.ParticipantItem;
@@ -9,23 +8,14 @@ import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipant
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.json.JsonParser;
-import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class GXFSCatalogRestService {
@@ -74,7 +64,6 @@ public class GXFSCatalogRestService {
             throw new IllegalArgumentException("Provided id is not a number.");
         }
 
-        // TODO check if the gxfs catalog returns multiple entries if their id starts with the same characters
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
         String response = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
                 URI.create(gxfscatalogParticipantsUri + "/Participant:" + id).toString(),

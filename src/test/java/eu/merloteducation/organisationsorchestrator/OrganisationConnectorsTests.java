@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(MockitoExtension.class)
 @EnableConfigurationProperties
 @SpringBootTest
-public class OrganisationConnectorsTests {
+class OrganisationConnectorsTests {
 
     @Autowired
     private OrganisationConnectorsService connectorsService;
@@ -132,6 +132,7 @@ public class OrganisationConnectorsTests {
     @Test
     void deleteConnector() throws Exception {
         connectorsService.deleteConnector("Connector:112");
+
     }
 
 }

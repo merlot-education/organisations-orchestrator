@@ -46,7 +46,6 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
 
     private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
         Map<String, Object> resourceAccess = jwt.getClaim("realm_access");
-        Map<String, Object> resource;
         Collection<String> resourceRoles;
         if (resourceAccess == null
                 || (resourceRoles = (Collection<String>) resourceAccess.get("roles")) == null) {

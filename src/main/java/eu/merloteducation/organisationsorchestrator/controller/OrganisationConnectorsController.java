@@ -74,7 +74,7 @@ public class OrganisationConnectorsController {
      */
     @GetMapping("connector/{connectorId}")
     public OrganisationConnectorExtension getConnector(@PathVariable(value = "orgaId") String orgaId,
-                                                       @PathVariable(value = "orgaId") String connectorId) {
+                                                       @PathVariable(value = "connectorId") String connectorId) {
         // if the requested organization id is not in the roles of this user,
         // the user is not allowed to request this endpoint
         if (!getRepresentedOrgaIds().contains(orgaId)) {

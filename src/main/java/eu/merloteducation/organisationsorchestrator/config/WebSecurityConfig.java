@@ -22,7 +22,7 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests()
                 .requestMatchers(new AntPathRequestMatcher("/health")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/organization/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/organization/*")).permitAll()
                 .anyRequest().authenticated();
         http.oauth2ResourceServer()
                 .jwt()

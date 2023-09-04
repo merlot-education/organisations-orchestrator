@@ -1,8 +1,11 @@
 package eu.merloteducation.organisationsorchestrator;
 
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
+import eu.merloteducation.organisationsorchestrator.models.messagequeue.ConnectorDetailsRequest;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
+import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -31,11 +34,16 @@ class MessageQueueServiceTests {
     @Mock
     GXFSCatalogRestService gxfsCatalogRestService;
 
+    @Mock
+    OrganisationConnectorsService organisationConnectorsService;
+
     @BeforeAll
     void beforeAll() throws Exception {
         ReflectionTestUtils.setField(messageQueueService, "gxfsCatalogRestService", gxfsCatalogRestService);
+        ReflectionTestUtils.setField(messageQueueService, "organisationConnectorsService", organisationConnectorsService);
         when(gxfsCatalogRestService.getParticipantById(any())).thenThrow(Exception.class);
         doReturn(new MerlotParticipantDto()).when(gxfsCatalogRestService).getParticipantById("10");
+        doReturn(new OrganisationConnectorExtension()).when(organisationConnectorsService).getConnector("10", "1234");
     }
 
 
@@ -48,6 +56,20 @@ class MessageQueueServiceTests {
     @Test
     void requestOrganizationNonExistent() throws Exception {
         MerlotParticipantDto model = messageQueueService.organizationRequest("garbage");
+        assertNull(model);
+    }
+
+    @Test
+    void requestOrganizationConnectorExistent() {
+        ConnectorDetailsRequest connectorDetailsRequest = new ConnectorDetailsRequest("1234", "10");
+        OrganisationConnectorExtension model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
+        assertNotNull(model);
+    }
+
+    @Test
+    void requestOrganizationConnectorNonExistent()  {
+        ConnectorDetailsRequest connectorDetailsRequest = new ConnectorDetailsRequest("garbage", "10");
+        OrganisationConnectorExtension model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
         assertNull(model);
     }
 }

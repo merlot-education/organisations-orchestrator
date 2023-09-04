@@ -2,6 +2,8 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.text.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,10 +12,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 
 @Service
 public class KeycloakAuthService {
+
+    private final Logger logger = LoggerFactory.getLogger(KeycloakAuthService.class);
     private final WebClient webClient;
     private final String keycloakTokenUri;
     private final String keycloakLogoutUri;
@@ -42,13 +48,17 @@ public class KeycloakAuthService {
         this.keycloakGXFScatalogUser = keycloakGXFScatalogUser;
         this.keycloakGXFScatalogPass = keycloakGXFScatalogPass;
         this.webClient = webClient;
-        this.loginAsGXFSCatalog();
+        this.refreshLogin();
     }
 
     @Scheduled(fixedDelay = 120 * 1000)
     public void refreshLogin() {
         // TODO compute delay dynamically from token
-        loginAsGXFSCatalog();
+        try {
+            loginAsGXFSCatalog();
+        } catch (WebClientRequestException | WebClientResponseException e) {
+            logger.warn("Failed to refresh authentication token", e);
+        }
     }
 
     private void loginAsGXFSCatalog() {

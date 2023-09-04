@@ -1,8 +1,6 @@
 package eu.merloteducation.organisationsorchestrator;
 
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
-import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
-import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,11 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
@@ -36,9 +32,6 @@ class OrganisationConnectorsTests {
 
     @Autowired
     private OrganisationConnectorsExtensionRepository connectorsRepo;
-
-    @MockBean
-    private KeycloakAuthService keycloakAuthService;
 
     @BeforeAll
     void beforeAll() throws Exception {

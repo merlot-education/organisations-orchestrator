@@ -60,6 +60,15 @@ jwt:
       resource-id: MARKETPLACE
       principal-attribute: preferred_username
 
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      base-path: "/"
+  endpoint:
+    health:
+      enabled: true
+
 keycloak:
   client-id: "federated-catalogue"
   authorization-grant-type: "password"

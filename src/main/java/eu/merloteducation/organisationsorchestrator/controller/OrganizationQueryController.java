@@ -32,14 +32,6 @@ public class OrganizationQueryController {
 
     private static final String PARTICIPANT = "Participant:";
 
-    /**
-     * GET health endpoint.
-     */
-    @GetMapping("health")
-    public void getHealth() {
-        // always return code 200
-    }
-
     // TODO refactor to library
     private Set<String> getMerlotRoles() {
         // get roles from the authenticated user

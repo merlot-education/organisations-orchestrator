@@ -1,13 +1,11 @@
 package eu.merloteducation.organisationsorchestrator;
 
 import eu.merloteducation.organisationsorchestrator.service.GXFSWizardRestService;
-import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;

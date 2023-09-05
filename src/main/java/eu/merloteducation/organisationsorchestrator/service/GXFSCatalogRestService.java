@@ -140,7 +140,7 @@ public class GXFSCatalogRestService {
         List<MerlotParticipantDto> selfDescriptions = sdResponse.getItems().stream()
                 .map(item -> organizationMapper.selfDescriptionToMerlotParticipantDto(item.getMeta().getContent()))
                 .sorted(Comparator.comparing(p -> p.getSelfDescription()
-                        .getVerifiableCredential().getCredentialSubject().getLegalName().getValue()))
+                        .getVerifiableCredential().getCredentialSubject().getLegalName().getValue().toLowerCase()))
                 .toList();
 
         // wrap result into page

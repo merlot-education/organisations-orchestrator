@@ -2,12 +2,12 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.MerlotOrganizationCredentialSubject;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.ParticipantItem;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.ParticipantsResponse;
+import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -28,6 +28,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -68,6 +69,12 @@ public class GXFSCatalogRestService {
     @Value("${gxfscatalog.participants-uri}")
     private String gxfscatalogParticipantsUri;
 
+    @Value("${gxfscatalog.selfdescriptions-uri}")
+    private String gxfscatalogSelfdescriptionsUri;
+
+    @Value("${gxfscatalog.query-uri}")
+    private String gxfscatalogQueryUri;
+
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
      *
@@ -104,20 +111,40 @@ public class GXFSCatalogRestService {
      * @throws Exception mapping exception
      */
     public Page<MerlotParticipantDto> getParticipants(Pageable pageable) throws Exception {
-        // log in as the gxfscatalog user and add the token to the header
+        // post a query to get a paginated and sorted list of participants
+        String queryResponse = keycloakAuthService.webCallAuthenticated(HttpMethod.POST,
+                gxfscatalogQueryUri,
+                """
+                        {
+                            "statement": "MATCH (p:MerlotOrganization) return p.uri ORDER BY p.legalName"""
+                        + " SKIP " + pageable.getOffset() + " LIMIT " + pageable.getPageSize() + """
+                        "
+                        }
+                        """, MediaType.APPLICATION_JSON);
 
-        // get on the participants endpoint of the gxfs catalog to get all enrolled participants
-        String response = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
-                gxfscatalogParticipantsUri + "?offset=" + pageable.getOffset() + "&limit=" + pageable.getPageSize(),
-                "", null);
-
-        // create a mapper to map the response to the ParticipantsResponse class
+        // create a mapper for the responses
         ObjectMapper mapper = new ObjectMapper();
-        ParticipantsResponse participantsResponse = mapper.readValue(response, ParticipantsResponse.class);
-        List<MerlotParticipantDto> selfDescriptions = participantsResponse.getItems().stream()
-                .map(item -> organizationMapper.selfDescriptionToMerlotParticipantDto(item.getSelfDescription())).toList();
 
-        return new PageImpl<>(selfDescriptions, pageable, participantsResponse.getTotalCount());
+        // map query response containing the ids to objects and create a string of ids joined by commas
+        GXFSCatalogResponse<GXFSQueryUriItem> uriResponse = mapper.readValue(queryResponse, new TypeReference<>() {});
+        String urisString = Joiner.on(",")
+                .join(uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toList());
+
+        // request the ids from the self-description endpoint to get full SDs and map the result to objects
+        String sdResponseString = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
+                gxfscatalogSelfdescriptionsUri + "?statuses=ACTIVE&withContent=true&ids=" + urisString,
+                "", null);
+        GXFSCatalogResponse<SelfDescriptionResponseItem> sdResponse = mapper.readValue(sdResponseString, new TypeReference<>() {});
+
+        // from the SDs create DTO objects. Also sort by name again since the catalog does not respect argument order
+        List<MerlotParticipantDto> selfDescriptions = sdResponse.getItems().stream()
+                .map(item -> organizationMapper.selfDescriptionToMerlotParticipantDto(item.getMeta().getContent()))
+                .sorted(Comparator.comparing(p -> p.getSelfDescription()
+                        .getVerifiableCredential().getCredentialSubject().getLegalName().getValue().toLowerCase()))
+                .toList();
+
+        // wrap result into page
+        return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());
     }
 
     private String presentAndSign(String credentialSubjectJson, String issuer) throws Exception {

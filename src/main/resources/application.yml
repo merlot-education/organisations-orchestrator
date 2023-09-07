@@ -50,6 +50,8 @@ server:
 gxfscatalog:
   base-uri: "http://localhost:8081"
   participants-uri: "${gxfscatalog.base-uri}/participants"
+  selfdescriptions-uri: "${gxfscatalog.base-uri}/self-descriptions"
+  query-uri: "${gxfscatalog.base-uri}/query"
 
 gxfswizard:
   base-uri: "http://localhost:8085"

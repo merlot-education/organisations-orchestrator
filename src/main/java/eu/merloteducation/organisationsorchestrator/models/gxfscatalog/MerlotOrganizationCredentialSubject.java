@@ -62,7 +62,7 @@ public class MerlotOrganizationCredentialSubject {
     @NotNull
     private StringTypeValue mailAddress;
 
-    @JsonProperty("gax-trust-framework:termsAndConditions")
+    @JsonProperty("merlot:termsAndConditions")
     @NotNull
     private TermsAndConditions termsAndConditions;
 

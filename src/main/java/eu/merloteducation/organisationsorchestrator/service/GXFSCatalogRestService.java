@@ -116,7 +116,7 @@ public class GXFSCatalogRestService {
                 gxfscatalogQueryUri,
                 """
                         {
-                            "statement": "MATCH (p:MerlotOrganization) return p.uri ORDER BY p.legalName"""
+                            "statement": "MATCH (p:MerlotOrganization) return p.uri ORDER BY toLower(p.legalName)"""
                         + " SKIP " + pageable.getOffset() + " LIMIT " + pageable.getPageSize() + """
                         "
                         }

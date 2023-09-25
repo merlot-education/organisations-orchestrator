@@ -143,7 +143,8 @@ class OrganizationQueryControllerTests {
                         .content(objectAsJsonString(credentialSubject))
                         .with(csrf())
                         .with(jwt().authorities(
-                                new OrganizationRoleGrantedAuthority("OrgLegRep_10")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_10"),
+                                new SimpleGrantedAuthority("ROLE_some_other_role")
                         )))
                 .andDo(print())
                 .andExpect(status().isOk());

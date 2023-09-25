@@ -1,6 +1,5 @@
 package eu.merloteducation.organisationsorchestrator.auth;
 
-import com.google.common.base.Joiner;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 

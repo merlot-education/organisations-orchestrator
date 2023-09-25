@@ -2,8 +2,10 @@ package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import eu.merloteducation.organisationsorchestrator.auth.AuthorityChecker;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;
+import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganisationConnectorsController;
 import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
@@ -33,7 +35,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest({OrganisationConnectorsController.class, WebSecurityConfig.class})
+@WebMvcTest({OrganisationConnectorsController.class, WebSecurityConfig.class, AuthorityChecker.class})
 @AutoConfigureMockMvc()
 class OrganisationConnectorsControllerTests {
 
@@ -94,7 +96,7 @@ class OrganisationConnectorsControllerTests {
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_20")
                         )))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -108,7 +110,7 @@ class OrganisationConnectorsControllerTests {
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_10")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_10")
                         )))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -133,7 +135,7 @@ class OrganisationConnectorsControllerTests {
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_20")
                         )))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -147,7 +149,7 @@ class OrganisationConnectorsControllerTests {
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_10")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_10")
                         )))
                 .andDo(print())
                 .andExpect(status().isOk()).andReturn();
@@ -187,7 +189,7 @@ class OrganisationConnectorsControllerTests {
                         .content(objectAsJsonString(model))
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_20")
                         )))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -207,7 +209,7 @@ class OrganisationConnectorsControllerTests {
                         .content(objectAsJsonString(model))
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_10")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_10")
                         )))
                 .andDo(print())
                 .andExpect(status().isOk()).andReturn();
@@ -245,7 +247,7 @@ class OrganisationConnectorsControllerTests {
                         .content(objectAsJsonString(model))
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_20")
                         )))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -264,7 +266,7 @@ class OrganisationConnectorsControllerTests {
                         .content(objectAsJsonString(model))
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_10")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_10")
                         )))
                 .andDo(print())
                 .andExpect(status().isOk()).andReturn();
@@ -292,7 +294,7 @@ class OrganisationConnectorsControllerTests {
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_20")
                         )))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -306,7 +308,7 @@ class OrganisationConnectorsControllerTests {
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf())
                         .with(jwt().authorities(
-                                new SimpleGrantedAuthority("ROLE_OrgLegRep_10")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_10")
                         )))
                 .andDo(print())
                 .andExpect(status().isOk());

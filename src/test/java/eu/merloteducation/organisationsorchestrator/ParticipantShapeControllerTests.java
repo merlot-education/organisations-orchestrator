@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import eu.merloteducation.organisationsorchestrator.config.JwtAuthConverter;
-import eu.merloteducation.organisationsorchestrator.config.JwtAuthConverterProperties;
+import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
+import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.ParticipantShapeController;
 import eu.merloteducation.organisationsorchestrator.service.GXFSWizardRestService;

@@ -2,15 +2,13 @@ package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import eu.merloteducation.organisationsorchestrator.config.JwtAuthConverter;
-import eu.merloteducation.organisationsorchestrator.config.JwtAuthConverterProperties;
+import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
+import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganisationConnectorsController;
 import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,15 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +31,6 @@ import static org.mockito.Mockito.lenient;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest({OrganisationConnectorsController.class, WebSecurityConfig.class})

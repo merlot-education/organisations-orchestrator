@@ -4,22 +4,15 @@ import com.fasterxml.jackson.annotation.JsonView;
 import eu.merloteducation.organisationsorchestrator.models.OrganiationViews;
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.MerlotOrganizationCredentialSubject;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.ParticipantSelfDescription;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -31,28 +24,6 @@ public class OrganizationQueryController {
     private GXFSCatalogRestService gxfsCatalogRestService;
 
     private static final String PARTICIPANT = "Participant:";
-
-    // TODO refactor to library
-    private Set<String> getMerlotRoles() {
-        // get roles from the authenticated user
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        return authentication.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-    }
-
-    private Set<String> getRepresentedOrgaIds() {
-        Set<String> roles = getMerlotRoles();
-        // extract all orgaIds from the OrgRep and OrgLegRep Roles
-        return roles
-                .stream()
-                .filter(s -> s.startsWith("ROLE_OrgRep_") || s.startsWith("ROLE_OrgLegRep_"))
-                .map(s -> s.replace("ROLE_OrgRep_", "").replace("ROLE_OrgLegRep_", ""))
-                .collect(Collectors.toSet());
-    }
-
 
     /**
      * GET endpoint for retrieving all enrolled organizations.
@@ -75,11 +46,10 @@ public class OrganizationQueryController {
      */
     @PutMapping("/organization/{orgaId}")
     @JsonView(OrganiationViews.PublicView.class)
+    @PreAuthorize("@authorityChecker.representsOrganization(authentication, #credentialSubject.id) " +
+            "and @authorityChecker.representsOrganization(authentication, #orgaId)")
     public MerlotParticipantDto updateOrganization(@Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject,
                                                    @PathVariable(value = "orgaId") String orgaId) throws Exception {
-        if (!getRepresentedOrgaIds().contains(credentialSubject.getId().replace(PARTICIPANT, ""))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
         return gxfsCatalogRestService.updateParticipant(credentialSubject, orgaId.replace(PARTICIPANT, ""));
     }
 

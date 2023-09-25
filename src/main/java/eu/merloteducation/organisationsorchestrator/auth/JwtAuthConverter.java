@@ -1,10 +1,9 @@
-package eu.merloteducation.organisationsorchestrator.config;
+package eu.merloteducation.organisationsorchestrator.auth;
 
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -51,8 +50,8 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
                 || (resourceRoles = (Collection<String>) resourceAccess.get("roles")) == null) {
             return Set.of();
         }
-        return resourceRoles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+        return resourceRoles.stream().filter(s -> s.startsWith("OrgRep") || s.startsWith("OrgLegRep"))
+                .map(OrganizationRoleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }
 }

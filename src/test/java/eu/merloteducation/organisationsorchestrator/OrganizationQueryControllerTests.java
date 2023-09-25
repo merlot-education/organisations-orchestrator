@@ -2,8 +2,8 @@ package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import eu.merloteducation.organisationsorchestrator.config.JwtAuthConverter;
-import eu.merloteducation.organisationsorchestrator.config.JwtAuthConverterProperties;
+import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
+import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 

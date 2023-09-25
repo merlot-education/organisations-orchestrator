@@ -27,7 +27,7 @@ class JwtAuthConverterTests {
                 Instant.now(), Instant.now().plusSeconds(999),
                 Map.of("header1", "header1"),
                 Map.of("sub", "myUserId",
-                        "realm_access", Map.of("roles", Set.of("OrgLegRep_10"))));
+                        "realm_access", Map.of("roles", Set.of("OrgLegRep_10", "SomeOtherRole"))));
         Authentication auth = converter.convert(jwt);
         List<OrganizationRoleGrantedAuthority> orgaAuths = (List<OrganizationRoleGrantedAuthority>) auth.getAuthorities();
         assertEquals("OrgLegRep", orgaAuths.get(0).getOrganizationRole());

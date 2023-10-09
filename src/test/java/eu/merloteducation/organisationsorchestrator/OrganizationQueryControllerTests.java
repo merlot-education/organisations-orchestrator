@@ -184,4 +184,15 @@ class OrganizationQueryControllerTests {
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void getAllFederatorsUnauthenticatedTest() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .get("/federators")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
 }

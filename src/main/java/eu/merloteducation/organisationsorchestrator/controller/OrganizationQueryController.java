@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -71,6 +72,16 @@ public class OrganizationQueryController {
 
     }
 
-
+    /**
+     * GET endpoint for retrieving all enrolled organizations that are federators.
+     *
+     * @return list of the enrolled organizations that are federators
+     * @throws Exception exception during participant retrieval
+     */
+    @GetMapping("/federators")
+    @JsonView(OrganiationViews.PublicView.class)
+    public Page<MerlotParticipantDto> getAllFederators() throws Exception {
+        return gxfsCatalogRestService.getFederators(PageRequest.of(0, Integer.MAX_VALUE));
+    }
 }
 

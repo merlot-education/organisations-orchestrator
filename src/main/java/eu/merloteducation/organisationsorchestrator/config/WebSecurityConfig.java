@@ -1,6 +1,5 @@
 package eu.merloteducation.organisationsorchestrator.config;
 
-
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,14 +21,12 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests()
-                .requestMatchers(new AntPathRequestMatcher("/health")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/organization/*")).permitAll()
-                .anyRequest().authenticated();
-        http.oauth2ResourceServer()
-                .jwt()
-                .jwtAuthenticationConverter(jwtAuthConverter);
+
+        http.authorizeHttpRequests().requestMatchers(new AntPathRequestMatcher("/health")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/federators")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/organization/*")).permitAll().anyRequest().authenticated();
+        http.oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthConverter);
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.cors();
         http.headers().frameOptions().disable();

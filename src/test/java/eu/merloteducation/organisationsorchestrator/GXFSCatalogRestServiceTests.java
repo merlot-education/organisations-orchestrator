@@ -255,5 +255,11 @@ class GXFSCatalogRestServiceTests {
         assertThrows(HttpClientErrorException.NotFound.class, () -> gxfsCatalogRestService.updateParticipant(credentialSubject, "11"));
     }
 
+    @Test
+    void getAllFederators() throws Exception {
+        Page<MerlotParticipantDto> organizations = gxfsCatalogRestService.getFederators(PageRequest.of(0, Integer.MAX_VALUE));
+        assertThat(organizations.getContent(), isA(List.class));
+        assertThat(organizations.getContent(), not(empty()));
+    }
 }
 

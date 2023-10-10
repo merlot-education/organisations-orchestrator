@@ -71,6 +71,16 @@ public class OrganizationQueryController {
 
     }
 
-
+    /**
+     * GET endpoint for retrieving all enrolled organizations that are federators.
+     *
+     * @return list of the enrolled organizations that are federators
+     * @throws Exception exception during participant retrieval
+     */
+    @GetMapping("/federators")
+    @JsonView(OrganiationViews.PublicView.class)
+    public Page<MerlotParticipantDto> getAllFederators() throws Exception {
+        return gxfsCatalogRestService.getFederators(PageRequest.of(0, Integer.MAX_VALUE));
+    }
 }
 

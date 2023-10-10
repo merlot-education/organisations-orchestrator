@@ -211,4 +211,13 @@ public class GXFSCatalogRestService {
         return organizationMapper.selfDescriptionToMerlotParticipantDto(participantItem.getSelfDescription());
     }
 
+    /**
+     * Return all participants/organizations enrolled in the GXFS catalog that are federators.
+     *
+     * @return list of organizations
+     * @throws Exception mapping exception
+     */
+    public Page<MerlotParticipantDto> getFederators(Pageable pageable) throws Exception {
+        return getParticipants(pageable);
+    }
 }

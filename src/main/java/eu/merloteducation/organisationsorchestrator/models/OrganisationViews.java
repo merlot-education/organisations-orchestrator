@@ -1,6 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.models;
 
-public class OrganiationViews {
+public class OrganisationViews {
     public interface PublicView {
     }
 

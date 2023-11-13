@@ -16,5 +16,11 @@ public class StringTypeValue {
 
     public StringTypeValue(String value) {
         this.value = value;
+        this.type = "xsd:string";
+    }
+
+    public StringTypeValue(String value, String type) {
+        this.value = value;
+        this.type = type;
     }
 }

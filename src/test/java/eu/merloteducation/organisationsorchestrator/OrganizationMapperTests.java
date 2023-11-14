@@ -21,7 +21,7 @@ import java.io.IOException;
 import static org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA;
 
 @SpringBootTest
-public class OrganizationMapperTests {
+class OrganizationMapperTests {
     @Autowired
     OrganizationMapper organizationMapper;
     String mailAddress = "test@test.de";
@@ -37,7 +37,7 @@ public class OrganizationMapperTests {
     String addressCode = "DE-C";
 
     @Test
-    public void mapRegistrationFormToSelfDescriptionCorrectly() throws IOException {
+    void mapRegistrationFormToSelfDescriptionCorrectly() throws IOException {
         MerlotOrganizationCredentialSubject expected = getExpectedCredentialSubject();
         PDAcroForm registrationForm = getTestRegistrationForm();
 

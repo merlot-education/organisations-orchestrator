@@ -486,7 +486,7 @@ class GXFSCatalogRestServiceTests {
         Exception e = assertThrows(ResponseStatusException.class,
             () -> gxfsCatalogRestService.createParticipant(pdDocument));
 
-        assertEquals(e.getMessage(), "400 BAD_REQUEST \"Invalid registration form file.\"");
+        assertEquals("400 BAD_REQUEST \"Invalid registration form file.\"", e.getMessage());
     }
 
     @Test
@@ -564,7 +564,7 @@ class GXFSCatalogRestServiceTests {
         Exception e = assertThrows(ResponseStatusException.class,
             () -> gxfsCatalogRestService.createParticipant(pdDocument));
 
-        assertEquals(e.getMessage(), "400 BAD_REQUEST \"Invalid registration form: Empty or blank fields.\"");
+        assertEquals("400 BAD_REQUEST \"Invalid registration form: Empty or blank fields.\"", e.getMessage());
     }
 }
 

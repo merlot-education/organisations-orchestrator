@@ -39,6 +39,9 @@ spring:
       enabled: true
       refresh:
         enabled: true
+  servlet:
+    multipart:
+      max-file-size: 2MB
 
 server:
   port: '8082'

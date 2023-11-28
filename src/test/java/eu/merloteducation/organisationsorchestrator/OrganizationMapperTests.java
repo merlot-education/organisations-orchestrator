@@ -1,5 +1,9 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.TermsAndConditions;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.VCard;
 import eu.merloteducation.modelslib.gxfscatalog.organization.*;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import org.apache.pdfbox.cos.COSName;

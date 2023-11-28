@@ -2,7 +2,7 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.gxfscatalog.organization.MerlotOrganizationCredentialSubject;
-import eu.merloteducation.modelslib.gxfscatalog.organization.ParticipantSelfDescription;
+import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantSelfDescription;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.mapstruct.*;
 

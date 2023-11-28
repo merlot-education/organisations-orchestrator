@@ -3,7 +3,14 @@ package eu.merloteducation.organisationsorchestrator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.TermsAndConditions;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.VCard;
 import eu.merloteducation.modelslib.gxfscatalog.organization.*;
+import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantItem;
+import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantSelfDescription;
+import eu.merloteducation.modelslib.gxfscatalog.participants.PublicKey;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
@@ -20,7 +27,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

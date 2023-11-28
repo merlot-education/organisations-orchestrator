@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.gxfscatalog.organization.MerlotOrganizationCredentialSubject;
-import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantSelfDescription;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescription;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.mapstruct.*;
 
@@ -11,7 +11,8 @@ public interface OrganizationMapper {
 
     @Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
     @Mapping(target = "selfDescription", source = "selfDescription")
-    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(ParticipantSelfDescription selfDescription);
+    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(
+            SelfDescription<MerlotOrganizationCredentialSubject> selfDescription);
 
     @BeanMapping(ignoreByDefault = true)
     // allow to edit mail

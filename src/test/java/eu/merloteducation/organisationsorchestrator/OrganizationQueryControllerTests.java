@@ -7,7 +7,7 @@ import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.TermsAndConditions;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.VCard;
-import eu.merloteducation.modelslib.gxfscatalog.organization.*;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.auth.AuthorityChecker;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;

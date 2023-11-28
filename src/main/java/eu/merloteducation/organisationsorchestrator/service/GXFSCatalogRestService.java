@@ -8,10 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
-import eu.merloteducation.modelslib.gxfscatalog.organization.*;
 import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantItem;
 import eu.merloteducation.modelslib.gxfscatalog.query.GXFSQueryUriItem;
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.GXFSCatalogListResponse;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescriptionItem;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import org.apache.commons.text.StringEscapeUtils;
@@ -136,7 +137,8 @@ public class GXFSCatalogRestService {
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
         String sdResponseString = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
             gxfscatalogSelfdescriptionsUri + "?statuses=ACTIVE&withContent=true&ids=" + urisString, "", null);
-        GXFSCatalogListResponse<SelfDescriptionResponseItem> sdResponse = mapper.readValue(sdResponseString,
+        GXFSCatalogListResponse<SelfDescriptionItem<MerlotOrganizationCredentialSubject>> sdResponse =
+                mapper.readValue(sdResponseString,
             new TypeReference<>() {
             });
 

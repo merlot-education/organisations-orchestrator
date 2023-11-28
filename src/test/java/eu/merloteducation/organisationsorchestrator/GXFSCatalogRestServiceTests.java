@@ -1,16 +1,17 @@
 package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.TermsAndConditions;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.VCard;
-import eu.merloteducation.modelslib.gxfscatalog.organization.*;
 import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantItem;
-import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantSelfDescription;
 import eu.merloteducation.modelslib.gxfscatalog.participants.PublicKey;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescription;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
@@ -106,7 +107,8 @@ class GXFSCatalogRestServiceTests {
     private String wrapSelfDescription(String selfDescription) throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        ParticipantSelfDescription sd = objectMapper.readValue(selfDescription, ParticipantSelfDescription.class);
+        SelfDescription<MerlotOrganizationCredentialSubject> sd = objectMapper.readValue(selfDescription,
+                new TypeReference<>() {});
         ParticipantItem item = new ParticipantItem();
         item.setSelfDescription(sd);
         item.setId(sd.getVerifiableCredential().getCredentialSubject().getId());

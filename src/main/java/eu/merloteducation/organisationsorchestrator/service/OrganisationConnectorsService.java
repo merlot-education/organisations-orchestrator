@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
+import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
+import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;

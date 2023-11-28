@@ -16,8 +16,7 @@ import eu.merloteducation.organisationsorchestrator.repositories.OrganisationCon
 
 import java.util.ArrayList;
 import java.util.List;
-import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

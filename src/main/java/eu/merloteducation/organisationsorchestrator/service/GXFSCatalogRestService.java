@@ -6,11 +6,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.gxfscatalog.GXFSCatalogResponse;
+import eu.merloteducation.modelslib.gxfscatalog.GXFSQueryUriItem;
+import eu.merloteducation.modelslib.gxfscatalog.StringTypeValue;
+import eu.merloteducation.modelslib.gxfscatalog.participant.ParticipantItem;
+import eu.merloteducation.modelslib.gxfscatalog.participant.ParticipantSelfDescription;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participant.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.selfdescriptionsmeta.SelfDescriptionItem;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -134,7 +139,7 @@ public class GXFSCatalogRestService {
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
         String sdResponseString = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
             gxfscatalogSelfdescriptionsUri + "?statuses=ACTIVE&withContent=true&ids=" + urisString, "", null);
-        GXFSCatalogResponse<SelfDescriptionResponseItem> sdResponse = mapper.readValue(sdResponseString,
+        GXFSCatalogResponse<SelfDescriptionItem> sdResponse = mapper.readValue(sdResponseString,
             new TypeReference<>() {
             });
 
@@ -190,7 +195,7 @@ public class GXFSCatalogRestService {
      * @throws Exception mapping exception
      */
     public MerlotParticipantDto updateParticipant(MerlotOrganizationCredentialSubject editedCredentialSubject,
-        String id) throws Exception {
+                                                  String id) throws Exception {
 
         MerlotOrganizationCredentialSubject targetCredentialSubject = getParticipantById(id).getSelfDescription()
             .getVerifiableCredential().getCredentialSubject();

@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
+import eu.merloteducation.organisationsorchestrator.models.messagequeue.ConnectorDetailsRequest;
+import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

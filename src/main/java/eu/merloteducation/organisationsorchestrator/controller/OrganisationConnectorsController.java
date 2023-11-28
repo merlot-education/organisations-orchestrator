@@ -1,7 +1,5 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
-import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
-import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
+import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
+import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
 
 @RestController
 @RequestMapping("/organization/{orgaId}/connectors/")

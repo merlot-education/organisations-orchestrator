@@ -1,9 +1,9 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
-import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participant.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.organisationsorchestrator.models.OrganisationViews;
+import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
+import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import jakarta.validation.Valid;
 import org.apache.pdfbox.Loader;
@@ -40,7 +40,7 @@ public class OrganizationQueryController {
     @GetMapping("")
     @JsonView(OrganisationViews.PublicView.class)
     public Page<MerlotParticipantDto> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
-                                                          @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
+        @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
 
         return gxfsCatalogRestService.getParticipants(PageRequest.of(page, size));
     }

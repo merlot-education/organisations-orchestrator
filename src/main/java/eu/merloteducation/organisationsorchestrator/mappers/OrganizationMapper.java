@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.gxfscatalog.participant.ParticipantSelfDescription;
-import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participant.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.ParticipantSelfDescription;
+import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.mapstruct.*;
 
@@ -31,7 +31,7 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.postalCode.value", source = "legalAddress.postalCode.value")
     @Mapping(target = "headquarterAddress.streetAddress.value", source = "legalAddress.streetAddress.value")
     void updateSelfDescriptionAsParticipant(MerlotOrganizationCredentialSubject source,
-                                            @MappingTarget MerlotOrganizationCredentialSubject target);
+        @MappingTarget MerlotOrganizationCredentialSubject target);
 
     @Mapping(target = "orgaName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ORGANIZATIONNAME.getValue()).getValueAsString()))")
     @Mapping(target = "legalName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ORGANIZATIONLEGALNAME.getValue()).getValueAsString()))")

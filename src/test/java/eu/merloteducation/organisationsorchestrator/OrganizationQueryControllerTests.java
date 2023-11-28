@@ -2,14 +2,14 @@ package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.gxfscatalog.organization.*;
 import eu.merloteducation.organisationsorchestrator.auth.AuthorityChecker;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;
 import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

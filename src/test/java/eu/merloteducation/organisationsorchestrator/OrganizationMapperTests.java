@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import eu.merloteducation.modelslib.gxfscatalog.organization.*;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;

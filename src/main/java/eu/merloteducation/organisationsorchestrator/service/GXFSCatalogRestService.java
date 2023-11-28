@@ -6,11 +6,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.gxfscatalog.organization.*;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -35,7 +34,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 @Service
 public class GXFSCatalogRestService {
@@ -190,7 +188,7 @@ public class GXFSCatalogRestService {
      * @throws Exception mapping exception
      */
     public MerlotParticipantDto updateParticipant(MerlotOrganizationCredentialSubject editedCredentialSubject,
-        String id) throws Exception {
+                                                  String id) throws Exception {
 
         MerlotOrganizationCredentialSubject targetCredentialSubject = getParticipantById(id).getSelfDescription()
             .getVerifiableCredential().getCredentialSubject();

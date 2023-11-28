@@ -1,5 +1,7 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
+import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,8 +18,6 @@ import eu.merloteducation.organisationsorchestrator.repositories.OrganisationCon
 
 import java.util.ArrayList;
 import java.util.List;
-import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

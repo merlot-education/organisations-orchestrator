@@ -2,9 +2,9 @@ package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.gxfscatalog.organization.*;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
 import org.apache.commons.text.StringEscapeUtils;

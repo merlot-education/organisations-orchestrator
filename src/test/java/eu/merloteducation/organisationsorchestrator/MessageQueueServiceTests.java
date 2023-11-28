@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
-import eu.merloteducation.organisationsorchestrator.models.messagequeue.ConnectorDetailsRequest;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;

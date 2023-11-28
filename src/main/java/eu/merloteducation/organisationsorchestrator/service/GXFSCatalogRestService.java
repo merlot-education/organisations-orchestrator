@@ -11,6 +11,7 @@ import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
 import eu.merloteducation.modelslib.gxfscatalog.organization.*;
 import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantItem;
 import eu.merloteducation.modelslib.gxfscatalog.query.GXFSQueryUriItem;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import org.apache.commons.text.StringEscapeUtils;
@@ -128,14 +129,14 @@ public class GXFSCatalogRestService {
         ObjectMapper mapper = new ObjectMapper();
 
         // map query response containing the ids to objects and create a string of ids joined by commas
-        GXFSCatalogResponse<GXFSQueryUriItem> uriResponse = mapper.readValue(queryResponse, new TypeReference<>() {
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = mapper.readValue(queryResponse, new TypeReference<>() {
         });
         String urisString = Joiner.on(",").join(uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toList());
 
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
         String sdResponseString = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
             gxfscatalogSelfdescriptionsUri + "?statuses=ACTIVE&withContent=true&ids=" + urisString, "", null);
-        GXFSCatalogResponse<SelfDescriptionResponseItem> sdResponse = mapper.readValue(sdResponseString,
+        GXFSCatalogListResponse<SelfDescriptionResponseItem> sdResponse = mapper.readValue(sdResponseString,
             new TypeReference<>() {
             });
 

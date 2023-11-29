@@ -139,6 +139,11 @@
 			<artifactId>pdfbox</artifactId>
 			<version>3.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>eu.merlot-education</groupId>
+			<artifactId>authorization-library</artifactId>
+			<version>0.0.10-SNAPSHOT</version>
+		</dependency>
     </dependencies>
 	<build>
 		<plugins>

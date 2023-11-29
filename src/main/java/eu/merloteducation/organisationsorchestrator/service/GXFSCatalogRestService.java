@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;

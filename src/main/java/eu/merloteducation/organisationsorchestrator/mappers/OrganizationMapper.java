@@ -21,7 +21,6 @@ public interface OrganizationMapper {
     @Mapping(target = "termsAndConditions.content.value", source = "termsAndConditions.content.value")
     @Mapping(target = "termsAndConditions.hash.value", source = "termsAndConditions.hash.value")
     // allow to edit address
-    @Mapping(target = "addressCode.value", source = "addressCode.value")
     @Mapping(target = "legalAddress.countryName.value", source = "legalAddress.countryName.value")
     @Mapping(target = "legalAddress.locality.value", source = "legalAddress.locality.value")
     @Mapping(target = "legalAddress.postalCode.value", source = "legalAddress.postalCode.value")
@@ -43,7 +42,6 @@ public interface OrganizationMapper {
     @Mapping(target = "termsAndConditions.content.type", constant = "xsd:anyURI")
     @Mapping(target = "termsAndConditions.hash", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString()))")
     @Mapping(target = "termsAndConditions.type", constant = "gax-trust-framework:TermsAndConditions")
-    @Mapping(target = "addressCode", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ADDRESSCODE.getValue()).getValueAsString()))")
     @Mapping(target = "legalAddress.countryName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.COUNTRYCODE.getValue()).getValueAsString()))")
     @Mapping(target = "legalAddress.locality", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString()))")
     @Mapping(target = "legalAddress.postalCode", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString()))")

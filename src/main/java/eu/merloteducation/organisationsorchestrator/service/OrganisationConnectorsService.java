@@ -1,7 +1,9 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
+import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
+import eu.merloteducation.organisationsorchestrator.mappers.OrganizationConnectorMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;
@@ -15,14 +17,19 @@ public class OrganisationConnectorsService {
     @Autowired
     private OrganisationConnectorsExtensionRepository connectorsRepo;
 
+    @Autowired
+    private OrganizationConnectorMapper organizationConnectorMapper;
+
     /**
      * Given an organization id, return all related connectors.
      *
      * @param orgaId organization id
      * @return connectors of organization
      */
-    public List<OrganisationConnectorExtension> getAllConnectors(String orgaId) {
-        return connectorsRepo.findAllByOrgaId(orgaId);
+    public List<OrganizationConnectorDto> getAllConnectors(String orgaId) {
+        return connectorsRepo.findAllByOrgaId(orgaId).stream()
+                .map(o -> organizationConnectorMapper.connectorExtensionToOrganizationConnectorDto(o))
+                .toList();
     }
 
     /**
@@ -32,8 +39,9 @@ public class OrganisationConnectorsService {
      * @param connectorId connector id
      * @return connector
      */
-    public OrganisationConnectorExtension getConnector(String orgaId, String connectorId) {
-        return connectorsRepo.findByOrgaIdAndConnectorId(orgaId, connectorId).orElse(null);
+    public OrganizationConnectorDto getConnector(String orgaId, String connectorId) {
+        return organizationConnectorMapper.connectorExtensionToOrganizationConnectorDto(
+                connectorsRepo.findByOrgaIdAndConnectorId(orgaId, connectorId).orElse(null));
     }
 
     /**
@@ -43,7 +51,7 @@ public class OrganisationConnectorsService {
      * @param postModel model of new connector
      * @return newly created connector
      */
-    public OrganisationConnectorExtension postConnector(String orgaId, PostOrganisationConnectorModel postModel) {
+    public OrganizationConnectorDto postConnector(String orgaId, PostOrganisationConnectorModel postModel) {
         OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
         connector.setOrgaId(orgaId);
         connector.setConnectorId((postModel.getConnectorId()));
@@ -51,7 +59,7 @@ public class OrganisationConnectorsService {
         connector.setConnectorAccessToken(postModel.getConnectorAccessToken());
         connector.setBucketNames(postModel.getBucketNames());
 
-        return connectorsRepo.save(connector);
+        return organizationConnectorMapper.connectorExtensionToOrganizationConnectorDto(connectorsRepo.save(connector));
     }
 
     /**
@@ -63,7 +71,7 @@ public class OrganisationConnectorsService {
      * @param patchModel updated model of connector
      * @return updated connector
      */
-    public OrganisationConnectorExtension patchConnector(String orgaId, String connectorId, PatchOrganisationConnectorModel patchModel) {
+    public OrganizationConnectorDto patchConnector(String orgaId, String connectorId, PatchOrganisationConnectorModel patchModel) {
 
         OrganisationConnectorExtension connector =  connectorsRepo.findByOrgaIdAndConnectorId(orgaId, connectorId).orElse(null);
         if(connector == null){
@@ -74,7 +82,7 @@ public class OrganisationConnectorsService {
         connector.setConnectorAccessToken(patchModel.getConnectorAccessToken());
         connector.setBucketNames(patchModel.getBucketNames());
 
-        return connectorsRepo.save(connector);
+        return organizationConnectorMapper.connectorExtensionToOrganizationConnectorDto(connectorsRepo.save(connector));
     }
 
     /**

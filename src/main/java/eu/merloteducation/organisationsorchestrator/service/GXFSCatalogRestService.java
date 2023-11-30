@@ -6,11 +6,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
+import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantItem;
+import eu.merloteducation.modelslib.gxfscatalog.query.GXFSQueryUriItem;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.GXFSCatalogListResponse;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescriptionItem;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -35,7 +39,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 @Service
 public class GXFSCatalogRestService {
@@ -127,14 +130,15 @@ public class GXFSCatalogRestService {
         ObjectMapper mapper = new ObjectMapper();
 
         // map query response containing the ids to objects and create a string of ids joined by commas
-        GXFSCatalogResponse<GXFSQueryUriItem> uriResponse = mapper.readValue(queryResponse, new TypeReference<>() {
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = mapper.readValue(queryResponse, new TypeReference<>() {
         });
         String urisString = Joiner.on(",").join(uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toList());
 
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
         String sdResponseString = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
             gxfscatalogSelfdescriptionsUri + "?statuses=ACTIVE&withContent=true&ids=" + urisString, "", null);
-        GXFSCatalogResponse<SelfDescriptionResponseItem> sdResponse = mapper.readValue(sdResponseString,
+        GXFSCatalogListResponse<SelfDescriptionItem<MerlotOrganizationCredentialSubject>> sdResponse =
+                mapper.readValue(sdResponseString,
             new TypeReference<>() {
             });
 
@@ -190,7 +194,7 @@ public class GXFSCatalogRestService {
      * @throws Exception mapping exception
      */
     public MerlotParticipantDto updateParticipant(MerlotOrganizationCredentialSubject editedCredentialSubject,
-        String id) throws Exception {
+                                                  String id) throws Exception {
 
         MerlotOrganizationCredentialSubject targetCredentialSubject = getParticipantById(id).getSelfDescription()
             .getVerifiableCredential().getCredentialSubject();
@@ -294,7 +298,6 @@ public class GXFSCatalogRestService {
         String mailAddress = pdAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString();
         String tncLink = pdAcroForm.getField(DocumentField.TNCLINK.getValue()).getValueAsString();
         String tncHash = pdAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString();
-        String addressCode = pdAcroForm.getField(DocumentField.ADDRESSCODE.getValue()).getValueAsString();
         String countryCode = pdAcroForm.getField(DocumentField.COUNTRYCODE.getValue()).getValueAsString();
         String city = pdAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString();
         String postalCode = pdAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString();
@@ -302,7 +305,7 @@ public class GXFSCatalogRestService {
 
         boolean anyFieldEmptyOrBlank =
             orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
-                || tncLink.isBlank() || tncHash.isBlank() || addressCode.isBlank() || countryCode.isBlank()
+                || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank()
                 || city.isBlank() || postalCode.isBlank() || street.isBlank();
 
         if (anyFieldEmptyOrBlank) {

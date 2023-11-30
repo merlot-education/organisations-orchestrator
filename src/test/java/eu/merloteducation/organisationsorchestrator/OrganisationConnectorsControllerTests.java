@@ -2,15 +2,15 @@ package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
+import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.auth.AuthorityChecker;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;
 import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganisationConnectorsController;
-import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -63,18 +62,18 @@ class OrganisationConnectorsControllerTests {
 
     @BeforeEach
     public void beforeEach() {
-        List<OrganisationConnectorExtension> connectors = List.of(new OrganisationConnectorExtension());
+        List<OrganizationConnectorDto> connectors = List.of(new OrganizationConnectorDto());
 
         lenient().when(organisationConnectorsService.getAllConnectors(any()))
                 .thenReturn(connectors);
         lenient().when(organisationConnectorsService.getConnector(any(), any()))
                 .thenReturn(null);
         lenient().when(organisationConnectorsService.getConnector(eq("10"), eq("1234")))
-                .thenReturn(new OrganisationConnectorExtension());
+                .thenReturn(new OrganizationConnectorDto());
         lenient().when(organisationConnectorsService.postConnector(any(), any()))
-                .thenReturn(new OrganisationConnectorExtension());
+                .thenReturn(new OrganizationConnectorDto());
         lenient().when(organisationConnectorsService.patchConnector(any(), any(), any()))
-                .thenReturn(new OrganisationConnectorExtension());
+                .thenReturn(new OrganizationConnectorDto());
     }
 
     @Test

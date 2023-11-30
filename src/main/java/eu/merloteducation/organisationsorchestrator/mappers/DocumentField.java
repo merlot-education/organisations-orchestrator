@@ -10,7 +10,6 @@ public enum DocumentField {
     STREET("Street"),
     CITY("City"),
     POSTALCODE("PostalCode"),
-    ADDRESSCODE("AddressCode"),
     COUNTRYCODE("CountryCode"),
     TNCLINK("ProviderTncLink"),
     TNCHASH("ProviderTncHash"),

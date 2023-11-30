@@ -1,6 +1,8 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
+import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,8 +18,6 @@ import eu.merloteducation.organisationsorchestrator.repositories.OrganisationCon
 
 import java.util.ArrayList;
 import java.util.List;
-import eu.merloteducation.organisationsorchestrator.models.PostOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.PatchOrganisationConnectorModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -47,7 +47,7 @@ class OrganisationConnectorsTests {
         postModel.setConnectorEndpoint("https://edc1.edchub.dev");
         postModel.setConnectorAccessToken("token$123?");
         postModel.setBucketNames(buckets);
-        OrganisationConnectorExtension connector = connectorsService.postConnector("Orga:110", postModel);
+        OrganizationConnectorDto connector = connectorsService.postConnector("Orga:110", postModel);
     }
 
     @Transactional
@@ -63,7 +63,7 @@ class OrganisationConnectorsTests {
         postModel.setConnectorEndpoint("https://edc1.edchub.dev");
         postModel.setConnectorAccessToken("token$123?");
         postModel.setBucketNames(buckets);
-        OrganisationConnectorExtension connector = connectorsService.postConnector("Orga:110", postModel);
+        OrganizationConnectorDto connector = connectorsService.postConnector("Orga:110", postModel);
 
         assertNotNull(connector);
         assertEquals("Connector:911", connector.getConnectorId());
@@ -85,7 +85,7 @@ class OrganisationConnectorsTests {
         patchModel.setConnectorEndpoint("https://edc1.edchub.dev");
         patchModel.setConnectorAccessToken("token$ABC?");
         patchModel.setBucketNames(buckets);
-        OrganisationConnectorExtension connector = connectorsService.patchConnector("Orga:110", "Connector:112", patchModel);
+        OrganizationConnectorDto connector = connectorsService.patchConnector("Orga:110", "Connector:112", patchModel);
 
         assertNotNull(connector);
         assertEquals("Connector:112", connector.getConnectorId());
@@ -97,7 +97,7 @@ class OrganisationConnectorsTests {
 
     @Test
     void getConnectorForOrganisation() throws Exception {
-        OrganisationConnectorExtension connector = connectorsService.getConnector("Orga:110", "Connector:112");
+        OrganizationConnectorDto connector = connectorsService.getConnector("Orga:110", "Connector:112");
 
         assertNotNull(connector);
         assertEquals("Connector:112", connector.getConnectorId());
@@ -109,7 +109,7 @@ class OrganisationConnectorsTests {
     @Transactional
     @Test
     void getAllConnectorsForOrganisation() throws Exception {
-        List<OrganisationConnectorExtension> connectors = connectorsService.getAllConnectors("Orga:110");
+        List<OrganizationConnectorDto> connectors = connectorsService.getAllConnectors("Orga:110");
 
         assertNotNull(connectors);
         assertEquals(1, connectors.size());

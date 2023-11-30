@@ -20,6 +20,18 @@
 	</properties>
 	<repositories>
 		<repository>
+			<id>central</id>
+			<url>https://repo1.maven.org/maven2</url>
+		</repository>
+		<repository>
+			<id>github</id>
+			<name>GitHub MERLOT Education</name>
+			<url>https://maven.pkg.github.com/merlot-education/*</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
 			<id>danubetech-maven-public</id>
 			<url>https://repo.danubetech.com/repository/maven-public/</url>
 		</repository>
@@ -138,6 +150,11 @@
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
 			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.merloteducation.modelslib</groupId>
+			<artifactId>modelslib</artifactId>
+			<version>0.1.3</version>
 		</dependency>
     </dependencies>
 	<build>

@@ -2,14 +2,18 @@ package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.TermsAndConditions;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.VCard;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.auth.AuthorityChecker;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
 import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;
 import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,7 +136,6 @@ class OrganizationQueryControllerTests {
         address.setPostalCode(new StringTypeValue("12345"));
         credentialSubject.setLegalAddress(address);
         credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setAddressCode(new StringTypeValue("DE-BER"));
         credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
         credentialSubject.setMerlotId(new StringTypeValue("10"));
         credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
@@ -168,7 +171,6 @@ class OrganizationQueryControllerTests {
         address.setPostalCode(new StringTypeValue("12345"));
         credentialSubject.setLegalAddress(address);
         credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setAddressCode(new StringTypeValue("DE-BER"));
         credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
         credentialSubject.setMerlotId(new StringTypeValue("10"));
         credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));

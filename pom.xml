@@ -20,6 +20,18 @@
 	</properties>
 	<repositories>
 		<repository>
+			<id>central</id>
+			<url>https://repo1.maven.org/maven2</url>
+		</repository>
+		<repository>
+			<id>github</id>
+			<name>GitHub MERLOT Education</name>
+			<url>https://maven.pkg.github.com/merlot-education/*</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
 			<id>danubetech-maven-public</id>
 			<url>https://repo.danubetech.com/repository/maven-public/</url>
 		</repository>
@@ -142,7 +154,7 @@
 		<dependency>
 			<groupId>eu.merlot-education</groupId>
 			<artifactId>authorization-library</artifactId>
-			<version>0.0.10-SNAPSHOT</version>
+			<version>0.0.2-8c0b3a9</version>
 		</dependency>
     </dependencies>
 	<build>

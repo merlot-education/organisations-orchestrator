@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
 import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +27,7 @@ public class OrganisationConnectorsController {
      * @return list of connectors of this organization
      */
     @GetMapping("")
-    public List<OrganisationConnectorExtension> getAllConnectors(@PathVariable(value = "orgaId") String orgaId) {
+    public List<OrganizationConnectorDto> getAllConnectors(@PathVariable(value = "orgaId") String orgaId) {
         return connectorsService.getAllConnectors(orgaId);
     }
 
@@ -39,7 +39,7 @@ public class OrganisationConnectorsController {
      * @return connector
      */
     @GetMapping("connector/{connectorId}")
-    public OrganisationConnectorExtension getConnector(@PathVariable(value = "orgaId") String orgaId,
+    public OrganizationConnectorDto getConnector(@PathVariable(value = "orgaId") String orgaId,
                                                        @PathVariable(value = "connectorId") String connectorId) {
         return connectorsService.getConnector(orgaId, connectorId);
     }
@@ -52,7 +52,7 @@ public class OrganisationConnectorsController {
      * @return newly created connector
      */
     @PostMapping("connector")
-    public OrganisationConnectorExtension postConnector(@PathVariable(value = "orgaId") String orgaId,
+    public OrganizationConnectorDto postConnector(@PathVariable(value = "orgaId") String orgaId,
                                                         @Valid @RequestBody PostOrganisationConnectorModel postModel) {
         return connectorsService.postConnector(orgaId, postModel);
     }
@@ -66,7 +66,7 @@ public class OrganisationConnectorsController {
      * @return updated connector
      */
     @PatchMapping("connector/{connectorId}")
-    public OrganisationConnectorExtension patchConnector(@PathVariable(value = "orgaId") String orgaId,
+    public OrganizationConnectorDto patchConnector(@PathVariable(value = "orgaId") String orgaId,
                                                          @PathVariable(value = "connectorId") String connectorId,
                                                          @Valid @RequestBody PatchOrganisationConnectorModel patchModel) {
         return connectorsService.patchConnector(orgaId, connectorId, patchModel);

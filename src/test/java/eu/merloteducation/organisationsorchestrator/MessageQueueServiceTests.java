@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
@@ -43,7 +43,7 @@ class MessageQueueServiceTests {
         ReflectionTestUtils.setField(messageQueueService, "organisationConnectorsService", organisationConnectorsService);
         when(gxfsCatalogRestService.getParticipantById(any())).thenThrow(Exception.class);
         doReturn(new MerlotParticipantDto()).when(gxfsCatalogRestService).getParticipantById("10");
-        doReturn(new OrganisationConnectorExtension()).when(organisationConnectorsService).getConnector("10", "1234");
+        doReturn(new OrganizationConnectorDto()).when(organisationConnectorsService).getConnector("10", "1234");
     }
 
 
@@ -62,14 +62,14 @@ class MessageQueueServiceTests {
     @Test
     void requestOrganizationConnectorExistent() {
         ConnectorDetailsRequest connectorDetailsRequest = new ConnectorDetailsRequest("1234", "10");
-        OrganisationConnectorExtension model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
+        OrganizationConnectorDto model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
         assertNotNull(model);
     }
 
     @Test
     void requestOrganizationConnectorNonExistent()  {
         ConnectorDetailsRequest connectorDetailsRequest = new ConnectorDetailsRequest("garbage", "10");
-        OrganisationConnectorExtension model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
+        OrganizationConnectorDto model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
         assertNull(model);
     }
 }

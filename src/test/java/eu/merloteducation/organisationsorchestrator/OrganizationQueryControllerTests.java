@@ -136,7 +136,6 @@ class OrganizationQueryControllerTests {
         address.setPostalCode(new StringTypeValue("12345"));
         credentialSubject.setLegalAddress(address);
         credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setAddressCode(new StringTypeValue("DE-BER"));
         credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
         credentialSubject.setMerlotId(new StringTypeValue("10"));
         credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
@@ -172,7 +171,6 @@ class OrganizationQueryControllerTests {
         address.setPostalCode(new StringTypeValue("12345"));
         credentialSubject.setLegalAddress(address);
         credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setAddressCode(new StringTypeValue("DE-BER"));
         credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
         credentialSubject.setMerlotId(new StringTypeValue("10"));
         credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));

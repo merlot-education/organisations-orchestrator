@@ -298,7 +298,6 @@ public class GXFSCatalogRestService {
         String mailAddress = pdAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString();
         String tncLink = pdAcroForm.getField(DocumentField.TNCLINK.getValue()).getValueAsString();
         String tncHash = pdAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString();
-        String addressCode = pdAcroForm.getField(DocumentField.ADDRESSCODE.getValue()).getValueAsString();
         String countryCode = pdAcroForm.getField(DocumentField.COUNTRYCODE.getValue()).getValueAsString();
         String city = pdAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString();
         String postalCode = pdAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString();
@@ -306,7 +305,7 @@ public class GXFSCatalogRestService {
 
         boolean anyFieldEmptyOrBlank =
             orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
-                || tncLink.isBlank() || tncHash.isBlank() || addressCode.isBlank() || countryCode.isBlank()
+                || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank()
                 || city.isBlank() || postalCode.isBlank() || street.isBlank();
 
         if (anyFieldEmptyOrBlank) {

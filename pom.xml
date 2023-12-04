@@ -154,7 +154,7 @@
 		<dependency>
 			<groupId>eu.merlot-education</groupId>
 			<artifactId>authorization-library</artifactId>
-			<version>0.0.2-8c0b3a9</version>
+			<version>0.0.3-eb99003</version>
 		</dependency>
     </dependencies>
 	<build>

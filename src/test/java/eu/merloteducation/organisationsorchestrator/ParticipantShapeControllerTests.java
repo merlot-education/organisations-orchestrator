@@ -1,7 +1,10 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import eu.merloteducation.authorizationlibrary.authorization.ActiveRoleHeaderHandlerInterceptor;
+import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.JwtAuthConverter;
 import eu.merloteducation.authorizationlibrary.authorization.JwtAuthConverterProperties;
+import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.ParticipantShapeController;
 import eu.merloteducation.organisationsorchestrator.service.GXFSWizardRestService;
@@ -24,15 +27,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest({ParticipantShapeController.class, WebSecurityConfig.class})
-@Import({JwtAuthConverter.class})
+@Import({JwtAuthConverter.class, ActiveRoleHeaderHandlerInterceptor.class, InterceptorConfig.class, AuthorityChecker.class})
 @AutoConfigureMockMvc()
 class ParticipantShapeControllerTests {
 
     @MockBean
     private GXFSWizardRestService gxfsWizardRestService;
-
-    @Autowired
-    private JwtAuthConverter jwtAuthConverter;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;

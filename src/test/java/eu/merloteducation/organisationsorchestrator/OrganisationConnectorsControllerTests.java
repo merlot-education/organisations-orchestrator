@@ -2,13 +2,11 @@ package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import eu.merloteducation.authorizationlibrary.authorization.*;
+import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
 import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
-import eu.merloteducation.organisationsorchestrator.auth.AuthorityChecker;
-import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverter;
-import eu.merloteducation.organisationsorchestrator.auth.JwtAuthConverterProperties;
-import eu.merloteducation.organisationsorchestrator.auth.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganisationConnectorsController;
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
@@ -18,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -34,15 +33,13 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest({OrganisationConnectorsController.class, WebSecurityConfig.class, AuthorityChecker.class})
+@WebMvcTest({OrganisationConnectorsController.class, WebSecurityConfig.class})
+@Import({JwtAuthConverter.class, AuthorityChecker.class, InterceptorConfig.class, ActiveRoleHeaderHandlerInterceptor.class, AuthorityChecker.class})
 @AutoConfigureMockMvc()
 class OrganisationConnectorsControllerTests {
 
     @MockBean
     private OrganisationConnectorsService organisationConnectorsService;
-
-    @Autowired
-    private JwtAuthConverter jwtAuthConverter;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;

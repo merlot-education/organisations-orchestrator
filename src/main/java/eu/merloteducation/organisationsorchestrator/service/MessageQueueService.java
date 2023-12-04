@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import eu.merloteducation.organisationsorchestrator.models.messagequeue.ConnectorDetailsRequest;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -44,7 +44,7 @@ public class MessageQueueService {
      * @return connector details
      */
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATIONCONNECTOR_REQUEST_QUEUE)
-    public OrganisationConnectorExtension organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
+    public OrganizationConnectorDto organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
         logger.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
         try {
             return organisationConnectorsService.getConnector(connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());

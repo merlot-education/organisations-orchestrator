@@ -1,7 +1,11 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.TermsAndConditions;
+import eu.merloteducation.modelslib.gxfscatalog.datatypes.VCard;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.*;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -34,7 +38,6 @@ class OrganizationMapperTests {
     String city = "City";
     String organizationName = "Organization Name";
     String postalCode = "12345";
-    String addressCode = "DE-C";
 
     @Test
     void mapRegistrationFormToSelfDescriptionCorrectly() throws IOException {
@@ -47,7 +50,6 @@ class OrganizationMapperTests {
 
     MerlotOrganizationCredentialSubject getExpectedCredentialSubject(){
         MerlotOrganizationCredentialSubject expected = new MerlotOrganizationCredentialSubject();
-        expected.setAddressCode(new StringTypeValue(addressCode));
         expected.setMailAddress(new StringTypeValue(mailAddress));
         expected.setOrgaName(new StringTypeValue(organizationName));
         expected.setLegalName(new StringTypeValue(organizationLegalName));
@@ -125,12 +127,6 @@ class OrganizationMapperTests {
         form.getFields().add(textField5);
         textField5.setDefaultAppearance(defaultAppearance);
         textField5.setValue(postalCode);
-
-        PDTextField textField6 = new PDTextField(form);
-        textField6.setPartialName("AddressCode");
-        form.getFields().add(textField6);
-        textField6.setDefaultAppearance(defaultAppearance);
-        textField6.setValue(addressCode);
 
         PDTextField textField7 = new PDTextField(form);
         textField7.setPartialName("City");

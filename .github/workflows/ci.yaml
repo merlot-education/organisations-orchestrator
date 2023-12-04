@@ -56,6 +56,8 @@ jobs:
         with:
           push: true
           tags: ghcr.io/${{ env.repository }}:${{ env.tag }},ghcr.io/${{ env.repository }}:latest
+          build-args: |
+            ENVIRONMENT=${{ env.environment }}
 
       - name: Dispatch update
         run: |

@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.MerlotOrganizationCredentialSubject;
-import eu.merloteducation.organisationsorchestrator.models.gxfscatalog.ParticipantSelfDescription;
-import eu.merloteducation.organisationsorchestrator.models.dto.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescription;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.mapstruct.*;
 
@@ -11,7 +11,8 @@ public interface OrganizationMapper {
 
     @Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
     @Mapping(target = "selfDescription", source = "selfDescription")
-    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(ParticipantSelfDescription selfDescription);
+    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(
+            SelfDescription<MerlotOrganizationCredentialSubject> selfDescription);
 
     @BeanMapping(ignoreByDefault = true)
     // allow to edit mail
@@ -20,7 +21,6 @@ public interface OrganizationMapper {
     @Mapping(target = "termsAndConditions.content.value", source = "termsAndConditions.content.value")
     @Mapping(target = "termsAndConditions.hash.value", source = "termsAndConditions.hash.value")
     // allow to edit address
-    @Mapping(target = "addressCode.value", source = "addressCode.value")
     @Mapping(target = "legalAddress.countryName.value", source = "legalAddress.countryName.value")
     @Mapping(target = "legalAddress.locality.value", source = "legalAddress.locality.value")
     @Mapping(target = "legalAddress.postalCode.value", source = "legalAddress.postalCode.value")
@@ -31,7 +31,7 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.postalCode.value", source = "legalAddress.postalCode.value")
     @Mapping(target = "headquarterAddress.streetAddress.value", source = "legalAddress.streetAddress.value")
     void updateSelfDescriptionAsParticipant(MerlotOrganizationCredentialSubject source,
-        @MappingTarget MerlotOrganizationCredentialSubject target);
+                                            @MappingTarget MerlotOrganizationCredentialSubject target);
 
     @Mapping(target = "orgaName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ORGANIZATIONNAME.getValue()).getValueAsString()))")
     @Mapping(target = "legalName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ORGANIZATIONLEGALNAME.getValue()).getValueAsString()))")
@@ -42,7 +42,6 @@ public interface OrganizationMapper {
     @Mapping(target = "termsAndConditions.content.type", constant = "xsd:anyURI")
     @Mapping(target = "termsAndConditions.hash", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString()))")
     @Mapping(target = "termsAndConditions.type", constant = "gax-trust-framework:TermsAndConditions")
-    @Mapping(target = "addressCode", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ADDRESSCODE.getValue()).getValueAsString()))")
     @Mapping(target = "legalAddress.countryName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.COUNTRYCODE.getValue()).getValueAsString()))")
     @Mapping(target = "legalAddress.locality", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString()))")
     @Mapping(target = "legalAddress.postalCode", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString()))")

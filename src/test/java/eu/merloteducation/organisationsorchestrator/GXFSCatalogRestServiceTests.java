@@ -3,6 +3,7 @@ package eu.merloteducation.organisationsorchestrator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
@@ -364,28 +365,11 @@ class GXFSCatalogRestServiceTests {
     @Test
     void updateParticipantExistentAsParticipant() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
-        credentialSubject.setId("garbage");
-        RegistrationNumber registrationNumber = new RegistrationNumber();
-        registrationNumber.setLocal(new StringTypeValue("garbage"));
-        credentialSubject.setRegistrationNumber(registrationNumber);
-        VCard address = new VCard();
-        address.setStreetAddress(new StringTypeValue("address"));
-        address.setLocality(new StringTypeValue("Berlin"));
-        address.setCountryName(new StringTypeValue("DE"));
-        address.setPostalCode(new StringTypeValue("12345"));
-        credentialSubject.setLegalAddress(address);
-        credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setOrgaName(new StringTypeValue("garbage"));
-        credentialSubject.setLegalName(new StringTypeValue("garbage"));
-        credentialSubject.setMerlotId(new StringTypeValue("garbage"));
-        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
-        TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(new StringTypeValue("http://example.com"));
-        termsAndConditions.setHash(new StringTypeValue("1234"));
-        credentialSubject.setTermsAndConditions(termsAndConditions);
+        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
 
-        MerlotParticipantDto participantDto = gxfsCatalogRestService.updateParticipant(credentialSubject, "10");
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_10");
+
+        MerlotParticipantDto participantDto = gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole, "10");
         MerlotOrganizationCredentialSubject resultCredentialSubject = participantDto.getSelfDescription()
             .getVerifiableCredential().getCredentialSubject();
         assertEquals(resultCredentialSubject.getMailAddress().getValue(),
@@ -409,32 +393,59 @@ class GXFSCatalogRestServiceTests {
         assertNotEquals(resultCredentialSubject.getLegalName().getValue(), credentialSubject.getLegalName().getValue());
         assertNotEquals(resultCredentialSubject.getRegistrationNumber().getLocal().getValue(),
             credentialSubject.getRegistrationNumber().getLocal().getValue());
+        assertNull(resultCredentialSubject.getRegistrationNumber().getEuid());
+        assertNull(resultCredentialSubject.getRegistrationNumber().getEori());
+        assertNull(resultCredentialSubject.getRegistrationNumber().getVatId());
+    }
+
+    @Test
+    void updateParticipantExistentAsFedAdmin() throws Exception {
+
+        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
+
+        MerlotParticipantDto participantDto = gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole, "10");
+        MerlotOrganizationCredentialSubject resultCredentialSubject = participantDto.getSelfDescription()
+            .getVerifiableCredential().getCredentialSubject();
+        assertEquals(resultCredentialSubject.getMailAddress().getValue(),
+            credentialSubject.getMailAddress().getValue());
+        assertEquals(resultCredentialSubject.getTermsAndConditions().getContent().getValue(),
+            credentialSubject.getTermsAndConditions().getContent().getValue());
+        assertEquals(resultCredentialSubject.getTermsAndConditions().getHash().getValue(),
+            credentialSubject.getTermsAndConditions().getHash().getValue());
+        assertEquals(resultCredentialSubject.getLegalAddress().getStreetAddress().getValue(),
+            credentialSubject.getLegalAddress().getStreetAddress().getValue());
+        assertEquals(resultCredentialSubject.getLegalAddress().getLocality().getValue(),
+            credentialSubject.getLegalAddress().getLocality().getValue());
+        assertEquals(resultCredentialSubject.getLegalAddress().getCountryName().getValue(),
+            credentialSubject.getLegalAddress().getCountryName().getValue());
+        assertEquals(resultCredentialSubject.getLegalAddress().getPostalCode().getValue(),
+            credentialSubject.getLegalAddress().getPostalCode().getValue());
+        assertEquals(resultCredentialSubject.getOrgaName().getValue(), credentialSubject.getOrgaName().getValue());
+        assertEquals(resultCredentialSubject.getLegalName().getValue(), credentialSubject.getLegalName().getValue());
+        assertEquals(resultCredentialSubject.getRegistrationNumber().getLocal().getValue(),
+            credentialSubject.getRegistrationNumber().getLocal().getValue());
+        assertEquals(resultCredentialSubject.getRegistrationNumber().getEuid().getValue(),
+            credentialSubject.getRegistrationNumber().getEuid().getValue());
+        assertEquals(resultCredentialSubject.getRegistrationNumber().getEori().getValue(),
+            credentialSubject.getRegistrationNumber().getEori().getValue());
+        assertEquals(resultCredentialSubject.getRegistrationNumber().getVatId().getValue(),
+            credentialSubject.getRegistrationNumber().getVatId().getValue());
+
+        assertNotEquals(resultCredentialSubject.getId(), credentialSubject.getId());
+        assertNotEquals(resultCredentialSubject.getMerlotId().getValue(), credentialSubject.getMerlotId().getValue());
     }
 
     @Test
     void updateParticipantNonExistent() {
 
-        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
-        credentialSubject.setId("Participant:10");
-        RegistrationNumber registrationNumber = new RegistrationNumber();
-        registrationNumber.setLocal(new StringTypeValue("localRegNum"));
-        credentialSubject.setRegistrationNumber(registrationNumber);
-        VCard address = new VCard();
-        address.setStreetAddress(new StringTypeValue("address"));
-        address.setLocality(new StringTypeValue("Berlin"));
-        address.setCountryName(new StringTypeValue("DE"));
-        address.setPostalCode(new StringTypeValue("12345"));
-        credentialSubject.setLegalAddress(address);
-        credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
-        credentialSubject.setMerlotId(new StringTypeValue("10"));
-        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
-        TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(new StringTypeValue("http://example.com"));
-        termsAndConditions.setHash(new StringTypeValue("1234"));
-        credentialSubject.setTermsAndConditions(termsAndConditions);
+        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
+
         assertThrows(HttpClientErrorException.NotFound.class,
-            () -> gxfsCatalogRestService.updateParticipant(credentialSubject, "11"));
+            () -> gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole,"11"));
     }
 
     @Test
@@ -555,6 +566,34 @@ class GXFSCatalogRestServiceTests {
             () -> gxfsCatalogRestService.createParticipant(pdDocument));
 
         assertEquals("400 BAD_REQUEST \"Invalid registration form: Empty or blank fields.\"", e.getMessage());
+    }
+
+    private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {
+
+        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
+        credentialSubject.setId("changedId");
+        RegistrationNumber registrationNumber = new RegistrationNumber();
+        registrationNumber.setLocal(new StringTypeValue("changedLocal"));
+        registrationNumber.setEori(new StringTypeValue("changedEori"));
+        registrationNumber.setEuid(new StringTypeValue("changedEuid"));
+        registrationNumber.setVatId(new StringTypeValue("changedVatId"));
+        credentialSubject.setRegistrationNumber(registrationNumber);
+        VCard address = new VCard();
+        address.setStreetAddress(new StringTypeValue("changedAddress"));
+        address.setLocality(new StringTypeValue("changedCity"));
+        address.setCountryName(new StringTypeValue("changedCountry"));
+        address.setPostalCode(new StringTypeValue("changedPostCode"));
+        credentialSubject.setLegalAddress(address);
+        credentialSubject.setHeadquarterAddress(address);
+        credentialSubject.setOrgaName(new StringTypeValue("changedOrgaName"));
+        credentialSubject.setLegalName(new StringTypeValue("changedLegalName"));
+        credentialSubject.setMerlotId(new StringTypeValue("changedMerlotId"));
+        credentialSubject.setMailAddress(new StringTypeValue("changedMail"));
+        TermsAndConditions termsAndConditions = new TermsAndConditions();
+        termsAndConditions.setContent(new StringTypeValue("http://changed.com"));
+        termsAndConditions.setHash(new StringTypeValue("changedHash"));
+        credentialSubject.setTermsAndConditions(termsAndConditions);
+        return credentialSubject;
     }
 }
 

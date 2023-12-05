@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
 import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantItem;
@@ -137,9 +138,8 @@ public class GXFSCatalogRestService {
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
         String sdResponseString = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
             gxfscatalogSelfdescriptionsUri + "?statuses=ACTIVE&withContent=true&ids=" + urisString, "", null);
-        GXFSCatalogListResponse<SelfDescriptionItem<MerlotOrganizationCredentialSubject>> sdResponse =
-                mapper.readValue(sdResponseString,
-            new TypeReference<>() {
+        GXFSCatalogListResponse<SelfDescriptionItem<MerlotOrganizationCredentialSubject>> sdResponse = mapper.readValue(
+            sdResponseString, new TypeReference<>() {
             });
 
         // from the SDs create DTO objects. Also sort by name again since the catalog does not respect argument order
@@ -194,11 +194,17 @@ public class GXFSCatalogRestService {
      * @throws Exception mapping exception
      */
     public MerlotParticipantDto updateParticipant(MerlotOrganizationCredentialSubject editedCredentialSubject,
-                                                  String id) throws Exception {
+        OrganizationRoleGrantedAuthority activeRole, String id) throws Exception {
 
         MerlotOrganizationCredentialSubject targetCredentialSubject = getParticipantById(id).getSelfDescription()
             .getVerifiableCredential().getCredentialSubject();
-        organizationMapper.updateSelfDescriptionAsParticipant(editedCredentialSubject, targetCredentialSubject);
+
+        if (activeRole.isRepresentative()) {
+            organizationMapper.updateSelfDescriptionAsParticipant(editedCredentialSubject, targetCredentialSubject);
+        } else if (activeRole.isFedAdmin()) {
+            organizationMapper.updateSelfDescriptionAsFedAdmin(editedCredentialSubject, targetCredentialSubject);
+        }
+
         // prepare a json to send to the gxfs catalog, sign it and read the response
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -305,11 +311,12 @@ public class GXFSCatalogRestService {
 
         boolean anyFieldEmptyOrBlank =
             orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
-                || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank()
-                || city.isBlank() || postalCode.isBlank() || street.isBlank();
+                || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank() || city.isBlank()
+                || postalCode.isBlank() || street.isBlank();
 
         if (anyFieldEmptyOrBlank) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form: Empty or blank fields.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Invalid registration form: Empty or blank fields.");
         }
     }
 }

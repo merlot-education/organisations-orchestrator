@@ -311,8 +311,8 @@ public class GXFSCatalogRestService {
 
         boolean anyFieldEmptyOrBlank =
             orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
-                || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank() || city.isBlank()
-                || postalCode.isBlank() || street.isBlank();
+                || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank()
+                || city.isBlank() || postalCode.isBlank() || street.isBlank();
 
         if (anyFieldEmptyOrBlank) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

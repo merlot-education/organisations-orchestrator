@@ -54,7 +54,9 @@ public class OrganizationQueryController {
      */
     @PostMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
-    public MerlotParticipantDto createOrganization(@Valid @RequestPart("file") MultipartFile[] files) throws Exception {
+    @PreAuthorize("#activeRole.isFedAdmin()")
+    public MerlotParticipantDto createOrganization(@Valid @RequestPart("file") MultipartFile[] files,
+        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole) throws Exception {
 
         if (files.length != 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files specified");

@@ -170,11 +170,11 @@ class OrganizationQueryControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectAsJsonString(credentialSubject))
-                .header("Active-Role", "FedAdmin_10")
+                .header("Active-Role", "OrgLegRep_10")
                 .with(csrf())
                 .with(jwt().authorities(
                     new OrganizationRoleGrantedAuthority("OrgLegRep_20"),
-                    new OrganizationRoleGrantedAuthority("FedAdmin_10"),
+                    new OrganizationRoleGrantedAuthority("OrgLegRep_10"),
                     new SimpleGrantedAuthority("ROLE_some_other_role")
                 )))
             .andDo(print())
@@ -224,10 +224,11 @@ class OrganizationQueryControllerTests {
                 .file(multipartFile)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
+                .header("Active-Role", "FedAdmin_10")
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
                 )))
             .andDo(print())
             .andExpect(status().isOk());
@@ -248,10 +249,11 @@ class OrganizationQueryControllerTests {
                 .file(multipartFile)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
+                .header("Active-Role", "FedAdmin_10")
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
@@ -267,9 +269,10 @@ class OrganizationQueryControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
                 .accept(MediaType.APPLICATION_JSON)
+                .header("Active-Role", "FedAdmin_10")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())

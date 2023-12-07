@@ -81,7 +81,7 @@ class OrganizationQueryControllerTests {
                 .thenReturn(participantDto);
         lenient().when(gxfsCatalogRestService.getParticipantById(eq("garbage")))
                 .thenThrow(HttpClientErrorException.NotFound.class);
-        lenient().when(gxfsCatalogRestService.updateParticipant(any(), eq("10")))
+        lenient().when(gxfsCatalogRestService.updateParticipant(any(), any(), eq("10")))
                 .thenReturn(participantDto);
 
     }
@@ -121,30 +121,14 @@ class OrganizationQueryControllerTests {
 
     @Test
     void updateOrganizationAuthorizedExistent() throws Exception {
-        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
-        credentialSubject.setId("Participant:10");
-        RegistrationNumber registrationNumber = new RegistrationNumber();
-        registrationNumber.setLocal(new StringTypeValue("localRegNum"));
-        credentialSubject.setRegistrationNumber(registrationNumber);
-        VCard address = new VCard();
-        address.setStreetAddress(new StringTypeValue("address"));
-        address.setLocality(new StringTypeValue("Berlin"));
-        address.setCountryName(new StringTypeValue("DE"));
-        address.setPostalCode(new StringTypeValue("12345"));
-        credentialSubject.setLegalAddress(address);
-        credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
-        credentialSubject.setMerlotId(new StringTypeValue("10"));
-        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
-        TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(new StringTypeValue("http://example.com"));
-        termsAndConditions.setHash(new StringTypeValue("1234"));
-        credentialSubject.setTermsAndConditions(termsAndConditions);
+
+        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
         mvc.perform(MockMvcRequestBuilders
                         .put("/organization/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectAsJsonString(credentialSubject))
+                        .header("Active-Role", "OrgLegRep_10")
                         .with(csrf())
                         .with(jwt().authorities(
                                 new OrganizationRoleGrantedAuthority("OrgLegRep_10"),
@@ -155,31 +139,58 @@ class OrganizationQueryControllerTests {
     }
 
     @Test
+    void updateOrganizationAuthorizedAsFedAdminExistent() throws Exception {
+
+        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        mvc.perform(MockMvcRequestBuilders
+                .put("/organization/10")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectAsJsonString(credentialSubject))
+                .header("Active-Role", "FedAdmin_10")
+                .with(csrf())
+                .with(jwt().authorities(
+                    new OrganizationRoleGrantedAuthority("OrgLegRep_20"),
+                    new OrganizationRoleGrantedAuthority("FedAdmin_10"),
+                    new SimpleGrantedAuthority("ROLE_some_other_role")
+                )))
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateOrganizationAuthorizedAsFedAdminExistentInconsistentId() throws Exception {
+
+        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        credentialSubject.setMerlotId(new StringTypeValue("30"));
+        credentialSubject.setId("Participant:30");
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/organization/10")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectAsJsonString(credentialSubject))
+                .header("Active-Role", "OrgLegRep_10")
+                .with(csrf())
+                .with(jwt().authorities(
+                    new OrganizationRoleGrantedAuthority("OrgLegRep_20"),
+                    new OrganizationRoleGrantedAuthority("OrgLegRep_10"),
+                    new SimpleGrantedAuthority("ROLE_some_other_role")
+                )))
+            .andDo(print())
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
     void updateOrganizationUnauthorizedExistent() throws Exception {
-        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
-        credentialSubject.setId("Participant:10");
-        RegistrationNumber registrationNumber = new RegistrationNumber();
-        registrationNumber.setLocal(new StringTypeValue("localRegNum"));
-        credentialSubject.setRegistrationNumber(registrationNumber);
-        VCard address = new VCard();
-        address.setStreetAddress(new StringTypeValue("address"));
-        address.setLocality(new StringTypeValue("Berlin"));
-        address.setCountryName(new StringTypeValue("DE"));
-        address.setPostalCode(new StringTypeValue("12345"));
-        credentialSubject.setLegalAddress(address);
-        credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
-        credentialSubject.setMerlotId(new StringTypeValue("10"));
-        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
-        TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(new StringTypeValue("http://example.com"));
-        termsAndConditions.setHash(new StringTypeValue("1234"));
-        credentialSubject.setTermsAndConditions(termsAndConditions);
+
+        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
         mvc.perform(MockMvcRequestBuilders
                         .put("/organization/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectAsJsonString(credentialSubject))
+                        .header("Active-Role", "OrgLegRep_20")
                         .with(csrf())
                         .with(jwt().authorities(
                                 new OrganizationRoleGrantedAuthority("OrgLegRep_20")
@@ -213,10 +224,11 @@ class OrganizationQueryControllerTests {
                 .file(multipartFile)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
+                .header("Active-Role", "FedAdmin_10")
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
                 )))
             .andDo(print())
             .andExpect(status().isOk());
@@ -237,10 +249,11 @@ class OrganizationQueryControllerTests {
                 .file(multipartFile)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
+                .header("Active-Role", "FedAdmin_10")
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
@@ -256,9 +269,10 @@ class OrganizationQueryControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
                 .accept(MediaType.APPLICATION_JSON)
+                .header("Active-Role", "FedAdmin_10")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
@@ -282,5 +296,29 @@ class OrganizationQueryControllerTests {
                 .with(csrf()))
             .andDo(print())
             .andExpect(status().isUnauthorized());
+    }
+
+    private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {
+
+        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
+        credentialSubject.setId("Participant:10");
+        RegistrationNumber registrationNumber = new RegistrationNumber();
+        registrationNumber.setLocal(new StringTypeValue("localRegNum"));
+        credentialSubject.setRegistrationNumber(registrationNumber);
+        VCard address = new VCard();
+        address.setStreetAddress(new StringTypeValue("address"));
+        address.setLocality(new StringTypeValue("Berlin"));
+        address.setCountryName(new StringTypeValue("DE"));
+        address.setPostalCode(new StringTypeValue("12345"));
+        credentialSubject.setLegalAddress(address);
+        credentialSubject.setHeadquarterAddress(address);
+        credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
+        credentialSubject.setMerlotId(new StringTypeValue("10"));
+        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
+        TermsAndConditions termsAndConditions = new TermsAndConditions();
+        termsAndConditions.setContent(new StringTypeValue("http://example.com"));
+        termsAndConditions.setHash(new StringTypeValue("1234"));
+        credentialSubject.setTermsAndConditions(termsAndConditions);
+        return credentialSubject;
     }
 }

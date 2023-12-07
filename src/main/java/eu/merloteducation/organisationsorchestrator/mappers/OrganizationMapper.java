@@ -33,6 +33,34 @@ public interface OrganizationMapper {
     void updateSelfDescriptionAsParticipant(MerlotOrganizationCredentialSubject source,
                                             @MappingTarget MerlotOrganizationCredentialSubject target);
 
+    @BeanMapping(ignoreByDefault = true)
+    // allow to edit name (orga and legal)
+    @Mapping(target = "orgaName.value", source = "orgaName.value")
+    @Mapping(target = "legalName.value", source = "legalName.value")
+    // allow to edit registration number (local, euid, eori, vatId and leiCode)
+    @Mapping(target = "registrationNumber.local", source = "registrationNumber.local")
+    @Mapping(target = "registrationNumber.euid", source = "registrationNumber.euid")
+    @Mapping(target = "registrationNumber.eori", source = "registrationNumber.eori")
+    @Mapping(target = "registrationNumber.vatId", source = "registrationNumber.vatId")
+    @Mapping(target = "registrationNumber.leiCode", source = "registrationNumber.leiCode")
+    // allow to edit mail
+    @Mapping(target = "mailAddress.value", source = "mailAddress.value")
+    // allow to edit tnc
+    @Mapping(target = "termsAndConditions.content.value", source = "termsAndConditions.content.value")
+    @Mapping(target = "termsAndConditions.hash.value", source = "termsAndConditions.hash.value")
+    // allow to edit address
+    @Mapping(target = "legalAddress.countryName.value", source = "legalAddress.countryName.value")
+    @Mapping(target = "legalAddress.locality.value", source = "legalAddress.locality.value")
+    @Mapping(target = "legalAddress.postalCode.value", source = "legalAddress.postalCode.value")
+    @Mapping(target = "legalAddress.streetAddress.value", source = "legalAddress.streetAddress.value")
+    // copy legal address to headquarter
+    @Mapping(target = "headquarterAddress.countryName.value", source = "legalAddress.countryName.value")
+    @Mapping(target = "headquarterAddress.locality.value", source = "legalAddress.locality.value")
+    @Mapping(target = "headquarterAddress.postalCode.value", source = "legalAddress.postalCode.value")
+    @Mapping(target = "headquarterAddress.streetAddress.value", source = "legalAddress.streetAddress.value")
+    void updateSelfDescriptionAsFedAdmin(MerlotOrganizationCredentialSubject source,
+        @MappingTarget MerlotOrganizationCredentialSubject target);
+
     @Mapping(target = "orgaName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ORGANIZATIONNAME.getValue()).getValueAsString()))")
     @Mapping(target = "legalName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ORGANIZATIONLEGALNAME.getValue()).getValueAsString()))")
     @Mapping(target = "registrationNumber.local", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.REGISTRATIONNUMBER.getValue()).getValueAsString()))")

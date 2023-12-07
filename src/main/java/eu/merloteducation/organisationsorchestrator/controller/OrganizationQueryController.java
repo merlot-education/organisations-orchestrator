@@ -1,6 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
@@ -40,7 +41,7 @@ public class OrganizationQueryController {
     @GetMapping("")
     @JsonView(OrganisationViews.PublicView.class)
     public Page<MerlotParticipantDto> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
-                                                          @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
+        @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
 
         return gxfsCatalogRestService.getParticipants(PageRequest.of(page, size));
     }
@@ -53,8 +54,9 @@ public class OrganizationQueryController {
      */
     @PostMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
-    public MerlotParticipantDto createOrganization(
-        @Valid @RequestPart("file") MultipartFile[] files) throws Exception {
+    @PreAuthorize("#activeRole.isFedAdmin()")
+    public MerlotParticipantDto createOrganization(@Valid @RequestPart("file") MultipartFile[] files,
+        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole) throws Exception {
 
         if (files.length != 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files specified");
@@ -74,13 +76,14 @@ public class OrganizationQueryController {
      */
     @PutMapping("/organization/{orgaId}")
     @JsonView(OrganisationViews.PublicView.class)
-    @PreAuthorize("@authorityChecker.representsOrganization(authentication, #credentialSubject.id) "
-        + "and @authorityChecker.representsOrganization(authentication, #orgaId)")
+    @PreAuthorize("(@authorityChecker.representsOrganization(authentication, #credentialSubject.id) "
+        + "and @authorityChecker.representsOrganization(authentication, #orgaId))"
+        + "or #activeRole.isFedAdmin()")
     public MerlotParticipantDto updateOrganization(
         @Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject,
-        @PathVariable(value = "orgaId") String orgaId) throws Exception {
-
-        return gxfsCatalogRestService.updateParticipant(credentialSubject, orgaId.replace(PARTICIPANT, ""));
+        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole, @PathVariable(value = "orgaId") String orgaId)
+        throws Exception {
+        return gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole, orgaId.replace(PARTICIPANT, ""));
     }
 
     /**

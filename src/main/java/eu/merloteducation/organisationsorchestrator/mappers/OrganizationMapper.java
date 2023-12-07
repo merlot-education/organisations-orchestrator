@@ -37,11 +37,12 @@ public interface OrganizationMapper {
     // allow to edit name (orga and legal)
     @Mapping(target = "orgaName.value", source = "orgaName.value")
     @Mapping(target = "legalName.value", source = "legalName.value")
-    // allow to edit registration number (local, euid, eori and vatId)
+    // allow to edit registration number (local, euid, eori, vatId and leiCode)
     @Mapping(target = "registrationNumber.local", source = "registrationNumber.local")
     @Mapping(target = "registrationNumber.euid", source = "registrationNumber.euid")
     @Mapping(target = "registrationNumber.eori", source = "registrationNumber.eori")
     @Mapping(target = "registrationNumber.vatId", source = "registrationNumber.vatId")
+    @Mapping(target = "registrationNumber.leiCode", source = "registrationNumber.leiCode")
     // allow to edit mail
     @Mapping(target = "mailAddress.value", source = "mailAddress.value")
     // allow to edit tnc

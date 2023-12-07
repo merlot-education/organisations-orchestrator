@@ -93,10 +93,10 @@ public class GXFSCatalogRestService {
      * @throws Exception mapping exception
      */
     public MerlotParticipantDto getParticipantById(String id) throws Exception {
-
-        // input sanetization, for now we defined that ids must only consist of numbers
-        if (!id.matches("\\d+")) {
-            throw new IllegalArgumentException("Provided id is not a number.");
+        // input sanetization, for now we defined that ids must either only consist of numbers or be uuids
+        String regex = "(^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$)|(^\\d+$)";
+        if (!id.matches(regex)) {
+            throw new IllegalArgumentException("Provided id is invalid. It has to be a number or a uuid.");
         }
 
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants

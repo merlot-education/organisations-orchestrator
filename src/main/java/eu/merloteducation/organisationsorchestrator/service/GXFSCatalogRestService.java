@@ -182,7 +182,8 @@ public class GXFSCatalogRestService {
         logger.warn("Error in communication with catalog: {}", e.getResponseBodyAsString());
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode errorMessage = objectMapper.readTree(e.getResponseBodyAsString());
-        throw new ResponseStatusException(e.getStatusCode(), errorMessage.get("message").asText());
+        throw new ResponseStatusException(e.getStatusCode(),
+                errorMessage.get("message") == null ? "Unknown Error" : errorMessage.get("message").asText());
     }
 
     /**

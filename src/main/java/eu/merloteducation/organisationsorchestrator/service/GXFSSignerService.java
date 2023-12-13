@@ -12,6 +12,7 @@ import info.weboftrust.ldsignatures.LdProof;
 import info.weboftrust.ldsignatures.jsonld.LDSecurityKeywords;
 import info.weboftrust.ldsignatures.signer.JsonWebSignature2020LdSigner;
 import info.weboftrust.ldsignatures.verifier.JsonWebSignature2020LdVerifier;
+import io.netty.util.internal.StringUtil;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
@@ -41,16 +42,19 @@ public class GXFSSignerService {
 
     public GXFSSignerService(@Value("${gxfscatalog.cert-path}") String certPath,
                              @Value("${gxfscatalog.private-key-path}") String privateKeyPath) throws IOException, CertificateException {
-        try (InputStream privateKeyStream = new FileInputStream(privateKeyPath)) {
+        try (InputStream privateKeyStream = StringUtil.isNullOrEmpty(privateKeyPath) ?
+                GXFSSignerService.class.getClassLoader().getResourceAsStream("prk.ss.pem")
+                : new FileInputStream(privateKeyPath)) {
             PEMParser pemParser = new PEMParser(new InputStreamReader(privateKeyStream));
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
             PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(pemParser.readObject());
-
             prk = converter.getPrivateKey(privateKeyInfo);
         }
 
         //---extract Expiration Date--- https://stackoverflow.com/a/11621488
-        try (InputStream publicKeyStream = new FileInputStream(certPath)) {
+        try (InputStream publicKeyStream = StringUtil.isNullOrEmpty(certPath) ?
+                GXFSSignerService.class.getClassLoader().getResourceAsStream("cert.ss.pem")
+                : new FileInputStream(certPath)) {
             String certString = new String(publicKeyStream.readAllBytes(), StandardCharsets.UTF_8);
             ByteArrayInputStream certStream = new ByteArrayInputStream(certString.getBytes(StandardCharsets.UTF_8));
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509");

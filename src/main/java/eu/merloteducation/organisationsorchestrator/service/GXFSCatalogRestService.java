@@ -100,8 +100,16 @@ public class GXFSCatalogRestService {
         }
 
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
-        String response = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
-            URI.create(gxfscatalogParticipantsUri + "/Participant:" + id).toString(), "", null);
+        String response = "";
+        try {
+            response = keycloakAuthService.webCallAuthenticated(
+                HttpMethod.GET,
+                URI.create(gxfscatalogParticipantsUri + "/Participant:" + id).toString(),
+                "",
+                null);
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
         // as the catalog returns nested but escaped jsons, we need to manually unescape to properly use it
         response = StringEscapeUtils.unescapeJson(response).replace("\"{", "{").replace("}\"", "}");
 
@@ -119,13 +127,23 @@ public class GXFSCatalogRestService {
      */
     public Page<MerlotParticipantDto> getParticipants(Pageable pageable) throws Exception {
         // post a query to get a paginated and sorted list of participants
-        String queryResponse = keycloakAuthService.webCallAuthenticated(HttpMethod.POST, gxfscatalogQueryUri, """
-            {
-                "statement": "MATCH (p:MerlotOrganization) return p.uri ORDER BY toLower(p.orgaName)""" + " SKIP "
-            + pageable.getOffset() + " LIMIT " + pageable.getPageSize() + """
-            "
-            }
-            """, MediaType.APPLICATION_JSON);
+        String queryResponse = "";
+
+        try {
+            queryResponse = keycloakAuthService.webCallAuthenticated(
+                HttpMethod.POST,
+                gxfscatalogQueryUri,
+                """
+                {
+                    "statement": "MATCH (p:MerlotOrganization) return p.uri ORDER BY toLower(p.orgaName)""" + " SKIP "
+                    + pageable.getOffset() + " LIMIT " + pageable.getPageSize() + """
+                "
+                }
+                """,
+                MediaType.APPLICATION_JSON);
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
 
         // create a mapper for the responses
         ObjectMapper mapper = new ObjectMapper();
@@ -136,8 +154,16 @@ public class GXFSCatalogRestService {
         String urisString = Joiner.on(",").join(uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toList());
 
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
-        String sdResponseString = keycloakAuthService.webCallAuthenticated(HttpMethod.GET,
-            gxfscatalogSelfdescriptionsUri + "?statuses=ACTIVE&withContent=true&ids=" + urisString, "", null);
+        String sdResponseString = "";
+        try {
+            sdResponseString = keycloakAuthService.webCallAuthenticated(
+                HttpMethod.GET,
+                gxfscatalogSelfdescriptionsUri + "?statuses=ACTIVE&withContent=true&ids=" + urisString,
+                "",
+                null);
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
         GXFSCatalogListResponse<SelfDescriptionItem<MerlotOrganizationCredentialSubject>> sdResponse = mapper.readValue(
             sdResponseString, new TypeReference<>() {
             });

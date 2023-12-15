@@ -55,6 +55,8 @@ gxfscatalog:
   participants-uri: "${gxfscatalog.base-uri}/participants"
   selfdescriptions-uri: "${gxfscatalog.base-uri}/self-descriptions"
   query-uri: "${gxfscatalog.base-uri}/query"
+  private-key-path: "${user.home}/workspace/mpo/merlot-cert/prk.ss.pem"
+  cert-path: "${user.home}/workspace/mpo/merlot-cert/cert.ss.pem"
 
 gxfswizard:
   base-uri: "http://localhost:8085"

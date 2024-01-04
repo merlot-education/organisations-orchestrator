@@ -41,8 +41,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -338,6 +340,24 @@ class GXFSCatalogRestServiceTests {
     }
 
     @Test
+    void getAllParticipantsFailAtSdUri() throws Exception {
+        doThrow(getWebClientResponseException()).when(keycloakAuthService).webCallAuthenticated(eq(HttpMethod.GET),
+            startsWith(gxfscatalogSelfdescriptionsUri), any(), any());
+
+        PageRequest pageRequest = PageRequest.of(0, 9);
+        assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipants(pageRequest));
+    }
+
+    @Test
+    void getAllParticipantsFailAtQueryUri() throws Exception {
+        doThrow(getWebClientResponseException()).when(keycloakAuthService).webCallAuthenticated(eq(HttpMethod.POST),
+            eq(gxfscatalogQueryUri), any(), any());
+
+        PageRequest pageRequest = PageRequest.of(0, 9);
+        assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipants(pageRequest));
+    }
+
+    @Test
     void getParticipantById() throws Exception {
 
         MerlotParticipantDto organization = gxfsCatalogRestService.getParticipantById("10");
@@ -348,6 +368,14 @@ class GXFSCatalogRestServiceTests {
         assertEquals("Gaia-X European Association for Data and Cloud AISBL",
             organization.getSelfDescription().getVerifiableCredential().getCredentialSubject().getLegalName()
                 .getValue());
+    }
+
+    @Test
+    void getParticipantByIdFail() throws Exception {
+        doThrow(getWebClientResponseException()).when(keycloakAuthService).webCallAuthenticated(eq(HttpMethod.GET),
+            startsWith(gxfscatalogParticipantsUri + "/Participant:"), any(), any());
+
+        assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipantById("10"));
     }
 
     @Test
@@ -594,6 +622,15 @@ class GXFSCatalogRestServiceTests {
         termsAndConditions.setHash(new StringTypeValue("changedHash"));
         credentialSubject.setTermsAndConditions(termsAndConditions);
         return credentialSubject;
+    }
+
+    private WebClientResponseException getWebClientResponseException(){
+        byte[] byteArray = {123, 34, 99, 111, 100, 101, 34, 58, 34, 110, 111, 116, 95, 102, 111, 117, 110, 100, 95, 101,
+            114, 114, 111, 114, 34, 44, 34, 109, 101, 115, 115, 97, 103, 101, 34, 58, 34, 80, 97, 114,
+            116, 105, 99, 105, 112, 97, 110, 116, 32, 110, 111, 116, 32, 102, 111, 117, 110, 100, 58,
+            32, 80, 97, 114, 116, 105, 99, 105, 112, 97, 110, 116, 58, 49, 50, 51, 52, 49, 51, 52, 50,
+            51, 52, 50, 49, 34, 125};
+        return new WebClientResponseException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "garbage", null, byteArray, null);
     }
 }
 

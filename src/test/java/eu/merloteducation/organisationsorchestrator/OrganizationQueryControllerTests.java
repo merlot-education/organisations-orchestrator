@@ -5,10 +5,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.TermsAndConditions;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.VCard;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescription;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescriptionVerifiableCredential;
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
@@ -122,12 +125,12 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedExistent() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
                         .put("/organization/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectAsJsonString(credentialSubject))
+                        .content(objectAsJsonString(participantDtoWithEdits))
                         .header("Active-Role", "OrgLegRep_10")
                         .with(csrf())
                         .with(jwt().authorities(
@@ -141,12 +144,12 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedAsFedAdminExistent() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
                 .put("/organization/10")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(objectAsJsonString(credentialSubject))
+                .content(objectAsJsonString(participantDtoWithEdits))
                 .header("Active-Role", "FedAdmin_10")
                 .with(csrf())
                 .with(jwt().authorities(
@@ -161,15 +164,15 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedAsFedAdminExistentInconsistentId() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
-        credentialSubject.setMerlotId(new StringTypeValue("30"));
-        credentialSubject.setId("Participant:30");
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+        participantDtoWithEdits.getSelfDescription().getVerifiableCredential().getCredentialSubject().setMerlotId(new StringTypeValue("30"));
+        participantDtoWithEdits.getSelfDescription().getVerifiableCredential().getCredentialSubject().setId("Participant:30");
 
         mvc.perform(MockMvcRequestBuilders
                 .put("/organization/10")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(objectAsJsonString(credentialSubject))
+                .content(objectAsJsonString(participantDtoWithEdits))
                 .header("Active-Role", "OrgLegRep_10")
                 .with(csrf())
                 .with(jwt().authorities(
@@ -184,12 +187,12 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationUnauthorizedExistent() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
                         .put("/organization/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectAsJsonString(credentialSubject))
+                        .content(objectAsJsonString(participantDtoWithEdits))
                         .header("Active-Role", "OrgLegRep_20")
                         .with(csrf())
                         .with(jwt().authorities(
@@ -314,11 +317,32 @@ class OrganizationQueryControllerTests {
         credentialSubject.setHeadquarterAddress(address);
         credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
         credentialSubject.setMerlotId(new StringTypeValue("10"));
-        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
         TermsAndConditions termsAndConditions = new TermsAndConditions();
         termsAndConditions.setContent(new StringTypeValue("http://example.com"));
         termsAndConditions.setHash(new StringTypeValue("1234"));
         credentialSubject.setTermsAndConditions(termsAndConditions);
         return credentialSubject;
+    }
+
+    private MerlotParticipantDto getMerlotParticipantDtoWithEdits() {
+
+        MerlotParticipantDto dtoWithEdits = new MerlotParticipantDto();
+
+        SelfDescription<MerlotOrganizationCredentialSubject> selfDescription = new SelfDescription<>();
+        SelfDescriptionVerifiableCredential<MerlotOrganizationCredentialSubject> verifiableCredential = new SelfDescriptionVerifiableCredential<>();
+        MerlotOrganizationCredentialSubject editedCredentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+
+        verifiableCredential.setCredentialSubject(editedCredentialSubject);
+        selfDescription.setVerifiableCredential(verifiableCredential);
+
+        MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();
+        metaData.setOrgaId("changedMerlotId");
+        metaData.setMailAddress("me@mail.me");
+        metaData.setMembershipClass("Federator");
+
+        dtoWithEdits.setSelfDescription(selfDescription);
+        dtoWithEdits.setId(editedCredentialSubject.getId());
+        dtoWithEdits.setMetadata(metaData);
+        return dtoWithEdits;
     }
 }

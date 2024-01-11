@@ -149,7 +149,7 @@
 		<dependency>
 			<groupId>eu.merloteducation.modelslib</groupId>
 			<artifactId>modelslib</artifactId>
-			<version>0.1.5</version>
+			<version>0.1.7</version>
 		</dependency>
     </dependencies>
 	<build>

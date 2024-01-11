@@ -1,6 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescription;
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
@@ -10,13 +11,12 @@ import org.mapstruct.*;
 public interface OrganizationMapper {
 
     @Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
+    @Mapping(target = "metadata", source = "metaData")
     @Mapping(target = "selfDescription", source = "selfDescription")
-    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(
-            SelfDescription<MerlotOrganizationCredentialSubject> selfDescription);
+    MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(
+        SelfDescription<MerlotOrganizationCredentialSubject> selfDescription, MerlotParticipantMetaDto metaData);
 
     @BeanMapping(ignoreByDefault = true)
-    // allow to edit mail
-    @Mapping(target = "mailAddress.value", source = "mailAddress.value")
     // allow to edit tnc
     @Mapping(target = "termsAndConditions.content.value", source = "termsAndConditions.content.value")
     @Mapping(target = "termsAndConditions.hash.value", source = "termsAndConditions.hash.value")
@@ -31,7 +31,7 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.postalCode.value", source = "legalAddress.postalCode.value")
     @Mapping(target = "headquarterAddress.streetAddress.value", source = "legalAddress.streetAddress.value")
     void updateSelfDescriptionAsParticipant(MerlotOrganizationCredentialSubject source,
-                                            @MappingTarget MerlotOrganizationCredentialSubject target);
+        @MappingTarget MerlotOrganizationCredentialSubject target);
 
     @BeanMapping(ignoreByDefault = true)
     // allow to edit name (orga and legal)
@@ -43,8 +43,6 @@ public interface OrganizationMapper {
     @Mapping(target = "registrationNumber.eori", source = "registrationNumber.eori")
     @Mapping(target = "registrationNumber.vatId", source = "registrationNumber.vatId")
     @Mapping(target = "registrationNumber.leiCode", source = "registrationNumber.leiCode")
-    // allow to edit mail
-    @Mapping(target = "mailAddress.value", source = "mailAddress.value")
     // allow to edit tnc
     @Mapping(target = "termsAndConditions.content.value", source = "termsAndConditions.content.value")
     @Mapping(target = "termsAndConditions.hash.value", source = "termsAndConditions.hash.value")
@@ -65,7 +63,6 @@ public interface OrganizationMapper {
     @Mapping(target = "legalName", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.ORGANIZATIONLEGALNAME.getValue()).getValueAsString()))")
     @Mapping(target = "registrationNumber.local", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.REGISTRATIONNUMBER.getValue()).getValueAsString()))")
     @Mapping(target = "registrationNumber.type", constant = "gax-trust-framework:RegistrationNumber")
-    @Mapping(target = "mailAddress", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString()))")
     @Mapping(target = "termsAndConditions.content.value", expression = "java(pDAcroForm.getField(DocumentField.TNCLINK.getValue()).getValueAsString())")
     @Mapping(target = "termsAndConditions.content.type", constant = "xsd:anyURI")
     @Mapping(target = "termsAndConditions.hash", expression = "java(new StringTypeValue(pDAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString()))")

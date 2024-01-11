@@ -8,14 +8,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
 import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantItem;
 import eu.merloteducation.modelslib.gxfscatalog.query.GXFSQueryUriItem;
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.GXFSCatalogListResponse;
+import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescription;
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescriptionItem;
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
+import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMetadataMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
+import eu.merloteducation.organisationsorchestrator.models.entities.MembershipClass;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
+import jakarta.transaction.Transactional;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -24,9 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -54,6 +58,12 @@ public class GXFSCatalogRestService {
 
     @Autowired
     private GXFSSignerService gxfsSignerService;
+
+    @Autowired
+    private OrganisationMetadataService organisationMetadataService;
+
+    @Autowired
+    private OrganizationMetadataMapper organizationMetadataMapper;
 
     @Value("${keycloak.token-uri}")
     private String keycloakTokenUri;
@@ -93,7 +103,7 @@ public class GXFSCatalogRestService {
      * @throws Exception mapping exception
      */
     public MerlotParticipantDto getParticipantById(String id) throws Exception {
-        // input sanetization, for now we defined that ids must either only consist of numbers or be uuids
+        // input sanitization, for now we defined that ids must either only consist of numbers or be uuids
         String regex = "(^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$)|(^\\d+$)";
         if (!id.matches(regex)) {
             throw new IllegalArgumentException("Provided id is invalid. It has to be a number or a uuid.");
@@ -108,11 +118,21 @@ public class GXFSCatalogRestService {
         // create a mapper to the ParticipantItem class
         ObjectMapper mapper = new ObjectMapper();
         ParticipantItem participantItem = mapper.readValue(response, ParticipantItem.class);
-        return organizationMapper.selfDescriptionToMerlotParticipantDto(participantItem.getSelfDescription());
+
+        // retrieve participant's meta information from db
+        MerlotParticipantMetaDto metaDto = organisationMetadataService.getMerlotParticipantMetaDto(id);
+
+        if (metaDto == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be found.");
+        }
+
+        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
+            metaDto);
     }
 
     /**
-     * Return all participants enrolled in the GXFS catalog.
+     * Return all participants/organizations enrolled in the GXFS catalog (including organizations that are
+     * federators).
      *
      * @return list of organizations
      * @throws Exception mapping exception
@@ -143,11 +163,21 @@ public class GXFSCatalogRestService {
             });
 
         // from the SDs create DTO objects. Also sort by name again since the catalog does not respect argument order
-        List<MerlotParticipantDto> selfDescriptions = sdResponse.getItems().stream()
-            .map(item -> organizationMapper.selfDescriptionToMerlotParticipantDto(item.getMeta().getContent())).sorted(
-                Comparator.comparing(
-                    p -> p.getSelfDescription().getVerifiableCredential().getCredentialSubject().getOrgaName()
-                        .getValue().toLowerCase())).toList();
+        List<MerlotParticipantDto> selfDescriptions = sdResponse.getItems().stream().map(item -> {
+            SelfDescription<MerlotOrganizationCredentialSubject> selfDescription = item.getMeta().getContent();
+
+            String merlotId = selfDescription.getVerifiableCredential().getCredentialSubject().getMerlotId().getValue();
+            MerlotParticipantMetaDto metaDto = organisationMetadataService.getMerlotParticipantMetaDto(merlotId);
+
+            if (metaDto == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error while retrieving Participant:" + merlotId);
+            }
+
+            return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription, metaDto);
+        }).sorted(Comparator.comparing(
+            p -> p.getSelfDescription().getVerifiableCredential().getCredentialSubject().getOrgaName().getValue()
+                .toLowerCase())).toList();
 
         // wrap result into page
         return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());
@@ -183,27 +213,53 @@ public class GXFSCatalogRestService {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode errorMessage = objectMapper.readTree(e.getResponseBodyAsString());
         throw new ResponseStatusException(e.getStatusCode(),
-                errorMessage.get("message") == null ? "Unknown Error" : errorMessage.get("message").asText());
+            errorMessage.get("message") == null ? "Unknown Error" : errorMessage.get("message").asText());
     }
 
     /**
      * Given a new credential subject, attempt to update the self description in the gxfs catalog.
      *
      * @param id id of the participant to update
-     * @param editedCredentialSubject subject with updated fields
+     * @param participantDtoWithEdits dto with updated fields
      * @return update response from catalog
      * @throws Exception mapping exception
      */
-    public MerlotParticipantDto updateParticipant(MerlotOrganizationCredentialSubject editedCredentialSubject,
+    @Transactional(rollbackOn = { ResponseStatusException.class })
+    public MerlotParticipantDto updateParticipant(MerlotParticipantDto participantDtoWithEdits,
         OrganizationRoleGrantedAuthority activeRole, String id) throws Exception {
 
         MerlotOrganizationCredentialSubject targetCredentialSubject = getParticipantById(id).getSelfDescription()
             .getVerifiableCredential().getCredentialSubject();
+        MerlotOrganizationCredentialSubject editedCredentialSubject = participantDtoWithEdits.getSelfDescription()
+            .getVerifiableCredential().getCredentialSubject();
+
+        MerlotParticipantMetaDto targetMeta = organisationMetadataService.getMerlotParticipantMetaDto(id);
+
+        if (targetMeta == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant does not exist.");
+        }
+
+        MerlotParticipantMetaDto editedMeta = participantDtoWithEdits.getMetadata();
 
         if (activeRole.isRepresentative()) {
             organizationMapper.updateSelfDescriptionAsParticipant(editedCredentialSubject, targetCredentialSubject);
+            organizationMetadataMapper.updateMerlotParticipantMetaDtoAsParticipant(editedMeta, targetMeta);
+
         } else if (activeRole.isFedAdmin()) {
             organizationMapper.updateSelfDescriptionAsFedAdmin(editedCredentialSubject, targetCredentialSubject);
+            organizationMetadataMapper.updateMerlotParticipantMetaDtoAsFedAdmin(editedMeta, targetMeta);
+        }
+
+        MerlotParticipantMetaDto updatedMetaDto = null;
+        try {
+            updatedMetaDto = organisationMetadataService.updateMerlotParticipantMeta(targetMeta);
+
+            if (updatedMetaDto == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Participant could not be updated.");
+            }
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be updated.");
         }
 
         // prepare a json to send to the gxfs catalog, sign it and read the response
@@ -223,7 +279,8 @@ public class GXFSCatalogRestService {
         }
         mapper = new ObjectMapper();
         ParticipantItem participantItem = mapper.readValue(response, ParticipantItem.class);
-        return organizationMapper.selfDescriptionToMerlotParticipantDto(participantItem.getSelfDescription());
+        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
+            updatedMetaDto);
     }
 
     /**
@@ -232,9 +289,18 @@ public class GXFSCatalogRestService {
      * @return list of organizations
      * @throws Exception mapping exception
      */
-    public Page<MerlotParticipantDto> getFederators(Pageable pageable) throws Exception {
+    public List<MerlotParticipantDto> getFederators() throws Exception {
 
-        return getParticipants(pageable);
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);
+
+        Page<MerlotParticipantDto> participantPage = getParticipants(pageable);
+        List<MerlotParticipantDto> participantList = participantPage.getContent();
+
+        return participantList.stream().filter(participant -> {
+            String membershipClassString = participant.getMetadata().getMembershipClass().strip().toUpperCase();
+            MembershipClass membershipClassOfParticipant = MembershipClass.valueOf(membershipClassString);
+            return MembershipClass.FEDERATOR.equals(membershipClassOfParticipant);
+        }).toList();
     }
 
     /**
@@ -244,16 +310,19 @@ public class GXFSCatalogRestService {
      * @return post response from catalog
      * @throws Exception mapping exception
      */
+    @Transactional(rollbackOn = { ResponseStatusException.class })
     public MerlotParticipantDto createParticipant(PDDocument pdDoc) throws Exception {
 
         PDDocumentCatalog pdCatalog = pdDoc.getDocumentCatalog();
         PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
 
         MerlotOrganizationCredentialSubject credentialSubject;
+        String mailAddress;
 
         try {
             validateMandatoryFields(pdAcroForm);
             credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(pdAcroForm);
+            mailAddress = pdAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString();
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }
@@ -264,6 +333,16 @@ public class GXFSCatalogRestService {
         credentialSubject.setMerlotId(new StringTypeValue(uuid));
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
+
+        MembershipClass defaultMembership = MembershipClass.PARTICIPANT;
+        OrganizationMetadata metaData = new OrganizationMetadata(uuid, mailAddress, defaultMembership);
+
+        MerlotParticipantMetaDto metaDataDto = null;
+        try {
+            metaDataDto = organisationMetadataService.saveMerlotParticipantMeta(metaData);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
+        }
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -280,7 +359,8 @@ public class GXFSCatalogRestService {
         }
         mapper = new ObjectMapper();
         ParticipantItem participantItem = mapper.readValue(response, ParticipantItem.class);
-        return organizationMapper.selfDescriptionToMerlotParticipantDto(participantItem.getSelfDescription());
+        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
+            metaDataDto);
     }
 
     private Map<String, String> getContext() {
@@ -312,8 +392,8 @@ public class GXFSCatalogRestService {
 
         boolean anyFieldEmptyOrBlank =
             orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
-                || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank()
-                || city.isBlank() || postalCode.isBlank() || street.isBlank();
+                || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank() || city.isBlank()
+                || postalCode.isBlank() || street.isBlank();
 
         if (anyFieldEmptyOrBlank) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

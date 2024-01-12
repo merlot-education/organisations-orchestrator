@@ -2,7 +2,6 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMetadataMapper;
-import eu.merloteducation.organisationsorchestrator.models.entities.MembershipClass;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;

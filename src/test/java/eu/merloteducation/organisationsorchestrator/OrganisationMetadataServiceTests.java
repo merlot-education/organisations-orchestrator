@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @ExtendWith(MockitoExtension.class)
 @EnableConfigurationProperties
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class OrganisationMetadataServiceTests {
+class OrganisationMetadataServiceTests {
     @Autowired
     private OrganisationMetadataService metadataService;
 

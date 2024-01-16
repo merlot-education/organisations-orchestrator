@@ -15,7 +15,6 @@ import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescription
 import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
-import eu.merloteducation.organisationsorchestrator.service.KeycloakAuthService;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;

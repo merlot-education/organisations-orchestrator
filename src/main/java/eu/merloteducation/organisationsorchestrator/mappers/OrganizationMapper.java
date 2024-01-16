@@ -11,8 +11,7 @@ public interface OrganizationMapper {
 
     @Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
     @Mapping(target = "selfDescription", source = "selfDescription")
-    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(
-            SelfDescription<MerlotOrganizationCredentialSubject> selfDescription);
+    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(SelfDescription selfDescription);
 
     @BeanMapping(ignoreByDefault = true)
     // allow to edit mail

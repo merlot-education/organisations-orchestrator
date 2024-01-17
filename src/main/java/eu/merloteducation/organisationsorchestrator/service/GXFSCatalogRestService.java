@@ -1,23 +1,19 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.models.datatypes.StringTypeValue;
+import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
+import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
-import eu.merloteducation.modelslib.gxfscatalog.participants.ParticipantItem;
-import eu.merloteducation.modelslib.gxfscatalog.query.GXFSQueryUriItem;
-import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.GXFSCatalogListResponse;
-import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.SelfDescriptionItem;
-import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
@@ -100,7 +96,8 @@ public class GXFSCatalogRestService {
      */
     public Page<MerlotParticipantDto> getParticipants(Pageable pageable) {
 
-        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = gxfsCatalogService.getParticipantUriPage(pageable);
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = gxfsCatalogService.getParticipantUriPage(
+                pageable.getOffset(), pageable.getPageSize());
         String[] participantUris = uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toArray(String[]::new);
 
         GXFSCatalogListResponse<SelfDescriptionItem> sdResponse =

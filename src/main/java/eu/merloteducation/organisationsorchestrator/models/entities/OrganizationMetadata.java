@@ -1,6 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.models.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,6 +19,7 @@ public class OrganizationMetadata {
 
     private String mailAddress;
 
+    @Enumerated(EnumType.STRING)
     private MembershipClass membershipClass;
 
     public OrganizationMetadata() {

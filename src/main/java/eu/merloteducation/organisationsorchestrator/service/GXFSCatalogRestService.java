@@ -78,15 +78,25 @@ public class GXFSCatalogRestService {
      * @param id participant id
      * @return organization data
      */
-    public MerlotParticipantDto getParticipantById(String id) {
+    public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
         // input sanetization, for now we defined that ids must either only consist of numbers or be uuids
         String regex = "(^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$)|(^\\d+$)";
         if (!id.matches(regex)) {
             throw new IllegalArgumentException("Provided id is invalid. It has to be a number or a uuid.");
         }
 
-        ParticipantItem participantItem = gxfsCatalogService.getParticipantById("Participant:" + id);
-        return organizationMapper.selfDescriptionToMerlotParticipantDto(participantItem.getSelfDescription());
+        // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
+        ParticipantItem response = null;
+        try {
+            response = gxfsCatalogService.getParticipantById("Participant:" + id);
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found.");
+        }
+        return organizationMapper.selfDescriptionToMerlotParticipantDto(response.getSelfDescription());
     }
 
     /**
@@ -94,14 +104,27 @@ public class GXFSCatalogRestService {
      *
      * @return list of organizations
      */
-    public Page<MerlotParticipantDto> getParticipants(Pageable pageable) {
-
-        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = gxfsCatalogService.getParticipantUriPage(
-                pageable.getOffset(), pageable.getPageSize());
+    public Page<MerlotParticipantDto> getParticipants(Pageable pageable) throws JsonProcessingException {
+        // post a query to get a paginated and sorted list of participants
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
+        try {
+            uriResponse = gxfsCatalogService.getParticipantUriPage(
+                    pageable.getOffset(), pageable.getPageSize());
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+        if (uriResponse == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch uris from catalog.");
+        }
         String[] participantUris = uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toArray(String[]::new);
 
-        GXFSCatalogListResponse<SelfDescriptionItem> sdResponse =
-                gxfsCatalogService.getSelfDescriptionsByIds(participantUris);
+        // request the ids from the self-description endpoint to get full SDs and map the result to objects
+        GXFSCatalogListResponse<SelfDescriptionItem> sdResponse = null;
+        try {
+            sdResponse = gxfsCatalogService.getSelfDescriptionsByIds(participantUris);
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
 
         // from the SDs create DTO objects. Also sort by name again since the catalog does not respect argument order
         List<MerlotParticipantDto> selfDescriptions = sdResponse.getItems().stream()
@@ -156,7 +179,7 @@ public class GXFSCatalogRestService {
      *
      * @return list of organizations
      */
-    public Page<MerlotParticipantDto> getFederators(Pageable pageable) {
+    public Page<MerlotParticipantDto> getFederators(Pageable pageable) throws JsonProcessingException {
         return getParticipants(pageable);
     }
 

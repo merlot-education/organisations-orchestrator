@@ -35,9 +35,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.*;
 
 @Service
-public class GXFSCatalogRestService {
+public class ParticipantService {
 
-    private final Logger logger = LoggerFactory.getLogger(GXFSCatalogRestService.class);
+    private final Logger logger = LoggerFactory.getLogger(ParticipantService.class);
 
     @Autowired
     private OrganizationMapper organizationMapper;

@@ -12,7 +12,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
-import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class OrganizationQueryControllerTests {
 
     @MockBean
-    private GXFSCatalogRestService gxfsCatalogRestService;
+    private ParticipantService participantService;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;
@@ -75,13 +75,13 @@ class OrganizationQueryControllerTests {
 
         Page<MerlotParticipantDto> participantsPage = new PageImpl<>(participants);
 
-        lenient().when(gxfsCatalogRestService.getParticipants(any()))
+        lenient().when(participantService.getParticipants(any()))
                 .thenReturn(participantsPage);
-        lenient().when(gxfsCatalogRestService.getParticipantById(eq("10")))
+        lenient().when(participantService.getParticipantById(eq("10")))
                 .thenReturn(participantDto);
-        lenient().when(gxfsCatalogRestService.getParticipantById(eq("garbage")))
+        lenient().when(participantService.getParticipantById(eq("garbage")))
                 .thenThrow(HttpClientErrorException.NotFound.class);
-        lenient().when(gxfsCatalogRestService.updateParticipant(any(), any(), eq("10")))
+        lenient().when(participantService.updateParticipant(any(), any(), eq("10")))
                 .thenReturn(participantDto);
 
     }

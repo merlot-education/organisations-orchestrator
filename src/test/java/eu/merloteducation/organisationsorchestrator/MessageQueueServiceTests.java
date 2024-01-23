@@ -3,9 +3,9 @@ package eu.merloteducation.organisationsorchestrator;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
-import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
 import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,17 +32,17 @@ class MessageQueueServiceTests {
     MessageQueueService messageQueueService;
 
     @Mock
-    GXFSCatalogRestService gxfsCatalogRestService;
+    ParticipantService participantService;
 
     @Mock
     OrganisationConnectorsService organisationConnectorsService;
 
     @BeforeAll
     void beforeAll() throws Exception {
-        ReflectionTestUtils.setField(messageQueueService, "gxfsCatalogRestService", gxfsCatalogRestService);
+        ReflectionTestUtils.setField(messageQueueService, "participantService", participantService);
         ReflectionTestUtils.setField(messageQueueService, "organisationConnectorsService", organisationConnectorsService);
-        when(gxfsCatalogRestService.getParticipantById(any())).thenThrow(RuntimeException.class);
-        doReturn(new MerlotParticipantDto()).when(gxfsCatalogRestService).getParticipantById("10");
+        when(participantService.getParticipantById(any())).thenThrow(RuntimeException.class);
+        doReturn(new MerlotParticipantDto()).when(participantService).getParticipantById("10");
         doReturn(new OrganizationConnectorDto()).when(organisationConnectorsService).getConnector("10", "1234");
     }
 

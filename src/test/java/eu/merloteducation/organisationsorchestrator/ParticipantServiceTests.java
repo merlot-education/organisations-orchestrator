@@ -21,7 +21,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -46,15 +46,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +68,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
 @EnableConfigurationProperties
-class GXFSCatalogRestServiceTests {
+class ParticipantServiceTests {
 
     @Autowired
     private OrganizationMapper organizationMapper;
@@ -86,7 +83,7 @@ class GXFSCatalogRestServiceTests {
     private String gxfscatalogQueryUri;
 
     @Autowired
-    private GXFSCatalogRestService gxfsCatalogRestService;
+    private ParticipantService participantService;
 
     @MockBean
     private GxfsCatalogService gxfsCatalogService;
@@ -264,8 +261,8 @@ class GXFSCatalogRestServiceTests {
     @BeforeEach
     public void setUp() throws JsonProcessingException, CredentialSignatureException, CredentialPresentationException {
         ObjectMapper mapper = new ObjectMapper();
-        ReflectionTestUtils.setField(gxfsCatalogRestService, "organizationMapper", organizationMapper);
-        ReflectionTestUtils.setField(gxfsCatalogRestService, "gxfsCatalogService", gxfsCatalogService);
+        ReflectionTestUtils.setField(participantService, "organizationMapper", organizationMapper);
+        ReflectionTestUtils.setField(participantService, "gxfsCatalogService", gxfsCatalogService);
 
         String mockParticipant = """
             {
@@ -343,7 +340,7 @@ class GXFSCatalogRestServiceTests {
     @Test
     void getAllParticipants() throws Exception {
 
-        Page<MerlotParticipantDto> organizations = gxfsCatalogRestService.getParticipants(PageRequest.of(0, 9));
+        Page<MerlotParticipantDto> organizations = participantService.getParticipants(PageRequest.of(0, 9));
         assertThat(organizations.getContent(), isA(List.class));
         assertThat(organizations.getContent(), not(empty()));
 
@@ -354,7 +351,7 @@ class GXFSCatalogRestServiceTests {
         doThrow(getWebClientResponseException()).when(gxfsCatalogService).getSelfDescriptionsByIds(any());
 
         PageRequest pageRequest = PageRequest.of(0, 9);
-        assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipants(pageRequest));
+        assertThrows(ResponseStatusException.class, () -> participantService.getParticipants(pageRequest));
     }
 
     @Test
@@ -362,13 +359,13 @@ class GXFSCatalogRestServiceTests {
         doThrow(getWebClientResponseException()).when(gxfsCatalogService).getParticipantUriPage(anyLong(), anyLong());
 
         PageRequest pageRequest = PageRequest.of(0, 9);
-        assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipants(pageRequest));
+        assertThrows(ResponseStatusException.class, () -> participantService.getParticipants(pageRequest));
     }
 
     @Test
     void getParticipantById() throws Exception {
 
-        MerlotParticipantDto organization = gxfsCatalogRestService.getParticipantById("10");
+        MerlotParticipantDto organization = participantService.getParticipantById("10");
         assertThat(organization, isA(MerlotParticipantDto.class));
         MerlotOrganizationCredentialSubject subject = (MerlotOrganizationCredentialSubject)
                 organization.getSelfDescription().getVerifiableCredential().getCredentialSubject();
@@ -380,19 +377,19 @@ class GXFSCatalogRestServiceTests {
     void getParticipantByIdFail() throws Exception {
         doThrow(getWebClientResponseException()).when(gxfsCatalogService).getParticipantById(any());
 
-        assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipantById("10"));
+        assertThrows(ResponseStatusException.class, () -> participantService.getParticipantById("10"));
     }
 
     @Test
     void getParticipantByInvalidId() {
 
-        assertThrows(IllegalArgumentException.class, () -> gxfsCatalogRestService.getParticipantById("asdf"));
+        assertThrows(IllegalArgumentException.class, () -> participantService.getParticipantById("asdf"));
     }
 
     @Test
     void getParticipantByNonexistentId() {
         ResponseStatusException e =
-                assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipantById("11"));
+                assertThrows(ResponseStatusException.class, () -> participantService.getParticipantById("11"));
         assertEquals(HttpStatus.NOT_FOUND, e.getStatusCode());
     }
 
@@ -403,7 +400,7 @@ class GXFSCatalogRestServiceTests {
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_10");
 
-        MerlotParticipantDto participantDto = gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole, "10");
+        MerlotParticipantDto participantDto = participantService.updateParticipant(credentialSubject, activeRole, "10");
         MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
                 participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
         assertEquals(resultCredentialSubject.getMailAddress().getValue(),
@@ -439,7 +436,7 @@ class GXFSCatalogRestServiceTests {
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
 
-        MerlotParticipantDto participantDto = gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole, "10");
+        MerlotParticipantDto participantDto = participantService.updateParticipant(credentialSubject, activeRole, "10");
         MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
                 participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
         assertEquals(resultCredentialSubject.getMailAddress().getValue(),
@@ -479,14 +476,14 @@ class GXFSCatalogRestServiceTests {
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
-            () -> gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole,"11"));
+            () -> participantService.updateParticipant(credentialSubject, activeRole,"11"));
         assertEquals(HttpStatus.NOT_FOUND, e.getStatusCode());
     }
 
     @Test
     void getAllFederators() throws Exception {
 
-        Page<MerlotParticipantDto> organizations = gxfsCatalogRestService.getFederators(
+        Page<MerlotParticipantDto> organizations = participantService.getFederators(
             PageRequest.of(0, Integer.MAX_VALUE));
         assertThat(organizations.getContent(), isA(List.class));
         assertThat(organizations.getContent(), not(empty()));
@@ -495,7 +492,7 @@ class GXFSCatalogRestServiceTests {
     @Test
     void createParticipantWithValidRegistrationForm() throws Exception {
 
-        MerlotParticipantDto participantDto = gxfsCatalogRestService.createParticipant(getTestRegistrationDocument());
+        MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationDocument());
         MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
                 participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
 
@@ -525,7 +522,7 @@ class GXFSCatalogRestServiceTests {
         form.setDefaultResources(resources);
 
         Exception e = assertThrows(ResponseStatusException.class,
-            () -> gxfsCatalogRestService.createParticipant(pdDocument));
+            () -> participantService.createParticipant(pdDocument));
 
         assertEquals("400 BAD_REQUEST \"Invalid registration form file.\"", e.getMessage());
     }
@@ -598,7 +595,7 @@ class GXFSCatalogRestServiceTests {
         textField10.setDefaultAppearance(defaultAppearance);
 
         Exception e = assertThrows(ResponseStatusException.class,
-            () -> gxfsCatalogRestService.createParticipant(pdDocument));
+            () -> participantService.createParticipant(pdDocument));
 
         assertEquals("400 BAD_REQUEST \"Invalid registration form: Empty or blank fields.\"", e.getMessage());
     }

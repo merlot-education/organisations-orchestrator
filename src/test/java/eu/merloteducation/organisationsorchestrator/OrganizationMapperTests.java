@@ -1,10 +1,10 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import eu.merloteducation.modelslib.gxfscatalog.datatypes.RegistrationNumber;
-import eu.merloteducation.modelslib.gxfscatalog.datatypes.StringTypeValue;
-import eu.merloteducation.modelslib.gxfscatalog.datatypes.TermsAndConditions;
-import eu.merloteducation.modelslib.gxfscatalog.datatypes.VCard;
-import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.StringTypeValue;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;

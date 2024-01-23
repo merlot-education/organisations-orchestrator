@@ -4,6 +4,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
+import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
+import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
+import eu.merloteducation.gxfscataloglibrary.models.participants.PublicKey;
+import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.StringTypeValue;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
@@ -100,7 +114,7 @@ class GXFSCatalogRestServiceTests {
     private String wrapSelfDescription(String selfDescription) throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        SelfDescription<MerlotOrganizationCredentialSubject> sd = objectMapper.readValue(selfDescription,
+        SelfDescription sd = objectMapper.readValue(selfDescription,
                 new TypeReference<>() {});
         ParticipantItem item = new ParticipantItem();
         item.setSelfDescription(sd);
@@ -237,14 +251,21 @@ class GXFSCatalogRestServiceTests {
         return pdDocument;
     }
 
+    private ParticipantItem wrapCredentialSubjectInItem(MerlotOrganizationCredentialSubject credentialSubject) {
+        ParticipantItem item = new ParticipantItem();
+        item.setSelfDescription(new SelfDescription());
+        item.getSelfDescription().setVerifiableCredential(new SelfDescriptionVerifiableCredential());
+        item.getSelfDescription().getVerifiableCredential().setCredentialSubject(credentialSubject);
+        item.setId(credentialSubject.getId());
+        item.setName(credentialSubject.getLegalName().getValue());
+        return item;
+    }
+
     @BeforeEach
-    public void setUp() {
-
+    public void setUp() throws JsonProcessingException, CredentialSignatureException, CredentialPresentationException {
+        ObjectMapper mapper = new ObjectMapper();
         ReflectionTestUtils.setField(gxfsCatalogRestService, "organizationMapper", organizationMapper);
-        ReflectionTestUtils.setField(gxfsCatalogRestService, "keycloakAuthService", keycloakAuthService);
-
-        lenient().when(keycloakAuthService.webCallAuthenticated(eq(HttpMethod.GET), any(), any(), any()))
-            .thenThrow(HttpClientErrorException.NotFound.class);
+        ReflectionTestUtils.setField(gxfsCatalogRestService, "gxfsCatalogService", gxfsCatalogService);
 
         String mockParticipant = """
             {
@@ -257,6 +278,7 @@ class GXFSCatalogRestServiceTests {
         mockParticipant = StringEscapeUtils.unescapeJson(mockParticipant);
         if (mockParticipant != null)
             mockParticipant = mockParticipant.replace("\"{", "{").replace("}\"", "}");
+        ParticipantItem participantItem = mapper.readValue(mockParticipant, new TypeReference<>() {});
 
         String mockUserResponse = """
             {
@@ -289,6 +311,7 @@ class GXFSCatalogRestServiceTests {
         mockUserResponse = StringEscapeUtils.unescapeJson(mockUserResponse);
         if (mockUserResponse != null)
             mockUserResponse = mockUserResponse.replace("\"{", "{").replace("}\"", "}");
+        GXFSCatalogListResponse<SelfDescriptionItem> sdItems = mapper.readValue(mockUserResponse, new TypeReference<>() {});
 
         String mockQueryResponse = """
             {
@@ -303,23 +326,18 @@ class GXFSCatalogRestServiceTests {
         mockQueryResponse = StringEscapeUtils.unescapeJson(mockQueryResponse);
         if (mockQueryResponse != null)
             mockQueryResponse = mockQueryResponse.replace("\"{", "{").replace("}\"", "}");
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriItems = mapper.readValue(mockQueryResponse, new TypeReference<>() {});
 
-        // return a dummy list of one item
-        lenient().when(
-            keycloakAuthService.webCallAuthenticated(eq(HttpMethod.POST), startsWith(gxfscatalogQueryUri), any(),
-                any())).thenReturn(mockQueryResponse);
-        lenient().when(
-            keycloakAuthService.webCallAuthenticated(eq(HttpMethod.GET), startsWith(gxfscatalogSelfdescriptionsUri),
-                any(), any())).thenReturn(mockUserResponse);
-        lenient().when(keycloakAuthService.webCallAuthenticated(eq(HttpMethod.GET),
-                eq(URI.create(gxfscatalogParticipantsUri + "/Participant:10").toString()), any(), any()))
-            .thenReturn(mockParticipant);
-        lenient().when(keycloakAuthService.webCallAuthenticated(eq(HttpMethod.PUT),
-                eq(URI.create(gxfscatalogParticipantsUri + "/Participant:10").toString()), anyString(), any()))
-            .thenAnswer(i -> wrapSelfDescription((String) i.getArguments()[2]));
-        lenient().when(keycloakAuthService.webCallAuthenticated(eq(HttpMethod.POST),
-                eq(URI.create(gxfscatalogParticipantsUri).toString()), anyString(), any()))
-            .thenAnswer(i -> wrapSelfDescription((String) i.getArguments()[2]));
+        lenient().when(gxfsCatalogService.getParticipantUriPage(anyLong(), anyLong()))
+                .thenReturn(uriItems);
+        lenient().when(gxfsCatalogService.getSelfDescriptionsByIds(any()))
+                    .thenReturn(sdItems);
+        lenient().when(gxfsCatalogService.getParticipantById(eq("Participant:10")))
+            .thenReturn(participantItem);
+        lenient().when(gxfsCatalogService.updateParticipant(any()))
+            .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
+        lenient().when(gxfsCatalogService.addParticipant(any()))
+                .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
     }
 
     @Test
@@ -341,7 +359,7 @@ class GXFSCatalogRestServiceTests {
 
     @Test
     void getAllParticipantsFailAtQueryUri() throws Exception {
-        doThrow(getWebClientResponseException()).when(gxfsCatalogService).getParticipantUriPage(any(), any());
+        doThrow(getWebClientResponseException()).when(gxfsCatalogService).getParticipantUriPage(anyLong(), anyLong());
 
         PageRequest pageRequest = PageRequest.of(0, 9);
         assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipants(pageRequest));
@@ -352,12 +370,10 @@ class GXFSCatalogRestServiceTests {
 
         MerlotParticipantDto organization = gxfsCatalogRestService.getParticipantById("10");
         assertThat(organization, isA(MerlotParticipantDto.class));
-        assertEquals("10",
-            organization.getSelfDescription().getVerifiableCredential().getCredentialSubject().getMerlotId()
-                .getValue());
-        assertEquals("Gaia-X European Association for Data and Cloud AISBL",
-            organization.getSelfDescription().getVerifiableCredential().getCredentialSubject().getLegalName()
-                .getValue());
+        MerlotOrganizationCredentialSubject subject = (MerlotOrganizationCredentialSubject)
+                organization.getSelfDescription().getVerifiableCredential().getCredentialSubject();
+        assertEquals("10", subject.getMerlotId().getValue());
+        assertEquals("Gaia-X European Association for Data and Cloud AISBL", subject.getLegalName().getValue());
     }
 
     @Test
@@ -375,8 +391,9 @@ class GXFSCatalogRestServiceTests {
 
     @Test
     void getParticipantByNonexistentId() {
-
-        assertThrows(HttpClientErrorException.NotFound.class, () -> gxfsCatalogRestService.getParticipantById("11"));
+        ResponseStatusException e =
+                assertThrows(ResponseStatusException.class, () -> gxfsCatalogRestService.getParticipantById("11"));
+        assertEquals(HttpStatus.NOT_FOUND, e.getStatusCode());
     }
 
     @Test
@@ -387,8 +404,8 @@ class GXFSCatalogRestServiceTests {
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_10");
 
         MerlotParticipantDto participantDto = gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole, "10");
-        MerlotOrganizationCredentialSubject resultCredentialSubject = participantDto.getSelfDescription()
-            .getVerifiableCredential().getCredentialSubject();
+        MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
+                participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
         assertEquals(resultCredentialSubject.getMailAddress().getValue(),
             credentialSubject.getMailAddress().getValue());
         assertEquals(resultCredentialSubject.getTermsAndConditions().getContent().getValue(),
@@ -423,8 +440,8 @@ class GXFSCatalogRestServiceTests {
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
 
         MerlotParticipantDto participantDto = gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole, "10");
-        MerlotOrganizationCredentialSubject resultCredentialSubject = participantDto.getSelfDescription()
-            .getVerifiableCredential().getCredentialSubject();
+        MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
+                participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
         assertEquals(resultCredentialSubject.getMailAddress().getValue(),
             credentialSubject.getMailAddress().getValue());
         assertEquals(resultCredentialSubject.getTermsAndConditions().getContent().getValue(),
@@ -461,8 +478,9 @@ class GXFSCatalogRestServiceTests {
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
 
-        assertThrows(HttpClientErrorException.NotFound.class,
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
             () -> gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole,"11"));
+        assertEquals(HttpStatus.NOT_FOUND, e.getStatusCode());
     }
 
     @Test
@@ -478,8 +496,8 @@ class GXFSCatalogRestServiceTests {
     void createParticipantWithValidRegistrationForm() throws Exception {
 
         MerlotParticipantDto participantDto = gxfsCatalogRestService.createParticipant(getTestRegistrationDocument());
-        MerlotOrganizationCredentialSubject resultCredentialSubject = participantDto.getSelfDescription()
-            .getVerifiableCredential().getCredentialSubject();
+        MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
+                participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
 
         assertThat(resultCredentialSubject).usingRecursiveComparison().ignoringFields("id", "merlotId")
             .isEqualTo(getExpectedCredentialSubject());

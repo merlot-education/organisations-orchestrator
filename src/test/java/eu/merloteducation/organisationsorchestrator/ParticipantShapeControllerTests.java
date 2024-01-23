@@ -5,9 +5,9 @@ import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.JwtAuthConverter;
 import eu.merloteducation.authorizationlibrary.authorization.JwtAuthConverterProperties;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
+import eu.merloteducation.gxfscataloglibrary.service.GxfsWizardApiService;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.ParticipantShapeController;
-import eu.merloteducation.organisationsorchestrator.service.GXFSWizardRestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ParticipantShapeControllerTests {
 
     @MockBean
-    private GXFSWizardRestService gxfsWizardRestService;
+    private GxfsWizardApiService gxfsWizardApiService;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;
@@ -43,7 +44,7 @@ class ParticipantShapeControllerTests {
 
     @BeforeEach
     public void beforeEach()  {
-        lenient().when(gxfsWizardRestService.getMerlotParticipantShape()).thenReturn("shape");
+        lenient().when(gxfsWizardApiService.getShapeByName(any())).thenReturn("shape");
     }
 
     @Test

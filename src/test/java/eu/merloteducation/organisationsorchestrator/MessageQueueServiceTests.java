@@ -41,7 +41,7 @@ class MessageQueueServiceTests {
     void beforeAll() throws Exception {
         ReflectionTestUtils.setField(messageQueueService, "gxfsCatalogRestService", gxfsCatalogRestService);
         ReflectionTestUtils.setField(messageQueueService, "organisationConnectorsService", organisationConnectorsService);
-        when(gxfsCatalogRestService.getParticipantById(any())).thenThrow(Exception.class);
+        when(gxfsCatalogRestService.getParticipantById(any())).thenThrow(RuntimeException.class);
         doReturn(new MerlotParticipantDto()).when(gxfsCatalogRestService).getParticipantById("10");
         doReturn(new OrganizationConnectorDto()).when(organisationConnectorsService).getConnector("10", "1234");
     }

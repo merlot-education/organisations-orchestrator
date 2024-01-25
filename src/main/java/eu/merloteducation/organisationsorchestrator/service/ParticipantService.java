@@ -111,7 +111,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getParticipantUriPage(
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(
                     "MerlotOrganization", "orgaName",
                     pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {

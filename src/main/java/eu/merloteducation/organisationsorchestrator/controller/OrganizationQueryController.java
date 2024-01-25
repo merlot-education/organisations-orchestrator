@@ -2,10 +2,10 @@ package eu.merloteducation.organisationsorchestrator.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
-import eu.merloteducation.modelslib.gxfscatalog.selfdescriptions.participants.MerlotOrganizationCredentialSubject;
-import eu.merloteducation.organisationsorchestrator.service.GXFSCatalogRestService;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import jakarta.validation.Valid;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -28,7 +28,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class OrganizationQueryController {
 
     @Autowired
-    private GXFSCatalogRestService gxfsCatalogRestService;
+    private ParticipantService participantService;
 
     private static final String PARTICIPANT = "Participant:";
 
@@ -43,7 +43,7 @@ public class OrganizationQueryController {
     public Page<MerlotParticipantDto> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
         @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
 
-        return gxfsCatalogRestService.getParticipants(PageRequest.of(page, size));
+        return participantService.getParticipants(PageRequest.of(page, size));
     }
 
     /**
@@ -62,7 +62,7 @@ public class OrganizationQueryController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files specified");
         }
         try (PDDocument pdDoc = Loader.loadPDF(files[0].getBytes())) {
-            return gxfsCatalogRestService.createParticipant(pdDoc);
+            return participantService.createParticipant(pdDoc);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }
@@ -83,7 +83,7 @@ public class OrganizationQueryController {
         @Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject,
         @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole, @PathVariable(value = "orgaId") String orgaId)
         throws Exception {
-        return gxfsCatalogRestService.updateParticipant(credentialSubject, activeRole, orgaId.replace(PARTICIPANT, ""));
+        return participantService.updateParticipant(credentialSubject, activeRole, orgaId.replace(PARTICIPANT, ""));
     }
 
     /**
@@ -98,7 +98,7 @@ public class OrganizationQueryController {
     public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
 
         try {
-            return gxfsCatalogRestService.getParticipantById(orgaId.replace(PARTICIPANT, ""));
+            return participantService.getParticipantById(orgaId.replace(PARTICIPANT, ""));
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
         }
@@ -115,7 +115,7 @@ public class OrganizationQueryController {
     @JsonView(OrganisationViews.PublicView.class)
     public Page<MerlotParticipantDto> getAllFederators() throws Exception {
 
-        return gxfsCatalogRestService.getFederators(PageRequest.of(0, Integer.MAX_VALUE));
+        return participantService.getFederators(PageRequest.of(0, Integer.MAX_VALUE));
     }
 }
 

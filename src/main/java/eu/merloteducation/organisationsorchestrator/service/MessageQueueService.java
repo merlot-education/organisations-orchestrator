@@ -13,7 +13,7 @@ import eu.merloteducation.organisationsorchestrator.config.MessageQueueConfig;
 @Service
 public class MessageQueueService {
     @Autowired
-    GXFSCatalogRestService gxfsCatalogRestService;
+    ParticipantService participantService;
 
     @Autowired
     OrganisationConnectorsService organisationConnectorsService;
@@ -30,7 +30,7 @@ public class MessageQueueService {
     public MerlotParticipantDto organizationRequest(String orgaId) throws Exception {
         logger.info("Organization request message: {}", orgaId);
         try {
-            return gxfsCatalogRestService.getParticipantById(orgaId);
+            return participantService.getParticipantById(orgaId);
         } catch (Exception e) {
             logger.error("Failed to find participant with this id, error: {}", e.getMessage());
             return null;

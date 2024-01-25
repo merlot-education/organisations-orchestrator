@@ -58,7 +58,7 @@ gxfscatalog:
   private-key-path: "${user.home}/workspace/mpo/merlot-cert/prk.ss.pem"
   cert-path: "${user.home}/workspace/mpo/merlot-cert/cert.ss.pem"
 
-gxfswizard:
+gxfswizardapi:
   base-uri: "http://localhost:8085"
 
 jwt:

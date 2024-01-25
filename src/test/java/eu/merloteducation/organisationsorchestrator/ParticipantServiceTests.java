@@ -14,7 +14,6 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescrip
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.StringTypeValue;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
@@ -126,27 +125,27 @@ class ParticipantServiceTests {
         Map<String, String> context = getContext();
 
         MerlotOrganizationCredentialSubject expected = new MerlotOrganizationCredentialSubject();
-        expected.setMailAddress(new StringTypeValue(mailAddress));
-        expected.setOrgaName(new StringTypeValue(organizationName));
-        expected.setLegalName(new StringTypeValue(organizationLegalName));
+        expected.setMailAddress(mailAddress);
+        expected.setOrgaName(organizationName);
+        expected.setLegalName(organizationLegalName);
 
         RegistrationNumber registrationNumberObj = new RegistrationNumber();
         registrationNumberObj.setType("gax-trust-framework:RegistrationNumber");
-        registrationNumberObj.setLocal(new StringTypeValue(registrationNumber));
+        registrationNumberObj.setLocal(registrationNumber);
         expected.setRegistrationNumber(registrationNumberObj);
 
         VCard vCard = new VCard();
-        vCard.setLocality(new StringTypeValue(city));
-        vCard.setPostalCode(new StringTypeValue(postalCode));
-        vCard.setCountryName(new StringTypeValue(countryCode));
-        vCard.setStreetAddress(new StringTypeValue(street));
+        vCard.setLocality(city);
+        vCard.setPostalCode(postalCode);
+        vCard.setCountryName(countryCode);
+        vCard.setStreetAddress(street);
         vCard.setType("vcard:Address");
         expected.setLegalAddress(vCard);
         expected.setHeadquarterAddress(vCard);
 
         TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(new StringTypeValue(providerTncLink, "xsd:anyURI"));
-        termsAndConditions.setHash(new StringTypeValue(providerTncHash));
+        termsAndConditions.setContent(providerTncLink);
+        termsAndConditions.setHash(providerTncHash);
         termsAndConditions.setType("gax-trust-framework:TermsAndConditions");
         expected.setTermsAndConditions(termsAndConditions);
 
@@ -254,7 +253,7 @@ class ParticipantServiceTests {
         item.getSelfDescription().setVerifiableCredential(new SelfDescriptionVerifiableCredential());
         item.getSelfDescription().getVerifiableCredential().setCredentialSubject(credentialSubject);
         item.setId(credentialSubject.getId());
-        item.setName(credentialSubject.getLegalName().getValue());
+        item.setName(credentialSubject.getLegalName());
         return item;
     }
 
@@ -370,8 +369,8 @@ class ParticipantServiceTests {
         assertThat(organization, isA(MerlotParticipantDto.class));
         MerlotOrganizationCredentialSubject subject = (MerlotOrganizationCredentialSubject)
                 organization.getSelfDescription().getVerifiableCredential().getCredentialSubject();
-        assertEquals("10", subject.getMerlotId().getValue());
-        assertEquals("Gaia-X European Association for Data and Cloud AISBL", subject.getLegalName().getValue());
+        assertEquals("10", subject.getMerlotId());
+        assertEquals("Gaia-X European Association for Data and Cloud AISBL", subject.getLegalName());
     }
 
     @Test
@@ -404,27 +403,27 @@ class ParticipantServiceTests {
         MerlotParticipantDto participantDto = participantService.updateParticipant(credentialSubject, activeRole, "10");
         MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
                 participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
-        assertEquals(resultCredentialSubject.getMailAddress().getValue(),
-            credentialSubject.getMailAddress().getValue());
-        assertEquals(resultCredentialSubject.getTermsAndConditions().getContent().getValue(),
-            credentialSubject.getTermsAndConditions().getContent().getValue());
-        assertEquals(resultCredentialSubject.getTermsAndConditions().getHash().getValue(),
-            credentialSubject.getTermsAndConditions().getHash().getValue());
-        assertEquals(resultCredentialSubject.getLegalAddress().getStreetAddress().getValue(),
-            credentialSubject.getLegalAddress().getStreetAddress().getValue());
-        assertEquals(resultCredentialSubject.getLegalAddress().getLocality().getValue(),
-            credentialSubject.getLegalAddress().getLocality().getValue());
-        assertEquals(resultCredentialSubject.getLegalAddress().getCountryName().getValue(),
-            credentialSubject.getLegalAddress().getCountryName().getValue());
-        assertEquals(resultCredentialSubject.getLegalAddress().getPostalCode().getValue(),
-            credentialSubject.getLegalAddress().getPostalCode().getValue());
+        assertEquals(resultCredentialSubject.getMailAddress(),
+            credentialSubject.getMailAddress());
+        assertEquals(resultCredentialSubject.getTermsAndConditions().getContent(),
+            credentialSubject.getTermsAndConditions().getContent());
+        assertEquals(resultCredentialSubject.getTermsAndConditions().getHash(),
+            credentialSubject.getTermsAndConditions().getHash());
+        assertEquals(resultCredentialSubject.getLegalAddress().getStreetAddress(),
+            credentialSubject.getLegalAddress().getStreetAddress());
+        assertEquals(resultCredentialSubject.getLegalAddress().getLocality(),
+            credentialSubject.getLegalAddress().getLocality());
+        assertEquals(resultCredentialSubject.getLegalAddress().getCountryName(),
+            credentialSubject.getLegalAddress().getCountryName());
+        assertEquals(resultCredentialSubject.getLegalAddress().getPostalCode(),
+            credentialSubject.getLegalAddress().getPostalCode());
 
         assertNotEquals(resultCredentialSubject.getId(), credentialSubject.getId());
-        assertNotEquals(resultCredentialSubject.getMerlotId().getValue(), credentialSubject.getMerlotId().getValue());
-        assertNotEquals(resultCredentialSubject.getOrgaName().getValue(), credentialSubject.getOrgaName().getValue());
-        assertNotEquals(resultCredentialSubject.getLegalName().getValue(), credentialSubject.getLegalName().getValue());
-        assertNotEquals(resultCredentialSubject.getRegistrationNumber().getLocal().getValue(),
-            credentialSubject.getRegistrationNumber().getLocal().getValue());
+        assertNotEquals(resultCredentialSubject.getMerlotId(), credentialSubject.getMerlotId());
+        assertNotEquals(resultCredentialSubject.getOrgaName(), credentialSubject.getOrgaName());
+        assertNotEquals(resultCredentialSubject.getLegalName(), credentialSubject.getLegalName());
+        assertNotEquals(resultCredentialSubject.getRegistrationNumber().getLocal(),
+            credentialSubject.getRegistrationNumber().getLocal());
         assertNull(resultCredentialSubject.getRegistrationNumber().getEuid());
         assertNull(resultCredentialSubject.getRegistrationNumber().getEori());
         assertNull(resultCredentialSubject.getRegistrationNumber().getVatId());
@@ -440,33 +439,33 @@ class ParticipantServiceTests {
         MerlotParticipantDto participantDto = participantService.updateParticipant(credentialSubject, activeRole, "10");
         MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
                 participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
-        assertEquals(resultCredentialSubject.getMailAddress().getValue(),
-            credentialSubject.getMailAddress().getValue());
-        assertEquals(resultCredentialSubject.getTermsAndConditions().getContent().getValue(),
-            credentialSubject.getTermsAndConditions().getContent().getValue());
-        assertEquals(resultCredentialSubject.getTermsAndConditions().getHash().getValue(),
-            credentialSubject.getTermsAndConditions().getHash().getValue());
-        assertEquals(resultCredentialSubject.getLegalAddress().getStreetAddress().getValue(),
-            credentialSubject.getLegalAddress().getStreetAddress().getValue());
-        assertEquals(resultCredentialSubject.getLegalAddress().getLocality().getValue(),
-            credentialSubject.getLegalAddress().getLocality().getValue());
-        assertEquals(resultCredentialSubject.getLegalAddress().getCountryName().getValue(),
-            credentialSubject.getLegalAddress().getCountryName().getValue());
-        assertEquals(resultCredentialSubject.getLegalAddress().getPostalCode().getValue(),
-            credentialSubject.getLegalAddress().getPostalCode().getValue());
-        assertEquals(resultCredentialSubject.getOrgaName().getValue(), credentialSubject.getOrgaName().getValue());
-        assertEquals(resultCredentialSubject.getLegalName().getValue(), credentialSubject.getLegalName().getValue());
-        assertEquals(resultCredentialSubject.getRegistrationNumber().getLocal().getValue(),
-            credentialSubject.getRegistrationNumber().getLocal().getValue());
-        assertEquals(resultCredentialSubject.getRegistrationNumber().getEuid().getValue(),
-            credentialSubject.getRegistrationNumber().getEuid().getValue());
-        assertEquals(resultCredentialSubject.getRegistrationNumber().getEori().getValue(),
-            credentialSubject.getRegistrationNumber().getEori().getValue());
-        assertEquals(resultCredentialSubject.getRegistrationNumber().getVatId().getValue(),
-            credentialSubject.getRegistrationNumber().getVatId().getValue());
+        assertEquals(resultCredentialSubject.getMailAddress(),
+            credentialSubject.getMailAddress());
+        assertEquals(resultCredentialSubject.getTermsAndConditions().getContent(),
+            credentialSubject.getTermsAndConditions().getContent());
+        assertEquals(resultCredentialSubject.getTermsAndConditions().getHash(),
+            credentialSubject.getTermsAndConditions().getHash());
+        assertEquals(resultCredentialSubject.getLegalAddress().getStreetAddress(),
+            credentialSubject.getLegalAddress().getStreetAddress());
+        assertEquals(resultCredentialSubject.getLegalAddress().getLocality(),
+            credentialSubject.getLegalAddress().getLocality());
+        assertEquals(resultCredentialSubject.getLegalAddress().getCountryName(),
+            credentialSubject.getLegalAddress().getCountryName());
+        assertEquals(resultCredentialSubject.getLegalAddress().getPostalCode(),
+            credentialSubject.getLegalAddress().getPostalCode());
+        assertEquals(resultCredentialSubject.getOrgaName(), credentialSubject.getOrgaName());
+        assertEquals(resultCredentialSubject.getLegalName(), credentialSubject.getLegalName());
+        assertEquals(resultCredentialSubject.getRegistrationNumber().getLocal(),
+            credentialSubject.getRegistrationNumber().getLocal());
+        assertEquals(resultCredentialSubject.getRegistrationNumber().getEuid(),
+            credentialSubject.getRegistrationNumber().getEuid());
+        assertEquals(resultCredentialSubject.getRegistrationNumber().getEori(),
+            credentialSubject.getRegistrationNumber().getEori());
+        assertEquals(resultCredentialSubject.getRegistrationNumber().getVatId(),
+            credentialSubject.getRegistrationNumber().getVatId());
 
         assertNotEquals(resultCredentialSubject.getId(), credentialSubject.getId());
-        assertNotEquals(resultCredentialSubject.getMerlotId().getValue(), credentialSubject.getMerlotId().getValue());
+        assertNotEquals(resultCredentialSubject.getMerlotId(), credentialSubject.getMerlotId());
     }
 
     @Test
@@ -500,11 +499,10 @@ class ParticipantServiceTests {
         assertThat(resultCredentialSubject).usingRecursiveComparison().ignoringFields("id", "merlotId")
             .isEqualTo(getExpectedCredentialSubject());
 
-        StringTypeValue merlotId = resultCredentialSubject.getMerlotId();
+        String merlotId = resultCredentialSubject.getMerlotId();
         assertThat(merlotId).isNotNull();
-        assertThat(merlotId.getType()).isEqualTo("xsd:string");
-        assertThat(merlotId.getValue()).isNotBlank();
-        assertThat(resultCredentialSubject.getId()).isNotBlank().isEqualTo("Participant:" + merlotId.getValue());
+        assertThat(merlotId).isNotBlank();
+        assertThat(resultCredentialSubject.getId()).isNotBlank().isEqualTo("Participant:" + merlotId);
     }
 
     @Test
@@ -606,25 +604,25 @@ class ParticipantServiceTests {
         MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
         credentialSubject.setId("changedId");
         RegistrationNumber registrationNumber = new RegistrationNumber();
-        registrationNumber.setLocal(new StringTypeValue("changedLocal"));
-        registrationNumber.setEori(new StringTypeValue("changedEori"));
-        registrationNumber.setEuid(new StringTypeValue("changedEuid"));
-        registrationNumber.setVatId(new StringTypeValue("changedVatId"));
+        registrationNumber.setLocal("changedLocal");
+        registrationNumber.setEori("changedEori");
+        registrationNumber.setEuid("changedEuid");
+        registrationNumber.setVatId("changedVatId");
         credentialSubject.setRegistrationNumber(registrationNumber);
         VCard address = new VCard();
-        address.setStreetAddress(new StringTypeValue("changedAddress"));
-        address.setLocality(new StringTypeValue("changedCity"));
-        address.setCountryName(new StringTypeValue("changedCountry"));
-        address.setPostalCode(new StringTypeValue("changedPostCode"));
+        address.setStreetAddress("changedAddress");
+        address.setLocality("changedCity");
+        address.setCountryName("changedCountry");
+        address.setPostalCode("changedPostCode");
         credentialSubject.setLegalAddress(address);
         credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setOrgaName(new StringTypeValue("changedOrgaName"));
-        credentialSubject.setLegalName(new StringTypeValue("changedLegalName"));
-        credentialSubject.setMerlotId(new StringTypeValue("changedMerlotId"));
-        credentialSubject.setMailAddress(new StringTypeValue("changedMail"));
+        credentialSubject.setOrgaName("changedOrgaName");
+        credentialSubject.setLegalName("changedLegalName");
+        credentialSubject.setMerlotId("changedMerlotId");
+        credentialSubject.setMailAddress("changedMail");
         TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(new StringTypeValue("http://changed.com"));
-        termsAndConditions.setHash(new StringTypeValue("changedHash"));
+        termsAndConditions.setContent("http://changed.com");
+        termsAndConditions.setHash("changedHash");
         credentialSubject.setTermsAndConditions(termsAndConditions);
         return credentialSubject;
     }

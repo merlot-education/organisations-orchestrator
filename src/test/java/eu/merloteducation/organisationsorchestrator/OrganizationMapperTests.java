@@ -1,7 +1,6 @@
 package eu.merloteducation.organisationsorchestrator;
 
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.StringTypeValue;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
@@ -50,27 +49,27 @@ class OrganizationMapperTests {
 
     MerlotOrganizationCredentialSubject getExpectedCredentialSubject(){
         MerlotOrganizationCredentialSubject expected = new MerlotOrganizationCredentialSubject();
-        expected.setMailAddress(new StringTypeValue(mailAddress));
-        expected.setOrgaName(new StringTypeValue(organizationName));
-        expected.setLegalName(new StringTypeValue(organizationLegalName));
+        expected.setMailAddress(mailAddress);
+        expected.setOrgaName(organizationName);
+        expected.setLegalName(organizationLegalName);
 
         RegistrationNumber registrationNumberObj = new RegistrationNumber();
         registrationNumberObj.setType("gax-trust-framework:RegistrationNumber");
-        registrationNumberObj.setLocal(new StringTypeValue(registrationNumber));
+        registrationNumberObj.setLocal(registrationNumber);
         expected.setRegistrationNumber(registrationNumberObj);
 
         VCard vCard = new VCard();
-        vCard.setLocality(new StringTypeValue(city));
-        vCard.setPostalCode(new StringTypeValue(postalCode));
-        vCard.setCountryName(new StringTypeValue(countryCode));
-        vCard.setStreetAddress(new StringTypeValue(street));
+        vCard.setLocality(city);
+        vCard.setPostalCode(postalCode);
+        vCard.setCountryName(countryCode);
+        vCard.setStreetAddress(street);
         vCard.setType("vcard:Address");
         expected.setLegalAddress(vCard);
         expected.setHeadquarterAddress(vCard);
 
         TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(new StringTypeValue(providerTncLink, "xsd:anyURI"));
-        termsAndConditions.setHash(new StringTypeValue(providerTncHash));
+        termsAndConditions.setContent(providerTncLink);
+        termsAndConditions.setHash(providerTncHash);
         termsAndConditions.setType("gax-trust-framework:TermsAndConditions");
         expected.setTermsAndConditions(termsAndConditions);
 

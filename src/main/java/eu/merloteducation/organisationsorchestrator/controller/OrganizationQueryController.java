@@ -76,8 +76,8 @@ public class OrganizationQueryController {
      */
     @PutMapping("/organization/{orgaId}")
     @JsonView(OrganisationViews.PublicView.class)
-    @PreAuthorize("#orgaId.replace('Participant:', '').equals(#credentialSubject.merlotId.value) "
-        + "and #credentialSubject.id.replace('Participant:', '').equals(#credentialSubject.merlotId.value) "
+    @PreAuthorize("#orgaId.replace('Participant:', '').equals(#credentialSubject.merlotId) "
+        + "and #credentialSubject.id.replace('Participant:', '').equals(#credentialSubject.merlotId) "
         + "and (@authorityChecker.representsOrganization(authentication, #orgaId) or #activeRole.isFedAdmin())")
     public MerlotParticipantDto updateOrganization(
         @Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject,

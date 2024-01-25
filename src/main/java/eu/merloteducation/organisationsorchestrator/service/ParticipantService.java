@@ -10,7 +10,6 @@ import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.StringTypeValue;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
@@ -106,7 +105,7 @@ public class ParticipantService {
                 Comparator.comparing(
                     p -> ((MerlotOrganizationCredentialSubject)
                             p.getSelfDescription().getVerifiableCredential().getCredentialSubject())
-                            .getOrgaName().getValue().toLowerCase())).toList();
+                            .getOrgaName().toLowerCase())).toList();
 
         // wrap result into page
         return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());
@@ -190,7 +189,7 @@ public class ParticipantService {
         String uuid = UUID.randomUUID().toString();
         String id = "Participant:" + uuid;
         credentialSubject.setId(id);
-        credentialSubject.setMerlotId(new StringTypeValue(uuid));
+        credentialSubject.setMerlotId(uuid);
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
 

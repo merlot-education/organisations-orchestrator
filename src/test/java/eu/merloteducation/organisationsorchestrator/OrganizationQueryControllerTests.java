@@ -5,7 +5,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.StringTypeValue;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
@@ -162,7 +161,7 @@ class OrganizationQueryControllerTests {
     void updateOrganizationAuthorizedAsFedAdminExistentInconsistentId() throws Exception {
 
         MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
-        credentialSubject.setMerlotId(new StringTypeValue("30"));
+        credentialSubject.setMerlotId("30");
         credentialSubject.setId("Participant:30");
 
         mvc.perform(MockMvcRequestBuilders
@@ -303,21 +302,21 @@ class OrganizationQueryControllerTests {
         MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
         credentialSubject.setId("Participant:10");
         RegistrationNumber registrationNumber = new RegistrationNumber();
-        registrationNumber.setLocal(new StringTypeValue("localRegNum"));
+        registrationNumber.setLocal("localRegNum");
         credentialSubject.setRegistrationNumber(registrationNumber);
         VCard address = new VCard();
-        address.setStreetAddress(new StringTypeValue("address"));
-        address.setLocality(new StringTypeValue("Berlin"));
-        address.setCountryName(new StringTypeValue("DE"));
-        address.setPostalCode(new StringTypeValue("12345"));
+        address.setStreetAddress("address");
+        address.setLocality("Berlin");
+        address.setCountryName("DE");
+        address.setPostalCode("12345");
         credentialSubject.setLegalAddress(address);
         credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setOrgaName(new StringTypeValue("MyOrga"));
-        credentialSubject.setMerlotId(new StringTypeValue("10"));
-        credentialSubject.setMailAddress(new StringTypeValue("me@mail.me"));
+        credentialSubject.setOrgaName("MyOrga");
+        credentialSubject.setMerlotId("10");
+        credentialSubject.setMailAddress("me@mail.me");
         TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(new StringTypeValue("http://example.com"));
-        termsAndConditions.setHash(new StringTypeValue("1234"));
+        termsAndConditions.setContent("http://example.com");
+        termsAndConditions.setHash("1234");
         credentialSubject.setTermsAndConditions(termsAndConditions);
         return credentialSubject;
     }

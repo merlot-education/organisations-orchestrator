@@ -112,6 +112,7 @@ public class ParticipantService {
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
             uriResponse = gxfsCatalogService.getParticipantUriPage(
+                    "MerlotOrganization", "orgaName",
                     pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);

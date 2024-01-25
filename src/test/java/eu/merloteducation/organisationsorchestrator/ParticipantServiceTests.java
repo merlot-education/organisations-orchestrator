@@ -325,7 +325,7 @@ class ParticipantServiceTests {
             mockQueryResponse = mockQueryResponse.replace("\"{", "{").replace("}\"", "}");
         GXFSCatalogListResponse<GXFSQueryUriItem> uriItems = mapper.readValue(mockQueryResponse, new TypeReference<>() {});
 
-        lenient().when(gxfsCatalogService.getParticipantUriPage(anyLong(), anyLong()))
+        lenient().when(gxfsCatalogService.getParticipantUriPage(any(), any(), anyLong(), anyLong()))
                 .thenReturn(uriItems);
         lenient().when(gxfsCatalogService.getSelfDescriptionsByIds(any()))
                     .thenReturn(sdItems);
@@ -356,7 +356,7 @@ class ParticipantServiceTests {
 
     @Test
     void getAllParticipantsFailAtQueryUri() throws Exception {
-        doThrow(getWebClientResponseException()).when(gxfsCatalogService).getParticipantUriPage(anyLong(), anyLong());
+        doThrow(getWebClientResponseException()).when(gxfsCatalogService).getParticipantUriPage(any(), any(), anyLong(), anyLong());
 
         PageRequest pageRequest = PageRequest.of(0, 9);
         assertThrows(ResponseStatusException.class, () -> participantService.getParticipants(pageRequest));

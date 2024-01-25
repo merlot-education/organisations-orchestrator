@@ -149,12 +149,12 @@
 		<dependency>
 			<groupId>eu.merloteducation.modelslib</groupId>
 			<artifactId>modelslib</artifactId>
-			<version>0.2.1</version>
+			<version>0.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.merlot-education</groupId>
 			<artifactId>gxfscatalog-library</artifactId>
-			<version>0.1.6</version>
+			<version>0.2.0</version>
 		</dependency>
     </dependencies>
 	<build>

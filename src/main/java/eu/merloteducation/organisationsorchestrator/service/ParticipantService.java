@@ -169,9 +169,11 @@ public class ParticipantService {
      *
      * @param pdDoc in-memory representation of the PDF document
      * @return post response from catalog
-     * @throws Exception mapping exception
+     * @throws CredentialPresentationException exception during vc presentation
+     * @throws CredentialSignatureException exception during vp signature
      */
-    public MerlotParticipantDto createParticipant(PDDocument pdDoc) throws Exception {
+    public MerlotParticipantDto createParticipant(PDDocument pdDoc)
+            throws CredentialSignatureException, CredentialPresentationException {
 
         PDDocumentCatalog pdCatalog = pdDoc.getDocumentCatalog();
         PDAcroForm pdAcroForm = pdCatalog.getAcroForm();

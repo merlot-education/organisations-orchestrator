@@ -107,19 +107,6 @@ class ParticipantServiceTests {
 
     String postalCode = "12345";
 
-    private String wrapSelfDescription(String selfDescription) throws JsonProcessingException {
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        SelfDescription sd = objectMapper.readValue(selfDescription,
-                new TypeReference<>() {});
-        ParticipantItem item = new ParticipantItem();
-        item.setSelfDescription(sd);
-        item.setId(sd.getVerifiableCredential().getCredentialSubject().getId());
-        item.setName("name");
-        item.setPublicKey(new PublicKey());
-        return objectMapper.writeValueAsString(item);
-    }
-
     MerlotOrganizationCredentialSubject getExpectedCredentialSubject() {
 
         Map<String, String> context = getContext();

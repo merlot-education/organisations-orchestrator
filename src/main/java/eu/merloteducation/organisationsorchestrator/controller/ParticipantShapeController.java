@@ -20,6 +20,6 @@ public class ParticipantShapeController {
      */
     @GetMapping("/merlotParticipant")
     public String getShapeJson() {
-        return gxfsWizardApiService.getShapeByName("Merlot+Organization.json");
+        return gxfsWizardApiService.getShapeByName("Merlot Organization.json");
     }
 }

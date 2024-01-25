@@ -44,36 +44,6 @@ public class ParticipantService {
     @Autowired
     private GxfsCatalogService gxfsCatalogService;
 
-    @Value("${keycloak.token-uri}")
-    private String keycloakTokenUri;
-
-    @Value("${keycloak.logout-uri}")
-    private String keycloakLogoutUri;
-
-    @Value("${keycloak.client-id}")
-    private String clientId;
-
-    @Value("${keycloak.client-secret}")
-    private String clientSecret;
-
-    @Value("${keycloak.authorization-grant-type}")
-    private String grantType;
-
-    @Value("${keycloak.gxfscatalog-user}")
-    private String keycloakGXFScatalogUser;
-
-    @Value("${keycloak.gxfscatalog-pass}")
-    private String keycloakGXFScatalogPass;
-
-    @Value("${gxfscatalog.participants-uri}")
-    private String gxfscatalogParticipantsUri;
-
-    @Value("${gxfscatalog.selfdescriptions-uri}")
-    private String gxfscatalogSelfdescriptionsUri;
-
-    @Value("${gxfscatalog.query-uri}")
-    private String gxfscatalogQueryUri;
-
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
      *
@@ -198,9 +168,11 @@ public class ParticipantService {
      *
      * @param pdDoc in-memory representation of the PDF document
      * @return post response from catalog
-     * @throws Exception mapping exception
+     * @throws CredentialPresentationException exception during vc presentation
+     * @throws CredentialSignatureException exception during vp signature
      */
-    public MerlotParticipantDto createParticipant(PDDocument pdDoc) throws Exception {
+    public MerlotParticipantDto createParticipant(PDDocument pdDoc)
+            throws CredentialSignatureException, CredentialPresentationException {
 
         PDDocumentCatalog pdCatalog = pdDoc.getDocumentCatalog();
         PDAcroForm pdAcroForm = pdCatalog.getAcroForm();

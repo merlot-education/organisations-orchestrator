@@ -2,7 +2,6 @@ package eu.merloteducation.organisationsorchestrator.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
@@ -20,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -76,14 +76,18 @@ public class OrganizationQueryController {
      */
     @PutMapping("/organization/{orgaId}")
     @JsonView(OrganisationViews.PublicView.class)
-    @PreAuthorize("#orgaId.replace('Participant:', '').equals(#credentialSubject.merlotId) "
-        + "and #credentialSubject.id.replace('Participant:', '').equals(#credentialSubject.merlotId) "
+    @PreAuthorize("#orgaId.replace('Participant:', '')"
+        + ".equals(((T(eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject)) "
+        + "#participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject).merlotId) "
+        + "and #participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.id.replace('Participant:', '')"
+        + ".equals(((T(eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject)) "
+        + "#participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject).merlotId) "
         + "and (@authorityChecker.representsOrganization(authentication, #orgaId) or #activeRole.isFedAdmin())")
     public MerlotParticipantDto updateOrganization(
-        @Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject,
+        @Valid @RequestBody MerlotParticipantDto participantDtoWithEdits,
         @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole, @PathVariable(value = "orgaId") String orgaId)
         throws Exception {
-        return participantService.updateParticipant(credentialSubject, activeRole, orgaId.replace(PARTICIPANT, ""));
+        return participantService.updateParticipant(participantDtoWithEdits, activeRole, orgaId.replace(PARTICIPANT, ""));
     }
 
     /**
@@ -113,9 +117,9 @@ public class OrganizationQueryController {
      */
     @GetMapping("/federators")
     @JsonView(OrganisationViews.PublicView.class)
-    public Page<MerlotParticipantDto> getAllFederators() throws Exception {
+    public List<MerlotParticipantDto> getAllFederators() throws Exception {
 
-        return participantService.getFederators(PageRequest.of(0, Integer.MAX_VALUE));
+        return participantService.getFederators();
     }
 }
 

@@ -19,7 +19,12 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatyp
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
+import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMetadataMapper;
+import eu.merloteducation.organisationsorchestrator.models.entities.MembershipClass;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
+import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.cos.COSName;
@@ -37,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,6 +93,12 @@ class ParticipantServiceTests {
     @MockBean
     private GxfsCatalogService gxfsCatalogService;
 
+    @MockBean
+    OrganizationMetadataService organizationMetadataService;
+
+    @Autowired
+    private OrganizationMetadataMapper organizationMetadataMapper;
+
     String mailAddress = "test@test.de";
 
     String organizationLegalName = "Organization Legal Name";
@@ -106,6 +118,8 @@ class ParticipantServiceTests {
     String organizationName = "Organization Name";
 
     String postalCode = "12345";
+
+    String id = "12345";
 
     MerlotOrganizationCredentialSubject getExpectedCredentialSubject() {
 
@@ -249,6 +263,8 @@ class ParticipantServiceTests {
         ObjectMapper mapper = new ObjectMapper();
         ReflectionTestUtils.setField(participantService, "organizationMapper", organizationMapper);
         ReflectionTestUtils.setField(participantService, "gxfsCatalogService", gxfsCatalogService);
+        ReflectionTestUtils.setField(participantService, "organizationMetadataMapper", organizationMetadataMapper);
+        ReflectionTestUtils.setField(participantService, "organizationMetadataService", organizationMetadataService);
 
         String mockParticipant = """
             {
@@ -321,6 +337,14 @@ class ParticipantServiceTests {
             .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
         lenient().when(gxfsCatalogService.addParticipant(any()))
                 .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
+
+        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
+        metaDto.setOrgaId("10");
+        metaDto.setMailAddress("mymail@example.com");
+        metaDto.setMembershipClass("PARTICIPANT");
+
+        lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("10"))).thenReturn(metaDto);
+        lenient().when(organizationMetadataService.updateMerlotParticipantMeta(any())).thenAnswer(i -> i.getArguments()[0]);
     }
 
     @Test
@@ -329,7 +353,17 @@ class ParticipantServiceTests {
         Page<MerlotParticipantDto> organizations = participantService.getParticipants(PageRequest.of(0, 9));
         assertThat(organizations.getContent(), isA(List.class));
         assertThat(organizations.getContent(), not(empty()));
+        assertEquals(1, organizations.getContent().size());
 
+        String merlotId = ((MerlotOrganizationCredentialSubject) organizations.getContent().get(0).getSelfDescription().getVerifiableCredential()
+            .getCredentialSubject()).getMerlotId();
+        assertEquals("10", merlotId);
+
+        String mailAddress = organizations.getContent().get(0).getMetadata().getMailAddress();
+        assertEquals("mymail@example.com", mailAddress);
+
+        String membershipClass = organizations.getContent().get(0).getMetadata().getMembershipClass();
+        assertEquals("PARTICIPANT", membershipClass);
     }
 
     @Test
@@ -358,6 +392,12 @@ class ParticipantServiceTests {
                 organization.getSelfDescription().getVerifiableCredential().getCredentialSubject();
         assertEquals("10", subject.getMerlotId());
         assertEquals("Gaia-X European Association for Data and Cloud AISBL", subject.getLegalName());
+
+        String mailAddress = organization.getMetadata().getMailAddress();
+        assertEquals("mymail@example.com", mailAddress);
+
+        String membershipClass = organization.getMetadata().getMembershipClass();
+        assertEquals("PARTICIPANT", membershipClass);
     }
 
     @Test
@@ -383,97 +423,146 @@ class ParticipantServiceTests {
     @Test
     void updateParticipantExistentAsParticipant() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+        MerlotOrganizationCredentialSubject editedCredentialSubject = (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription()
+            .getVerifiableCredential().getCredentialSubject();
+        MerlotParticipantMetaDto editedMetadata = participantDtoWithEdits.getMetadata();
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_10");
 
-        MerlotParticipantDto participantDto = participantService.updateParticipant(credentialSubject, activeRole, "10");
-        MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
-                participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
-        assertEquals(resultCredentialSubject.getMailAddress(),
-            credentialSubject.getMailAddress());
-        assertEquals(resultCredentialSubject.getTermsAndConditions().getContent(),
-            credentialSubject.getTermsAndConditions().getContent());
-        assertEquals(resultCredentialSubject.getTermsAndConditions().getHash(),
-            credentialSubject.getTermsAndConditions().getHash());
-        assertEquals(resultCredentialSubject.getLegalAddress().getStreetAddress(),
-            credentialSubject.getLegalAddress().getStreetAddress());
-        assertEquals(resultCredentialSubject.getLegalAddress().getLocality(),
-            credentialSubject.getLegalAddress().getLocality());
-        assertEquals(resultCredentialSubject.getLegalAddress().getCountryName(),
-            credentialSubject.getLegalAddress().getCountryName());
-        assertEquals(resultCredentialSubject.getLegalAddress().getPostalCode(),
-            credentialSubject.getLegalAddress().getPostalCode());
+        MerlotParticipantDto updatedParticipantDto = participantService.updateParticipant(participantDtoWithEdits, activeRole, "10");
 
-        assertNotEquals(resultCredentialSubject.getId(), credentialSubject.getId());
-        assertNotEquals(resultCredentialSubject.getMerlotId(), credentialSubject.getMerlotId());
-        assertNotEquals(resultCredentialSubject.getOrgaName(), credentialSubject.getOrgaName());
-        assertNotEquals(resultCredentialSubject.getLegalName(), credentialSubject.getLegalName());
-        assertNotEquals(resultCredentialSubject.getRegistrationNumber().getLocal(),
-            credentialSubject.getRegistrationNumber().getLocal());
-        assertNull(resultCredentialSubject.getRegistrationNumber().getEuid());
-        assertNull(resultCredentialSubject.getRegistrationNumber().getEori());
-        assertNull(resultCredentialSubject.getRegistrationNumber().getVatId());
+        // following attributes of the organization credential subject should have been updated
+        MerlotOrganizationCredentialSubject updatedCredentialSubject =
+            (MerlotOrganizationCredentialSubject) updatedParticipantDto.getSelfDescription().getVerifiableCredential()
+                .getCredentialSubject();
+        assertEquals(updatedCredentialSubject.getTermsAndConditions().getContent(),
+            editedCredentialSubject.getTermsAndConditions().getContent());
+        assertEquals(updatedCredentialSubject.getTermsAndConditions().getHash(),
+            editedCredentialSubject.getTermsAndConditions().getHash());
+        assertEquals(updatedCredentialSubject.getLegalAddress().getStreetAddress(),
+            editedCredentialSubject.getLegalAddress().getStreetAddress());
+        assertEquals(updatedCredentialSubject.getLegalAddress().getLocality(),
+            editedCredentialSubject.getLegalAddress().getLocality());
+        assertEquals(updatedCredentialSubject.getLegalAddress().getCountryName(),
+            editedCredentialSubject.getLegalAddress().getCountryName());
+        assertEquals(updatedCredentialSubject.getLegalAddress().getPostalCode(),
+            editedCredentialSubject.getLegalAddress().getPostalCode());
+
+        // following attributes of the organization credential subject should not have been updated
+        assertNotEquals(updatedCredentialSubject.getId(), editedCredentialSubject.getId());
+        assertNotEquals(updatedCredentialSubject.getMerlotId(),
+            editedCredentialSubject.getMerlotId());
+        assertNotEquals(updatedCredentialSubject.getOrgaName(),
+            editedCredentialSubject.getOrgaName());
+        assertNotEquals(updatedCredentialSubject.getLegalName(),
+            editedCredentialSubject.getLegalName());
+        assertNotEquals(updatedCredentialSubject.getRegistrationNumber().getLocal(),
+            editedCredentialSubject.getRegistrationNumber().getLocal());
+        assertNull(updatedCredentialSubject.getRegistrationNumber().getEuid());
+        assertNull(updatedCredentialSubject.getRegistrationNumber().getEori());
+        assertNull(updatedCredentialSubject.getRegistrationNumber().getVatId());
+
+        // following metadata of the organization should have been updated
+        MerlotParticipantMetaDto updatedMetadata = updatedParticipantDto.getMetadata();
+        assertEquals(updatedMetadata.getMailAddress(), editedMetadata.getMailAddress());
+
+        // following metadata of the organization should not have been updated
+        assertNotEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
+        assertNotEquals(updatedMetadata.getOrgaId(), editedMetadata.getOrgaId());
     }
 
     @Test
     void updateParticipantExistentAsFedAdmin() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto dtoWithEdits = getMerlotParticipantDtoWithEdits();
+        MerlotOrganizationCredentialSubject editedCredentialSubject =
+            (MerlotOrganizationCredentialSubject) dtoWithEdits.getSelfDescription().getVerifiableCredential()
+                .getCredentialSubject();
+        MerlotParticipantMetaDto editedMetadata = dtoWithEdits.getMetadata();
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
 
-        MerlotParticipantDto participantDto = participantService.updateParticipant(credentialSubject, activeRole, "10");
-        MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
-                participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
-        assertEquals(resultCredentialSubject.getMailAddress(),
-            credentialSubject.getMailAddress());
-        assertEquals(resultCredentialSubject.getTermsAndConditions().getContent(),
-            credentialSubject.getTermsAndConditions().getContent());
-        assertEquals(resultCredentialSubject.getTermsAndConditions().getHash(),
-            credentialSubject.getTermsAndConditions().getHash());
-        assertEquals(resultCredentialSubject.getLegalAddress().getStreetAddress(),
-            credentialSubject.getLegalAddress().getStreetAddress());
-        assertEquals(resultCredentialSubject.getLegalAddress().getLocality(),
-            credentialSubject.getLegalAddress().getLocality());
-        assertEquals(resultCredentialSubject.getLegalAddress().getCountryName(),
-            credentialSubject.getLegalAddress().getCountryName());
-        assertEquals(resultCredentialSubject.getLegalAddress().getPostalCode(),
-            credentialSubject.getLegalAddress().getPostalCode());
-        assertEquals(resultCredentialSubject.getOrgaName(), credentialSubject.getOrgaName());
-        assertEquals(resultCredentialSubject.getLegalName(), credentialSubject.getLegalName());
-        assertEquals(resultCredentialSubject.getRegistrationNumber().getLocal(),
-            credentialSubject.getRegistrationNumber().getLocal());
-        assertEquals(resultCredentialSubject.getRegistrationNumber().getEuid(),
-            credentialSubject.getRegistrationNumber().getEuid());
-        assertEquals(resultCredentialSubject.getRegistrationNumber().getEori(),
-            credentialSubject.getRegistrationNumber().getEori());
-        assertEquals(resultCredentialSubject.getRegistrationNumber().getVatId(),
-            credentialSubject.getRegistrationNumber().getVatId());
+        MerlotParticipantDto participantDto = participantService.updateParticipant(dtoWithEdits, activeRole, "10");
 
-        assertNotEquals(resultCredentialSubject.getId(), credentialSubject.getId());
-        assertNotEquals(resultCredentialSubject.getMerlotId(), credentialSubject.getMerlotId());
+        // following attributes of the organization credential subject should have been updated
+        MerlotOrganizationCredentialSubject updatedCredentialSubject =
+            (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription().getVerifiableCredential()
+                .getCredentialSubject();
+        assertEquals(updatedCredentialSubject.getTermsAndConditions().getContent(),
+            editedCredentialSubject.getTermsAndConditions().getContent());
+        assertEquals(updatedCredentialSubject.getTermsAndConditions().getHash(),
+            editedCredentialSubject.getTermsAndConditions().getHash());
+        assertEquals(updatedCredentialSubject.getLegalAddress().getStreetAddress(),
+            editedCredentialSubject.getLegalAddress().getStreetAddress());
+        assertEquals(updatedCredentialSubject.getLegalAddress().getLocality(),
+            editedCredentialSubject.getLegalAddress().getLocality());
+        assertEquals(updatedCredentialSubject.getLegalAddress().getCountryName(),
+            editedCredentialSubject.getLegalAddress().getCountryName());
+        assertEquals(updatedCredentialSubject.getLegalAddress().getPostalCode(),
+            editedCredentialSubject.getLegalAddress().getPostalCode());
+        assertEquals(updatedCredentialSubject.getOrgaName(),
+            editedCredentialSubject.getOrgaName());
+        assertEquals(updatedCredentialSubject.getLegalName(),
+            editedCredentialSubject.getLegalName());
+        assertEquals(updatedCredentialSubject.getRegistrationNumber().getLocal(),
+            editedCredentialSubject.getRegistrationNumber().getLocal());
+        assertEquals(updatedCredentialSubject.getRegistrationNumber().getEuid(),
+            editedCredentialSubject.getRegistrationNumber().getEuid());
+        assertEquals(updatedCredentialSubject.getRegistrationNumber().getEori(),
+            editedCredentialSubject.getRegistrationNumber().getEori());
+        assertEquals(updatedCredentialSubject.getRegistrationNumber().getVatId(),
+            editedCredentialSubject.getRegistrationNumber().getVatId());
+
+        // following attributes of the organization credential subject should not have been updated
+        assertNotEquals(updatedCredentialSubject.getId(), editedCredentialSubject.getId());
+        assertNotEquals(updatedCredentialSubject.getMerlotId(),
+            editedCredentialSubject.getMerlotId());
+
+        // following metadata of the organization should have been updated
+        MerlotParticipantMetaDto updatedMetadata = participantDto.getMetadata();
+        assertEquals(updatedMetadata.getMailAddress(), editedMetadata.getMailAddress());
+        assertEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
+
+        // following metadata of the organization should not have been updated
+        assertNotEquals(updatedMetadata.getOrgaId(), editedMetadata.getOrgaId());
     }
 
     @Test
     void updateParticipantNonExistent() {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto dtoWithEdits = getMerlotParticipantDtoWithEdits();
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
-            () -> participantService.updateParticipant(credentialSubject, activeRole,"11"));
+            () -> participantService.updateParticipant(dtoWithEdits, activeRole, "11"));
         assertEquals(HttpStatus.NOT_FOUND, e.getStatusCode());
+    }
+
+    @Test
+    void getAllFederatorsNoFederatorsExisting() throws Exception {
+
+        List<MerlotParticipantDto> organizations = participantService.getFederators();
+        assertThat(organizations, empty());
     }
 
     @Test
     void getAllFederators() throws Exception {
 
-        Page<MerlotParticipantDto> organizations = participantService.getFederators(
-            PageRequest.of(0, Integer.MAX_VALUE));
-        assertThat(organizations.getContent(), isA(List.class));
-        assertThat(organizations.getContent(), not(empty()));
+        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
+        metaDto.setOrgaId("10");
+        metaDto.setMailAddress("mymail@example.com");
+        metaDto.setMembershipClass("FEDERATOR");
+
+        lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("10"))).thenReturn(metaDto);
+
+        List<MerlotParticipantDto> organizations = participantService.getFederators();
+        assertThat(organizations, not(empty()));
+        assertEquals(1, organizations.size());
+        assertEquals("10",
+            ((MerlotOrganizationCredentialSubject) organizations.get(0).getSelfDescription().getVerifiableCredential()
+                .getCredentialSubject()).getMerlotId());
     }
 
     @Test
@@ -490,6 +579,15 @@ class ParticipantServiceTests {
         assertThat(merlotId).isNotNull();
         assertThat(merlotId).isNotBlank();
         assertThat(resultCredentialSubject.getId()).isNotBlank().isEqualTo("Participant:" + merlotId);
+
+        OrganizationMetadata metadataExpected = new OrganizationMetadata(merlotId, mailAddress,
+            MembershipClass.PARTICIPANT);
+
+        ArgumentCaptor<OrganizationMetadata> varArgs = ArgumentCaptor.forClass(OrganizationMetadata.class);
+        verify(organizationMetadataService, times(1)).saveMerlotParticipantMeta(varArgs.capture());
+        assertEquals(metadataExpected.getMerlotId(), varArgs.getValue().getMerlotId());
+        assertEquals(metadataExpected.getMailAddress(), varArgs.getValue().getMailAddress());
+        assertEquals(metadataExpected.getMembershipClass(), varArgs.getValue().getMembershipClass());
     }
 
     @Test
@@ -606,7 +704,6 @@ class ParticipantServiceTests {
         credentialSubject.setOrgaName("changedOrgaName");
         credentialSubject.setLegalName("changedLegalName");
         credentialSubject.setMerlotId("changedMerlotId");
-        credentialSubject.setMailAddress("changedMail");
         TermsAndConditions termsAndConditions = new TermsAndConditions();
         termsAndConditions.setContent("http://changed.com");
         termsAndConditions.setHash("changedHash");
@@ -621,6 +718,28 @@ class ParticipantServiceTests {
             32, 80, 97, 114, 116, 105, 99, 105, 112, 97, 110, 116, 58, 49, 50, 51, 52, 49, 51, 52, 50,
             51, 52, 50, 49, 34, 125};
         return new WebClientResponseException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "garbage", null, byteArray, null);
+    }
+
+    private MerlotParticipantDto getMerlotParticipantDtoWithEdits() {
+
+        MerlotParticipantDto dtoWithEdits = new MerlotParticipantDto();
+
+        SelfDescription selfDescription = new SelfDescription();
+        SelfDescriptionVerifiableCredential verifiableCredential = new SelfDescriptionVerifiableCredential();
+        MerlotOrganizationCredentialSubject editedCredentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+
+        verifiableCredential.setCredentialSubject(editedCredentialSubject);
+        selfDescription.setVerifiableCredential(verifiableCredential);
+
+        MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();
+        metaData.setOrgaId("changedMerlotId");
+        metaData.setMailAddress("changedMailAddress");
+        metaData.setMembershipClass("Federator");
+
+        dtoWithEdits.setSelfDescription(selfDescription);
+        dtoWithEdits.setId(editedCredentialSubject.getId());
+        dtoWithEdits.setMetadata(metaData);
+        return dtoWithEdits;
     }
 }
 

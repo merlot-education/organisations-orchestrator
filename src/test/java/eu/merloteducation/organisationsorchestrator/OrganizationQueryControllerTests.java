@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
@@ -121,12 +124,12 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedExistent() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
                         .put("/organization/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectAsJsonString(credentialSubject))
+                        .content(objectAsJsonString(participantDtoWithEdits))
                         .header("Active-Role", "OrgLegRep_10")
                         .with(csrf())
                         .with(jwt().authorities(
@@ -140,12 +143,12 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedAsFedAdminExistent() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
                 .put("/organization/10")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(objectAsJsonString(credentialSubject))
+                .content(objectAsJsonString(participantDtoWithEdits))
                 .header("Active-Role", "FedAdmin_10")
                 .with(csrf())
                 .with(jwt().authorities(
@@ -160,7 +163,10 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedAsFedAdminExistentInconsistentId() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+        MerlotOrganizationCredentialSubject credentialSubject =
+            (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription().getVerifiableCredential()
+                .getCredentialSubject();
         credentialSubject.setMerlotId("30");
         credentialSubject.setId("Participant:30");
 
@@ -168,7 +174,7 @@ class OrganizationQueryControllerTests {
                 .put("/organization/10")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(objectAsJsonString(credentialSubject))
+                .content(objectAsJsonString(participantDtoWithEdits))
                 .header("Active-Role", "OrgLegRep_10")
                 .with(csrf())
                 .with(jwt().authorities(
@@ -183,12 +189,12 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationUnauthorizedExistent() throws Exception {
 
-        MerlotOrganizationCredentialSubject credentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
                         .put("/organization/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectAsJsonString(credentialSubject))
+                        .content(objectAsJsonString(participantDtoWithEdits))
                         .header("Active-Role", "OrgLegRep_20")
                         .with(csrf())
                         .with(jwt().authorities(
@@ -319,5 +325,27 @@ class OrganizationQueryControllerTests {
         termsAndConditions.setHash("1234");
         credentialSubject.setTermsAndConditions(termsAndConditions);
         return credentialSubject;
+    }
+
+    private MerlotParticipantDto getMerlotParticipantDtoWithEdits() {
+
+        MerlotParticipantDto dtoWithEdits = new MerlotParticipantDto();
+
+        SelfDescription selfDescription = new SelfDescription();
+        SelfDescriptionVerifiableCredential verifiableCredential = new SelfDescriptionVerifiableCredential();
+        MerlotOrganizationCredentialSubject editedCredentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+
+        verifiableCredential.setCredentialSubject(editedCredentialSubject);
+        selfDescription.setVerifiableCredential(verifiableCredential);
+
+        MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();
+        metaData.setOrgaId("changedMerlotId");
+        metaData.setMailAddress("me@mail.me");
+        metaData.setMembershipClass("Federator");
+
+        dtoWithEdits.setSelfDescription(selfDescription);
+        dtoWithEdits.setId(editedCredentialSubject.getId());
+        dtoWithEdits.setMetadata(metaData);
+        return dtoWithEdits;
     }
 }

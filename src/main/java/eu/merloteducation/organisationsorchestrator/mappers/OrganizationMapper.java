@@ -3,6 +3,7 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.mapstruct.*;
 
@@ -10,12 +11,11 @@ import org.mapstruct.*;
 public interface OrganizationMapper {
 
     @Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
+    @Mapping(target = "metadata", source = "metaData")
     @Mapping(target = "selfDescription", source = "selfDescription")
-    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(SelfDescription selfDescription);
+    MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(SelfDescription selfDescription, MerlotParticipantMetaDto metaData);
 
     @BeanMapping(ignoreByDefault = true)
-    // allow to edit mail
-    @Mapping(target = "mailAddress", source = "mailAddress")
     // allow to edit tnc
     @Mapping(target = "termsAndConditions.content", source = "termsAndConditions.content")
     @Mapping(target = "termsAndConditions.hash", source = "termsAndConditions.hash")
@@ -42,8 +42,6 @@ public interface OrganizationMapper {
     @Mapping(target = "registrationNumber.eori", source = "registrationNumber.eori")
     @Mapping(target = "registrationNumber.vatId", source = "registrationNumber.vatId")
     @Mapping(target = "registrationNumber.leiCode", source = "registrationNumber.leiCode")
-    // allow to edit mail
-    @Mapping(target = "mailAddress", source = "mailAddress")
     // allow to edit tnc
     @Mapping(target = "termsAndConditions.content", source = "termsAndConditions.content")
     @Mapping(target = "termsAndConditions.hash", source = "termsAndConditions.hash")
@@ -64,7 +62,6 @@ public interface OrganizationMapper {
     @Mapping(target = "legalName", expression = "java(pDAcroForm.getField(DocumentField.ORGANIZATIONLEGALNAME.getValue()).getValueAsString())")
     @Mapping(target = "registrationNumber.local", expression = "java(pDAcroForm.getField(DocumentField.REGISTRATIONNUMBER.getValue()).getValueAsString())")
     @Mapping(target = "registrationNumber.type", constant = "gax-trust-framework:RegistrationNumber")
-    @Mapping(target = "mailAddress", expression = "java(pDAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString())")
     @Mapping(target = "termsAndConditions.content", expression = "java(pDAcroForm.getField(DocumentField.TNCLINK.getValue()).getValueAsString())")
     @Mapping(target = "termsAndConditions.hash", expression = "java(pDAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString())")
     @Mapping(target = "termsAndConditions.type", constant = "gax-trust-framework:TermsAndConditions")

@@ -49,7 +49,6 @@ class OrganizationMapperTests {
 
     MerlotOrganizationCredentialSubject getExpectedCredentialSubject(){
         MerlotOrganizationCredentialSubject expected = new MerlotOrganizationCredentialSubject();
-        expected.setMailAddress(mailAddress);
         expected.setOrgaName(organizationName);
         expected.setLegalName(organizationLegalName);
 

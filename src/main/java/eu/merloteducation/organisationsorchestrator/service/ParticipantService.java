@@ -11,7 +11,6 @@ import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.participants.GaxTrustLegalPersonCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
@@ -19,8 +18,6 @@ import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMetadataMapper;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import jakarta.transaction.Transactional;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -30,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -53,9 +49,6 @@ public class ParticipantService {
 
     @Autowired
     private OrganizationMetadataService organizationMetadataService;
-
-    @Autowired
-    private OrganizationMetadataMapper organizationMetadataMapper;
 
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
@@ -179,10 +172,10 @@ public class ParticipantService {
 
         if (activeRole.isRepresentative()) {
             organizationMapper.updateSelfDescriptionAsParticipant(editedCredentialSubject, targetCredentialSubject);
-            organizationMetadataMapper.updateMerlotParticipantMetaDtoAsParticipant(editedMetadata, targetMetadata);
+            organizationMapper.updateMerlotParticipantMetaDtoAsParticipant(editedMetadata, targetMetadata);
         } else if (activeRole.isFedAdmin()) {
             organizationMapper.updateSelfDescriptionAsFedAdmin(editedCredentialSubject, targetCredentialSubject);
-            organizationMetadataMapper.updateMerlotParticipantMetaDtoAsFedAdmin(editedMetadata, targetMetadata);
+            organizationMapper.updateMerlotParticipantMetaDtoAsFedAdmin(editedMetadata, targetMetadata);
         }
 
         MerlotParticipantMetaDto participantMetadata = null;

@@ -81,4 +81,23 @@ public interface OrganizationMapper {
     @Mapping(target = "mailAddress", expression = "java(pDAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString())")
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationFormAndId(PDAcroForm pDAcroForm);
+
+    MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
+
+    OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source, @MappingTarget OrganizationMetadata target);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source, @MappingTarget MerlotParticipantMetaDto target);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    void updateMerlotParticipantMetaDtoAsFedAdmin(MerlotParticipantMetaDto source, @MappingTarget MerlotParticipantMetaDto target);
+
 }

@@ -7,7 +7,6 @@ import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGra
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
-import eu.merloteducation.gxfscataloglibrary.models.participants.PublicKey;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
@@ -20,6 +19,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
+import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.pdfbox.cos.COSName;
@@ -156,82 +156,21 @@ class ParticipantServiceTests {
         return context;
     }
 
-    PDDocument getTestRegistrationDocument() throws IOException {
+    RegistrationFormContent getTestRegistrationFormContent() throws IOException {
 
-        PDDocument pdDocument = new PDDocument();
-        PDPage page = new PDPage(PDRectangle.A4);
-        pdDocument.addPage(page);
+        RegistrationFormContent content = new RegistrationFormContent();
+        content.setOrganizationName(organizationName);
+        content.setOrganizationLegalName(organizationLegalName);
+        content.setMailAddress(mailAddress);
+        content.setRegistrationNumberLocal(registrationNumber);
+        content.setCountryCode(countryCode);
+        content.setPostalCode(postalCode);
+        content.setCity(city);
+        content.setStreet(street);
+        content.setProviderTncLink(providerTncLink);
+        content.setProviderTncHash(providerTncHash);
 
-        PDAcroForm form = new PDAcroForm(pdDocument);
-        pdDocument.getDocumentCatalog().setAcroForm(form);
-
-        PDFont font = new PDType1Font(HELVETICA);
-        PDResources resources = new PDResources();
-        resources.put(COSName.getPDFName("Helv"), font);
-        form.setDefaultResources(resources);
-
-        String defaultAppearance = "/Helv 12 Tf 0 0 1 rg";
-
-        PDTextField textField = new PDTextField(form);
-        textField.setPartialName("MailAddress");
-        textField.setDefaultAppearance(defaultAppearance);
-        form.getFields().add(textField);
-        textField.setValue(mailAddress);
-
-        PDTextField textField1 = new PDTextField(form);
-        textField1.setPartialName("OrganizationLegalName");
-        form.getFields().add(textField1);
-        textField1.setDefaultAppearance(defaultAppearance);
-        textField1.setValue(organizationLegalName);
-
-        PDTextField textField2 = new PDTextField(form);
-        textField2.setPartialName("RegistrationNumber");
-        form.getFields().add(textField2);
-        textField2.setDefaultAppearance(defaultAppearance);
-        textField2.setValue(registrationNumber);
-
-        PDTextField textField3 = new PDTextField(form);
-        textField3.setPartialName("CountryCode");
-        form.getFields().add(textField3);
-        textField3.setDefaultAppearance(defaultAppearance);
-        textField3.setValue(countryCode);
-
-        PDTextField textField4 = new PDTextField(form);
-        textField4.setPartialName("OrganizationName");
-        form.getFields().add(textField4);
-        textField4.setDefaultAppearance(defaultAppearance);
-        textField4.setValue(organizationName);
-
-        PDTextField textField5 = new PDTextField(form);
-        textField5.setPartialName("PostalCode");
-        form.getFields().add(textField5);
-        textField5.setDefaultAppearance(defaultAppearance);
-        textField5.setValue(postalCode);
-
-        PDTextField textField7 = new PDTextField(form);
-        textField7.setPartialName("City");
-        form.getFields().add(textField7);
-        textField7.setDefaultAppearance(defaultAppearance);
-        textField7.setValue(city);
-
-        PDTextField textField8 = new PDTextField(form);
-        textField8.setPartialName("ProviderTncLink");
-        form.getFields().add(textField8);
-        textField8.setDefaultAppearance(defaultAppearance);
-        textField8.setValue(providerTncLink);
-
-        PDTextField textField9 = new PDTextField(form);
-        textField9.setPartialName("Street");
-        form.getFields().add(textField9);
-        textField9.setDefaultAppearance(defaultAppearance);
-        textField9.setValue(street);
-
-        PDTextField textField10 = new PDTextField(form);
-        textField10.setPartialName("ProviderTncHash");
-        form.getFields().add(textField10);
-        textField10.setDefaultAppearance(defaultAppearance);
-        textField10.setValue(providerTncHash);
-        return pdDocument;
+        return content;
     }
 
     private ParticipantItem wrapCredentialSubjectInItem(MerlotOrganizationCredentialSubject credentialSubject) {
@@ -479,7 +418,7 @@ class ParticipantServiceTests {
     @Test
     void createParticipantWithValidRegistrationForm() throws Exception {
 
-        MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationDocument());
+        MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationFormContent());
         MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
                 participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
 
@@ -495,20 +434,10 @@ class ParticipantServiceTests {
     @Test
     void createParticipantWithInvalidRegistrationForm() {
 
-        PDDocument pdDocument = new PDDocument();
-        PDPage page = new PDPage(PDRectangle.A4);
-        pdDocument.addPage(page);
-
-        PDAcroForm form = new PDAcroForm(pdDocument);
-        pdDocument.getDocumentCatalog().setAcroForm(form);
-
-        PDFont font = new PDType1Font(HELVETICA);
-        PDResources resources = new PDResources();
-        resources.put(COSName.getPDFName("Helv"), font);
-        form.setDefaultResources(resources);
+        RegistrationFormContent content = new RegistrationFormContent();
 
         Exception e = assertThrows(ResponseStatusException.class,
-            () -> participantService.createParticipant(pdDocument));
+            () -> participantService.createParticipant(content));
 
         assertEquals("400 BAD_REQUEST \"Invalid registration form file.\"", e.getMessage());
     }
@@ -516,72 +445,20 @@ class ParticipantServiceTests {
     @Test
     void createParticipantWithEmptyFieldsInRegistrationForm() {
 
-        PDDocument pdDocument = new PDDocument();
-        PDPage page = new PDPage(PDRectangle.A4);
-        pdDocument.addPage(page);
-
-        PDAcroForm form = new PDAcroForm(pdDocument);
-        pdDocument.getDocumentCatalog().setAcroForm(form);
-
-        PDFont font = new PDType1Font(HELVETICA);
-        PDResources resources = new PDResources();
-        resources.put(COSName.getPDFName("Helv"), font);
-        form.setDefaultResources(resources);
-
-        String defaultAppearance = "/Helv 12 Tf 0 0 1 rg";
-
-        PDTextField textField = new PDTextField(form);
-        textField.setPartialName("MailAddress");
-        textField.setDefaultAppearance(defaultAppearance);
-        form.getFields().add(textField);
-
-        PDTextField textField1 = new PDTextField(form);
-        textField1.setPartialName("OrganizationLegalName");
-        form.getFields().add(textField1);
-        textField1.setDefaultAppearance(defaultAppearance);
-
-        PDTextField textField2 = new PDTextField(form);
-        textField2.setPartialName("RegistrationNumber");
-        form.getFields().add(textField2);
-        textField2.setDefaultAppearance(defaultAppearance);
-
-        PDTextField textField3 = new PDTextField(form);
-        textField3.setPartialName("CountryCode");
-        form.getFields().add(textField3);
-        textField3.setDefaultAppearance(defaultAppearance);
-
-        PDTextField textField4 = new PDTextField(form);
-        textField4.setPartialName("OrganizationName");
-        form.getFields().add(textField4);
-        textField4.setDefaultAppearance(defaultAppearance);
-
-        PDTextField textField5 = new PDTextField(form);
-        textField5.setPartialName("PostalCode");
-        form.getFields().add(textField5);
-        textField5.setDefaultAppearance(defaultAppearance);
-
-        PDTextField textField7 = new PDTextField(form);
-        textField7.setPartialName("City");
-        form.getFields().add(textField7);
-        textField7.setDefaultAppearance(defaultAppearance);
-
-        PDTextField textField8 = new PDTextField(form);
-        textField8.setPartialName("ProviderTncLink");
-        form.getFields().add(textField8);
-        textField8.setDefaultAppearance(defaultAppearance);
-
-        PDTextField textField9 = new PDTextField(form);
-        textField9.setPartialName("Street");
-        form.getFields().add(textField9);
-        textField9.setDefaultAppearance(defaultAppearance);
-
-        PDTextField textField10 = new PDTextField(form);
-        textField10.setPartialName("ProviderTncHash");
-        form.getFields().add(textField10);
-        textField10.setDefaultAppearance(defaultAppearance);
+        RegistrationFormContent content = new RegistrationFormContent();
+        content.setOrganizationName("");
+        content.setOrganizationLegalName("");
+        content.setMailAddress("");
+        content.setRegistrationNumberLocal("");
+        content.setCountryCode("");
+        content.setPostalCode("");
+        content.setCity("");
+        content.setStreet("");
+        content.setProviderTncLink("");
+        content.setProviderTncHash("");
 
         Exception e = assertThrows(ResponseStatusException.class,
-            () -> participantService.createParticipant(pdDocument));
+            () -> participantService.createParticipant(content));
 
         assertEquals("400 BAD_REQUEST \"Invalid registration form: Empty or blank fields.\"", e.getMessage());
     }

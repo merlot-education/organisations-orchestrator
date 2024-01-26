@@ -11,6 +11,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
+import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest({OrganizationQueryController.class, WebSecurityConfig.class})
+@WebMvcTest({OrganizationQueryController.class, WebSecurityConfig.class, PdfContentMapper.class})
 @Import({JwtAuthConverter.class, AuthorityChecker.class, InterceptorConfig.class, ActiveRoleHeaderHandlerInterceptor.class, AuthorityChecker.class})
 @AutoConfigureMockMvc()
 class OrganizationQueryControllerTests {
@@ -55,6 +56,10 @@ class OrganizationQueryControllerTests {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private PdfContentMapper pdfContentMapper;
+
 
     private String objectAsJsonString(final Object obj) {
         try {

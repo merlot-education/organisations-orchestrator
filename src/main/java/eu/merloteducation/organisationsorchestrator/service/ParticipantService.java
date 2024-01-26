@@ -13,15 +13,12 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescrip
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -52,9 +49,9 @@ public class ParticipantService {
      */
     public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
         // input sanetization, for now we defined that ids must either only consist of numbers or be uuids
-        String regex = "(^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$)|(^\\d+$)";
+        String regex = "did:web:[-A-Za-z0-9]*.merlot-education.eu";
         if (!id.matches(regex)) {
-            throw new IllegalArgumentException("Provided id is invalid. It has to be a number or a uuid.");
+            throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did-web.");
         }
 
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
@@ -90,6 +87,10 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch uris from catalog.");
         }
         String[] participantUris = uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toArray(String[]::new);
+
+        if (participantUris.length == 0) {
+            new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
 
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
         GXFSCatalogListResponse<SelfDescriptionItem> sdResponse = null;
@@ -164,38 +165,45 @@ public class ParticipantService {
     }
 
     /**
-     * Given a registration PDF form, attempt to create the self description of the participant in the gxfs catalog.
+     * Given the content of a registration form, attempt to create the self-description of the participant in the GXFS catalog.
      *
-     * @param pdDoc in-memory representation of the PDF document
+     * @param registrationFormContent content of the registration form
      * @return post response from catalog
      * @throws CredentialPresentationException exception during vc presentation
      * @throws CredentialSignatureException exception during vp signature
      */
-    public MerlotParticipantDto createParticipant(PDDocument pdDoc)
+    public MerlotParticipantDto createParticipant(RegistrationFormContent registrationFormContent)
             throws CredentialSignatureException, CredentialPresentationException {
-
-        PDDocumentCatalog pdCatalog = pdDoc.getDocumentCatalog();
-        PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
 
         MerlotOrganizationCredentialSubject credentialSubject;
 
         try {
-            validateMandatoryFields(pdAcroForm);
-            credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(pdAcroForm);
+            validateMandatoryFields(registrationFormContent);
+            credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(registrationFormContent);
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }
 
-        String uuid = UUID.randomUUID().toString();
-        String id = "Participant:" + uuid;
-        credentialSubject.setId(id);
-        credentialSubject.setMerlotId(uuid);
+        String id = generateMerlotSubdomain(credentialSubject);
+        credentialSubject.setId("Participant:" + id);
+        credentialSubject.setMerlotId(id);
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
 
         ParticipantItem participantItem = gxfsCatalogService.addParticipant(credentialSubject);
 
         return organizationMapper.selfDescriptionToMerlotParticipantDto(participantItem.getSelfDescription());
+    }
+
+    private String generateMerlotSubdomain(MerlotOrganizationCredentialSubject credentialSubject) {
+        String merlotSubdomain = credentialSubject.getOrgaName()
+                .replace(" ", "-") // replace whitespace with dash
+                .replace("ä", "ae") // replace german umlauts
+                .replace("ö", "oe")
+                .replace("ü","ue")
+                .replaceAll("[^- A-Za-z0-9]", "")  // replace any non-alphanumeric character (except dash and space) with nothing
+                .toLowerCase(); // convert to lowercase
+        return "did:web:" + merlotSubdomain + ".merlot-education.eu";
     }
 
     private Map<String, String> getContext() {
@@ -212,21 +220,21 @@ public class ParticipantService {
         return context;
     }
 
-    private void validateMandatoryFields(PDAcroForm pdAcroForm) {
+    private void validateMandatoryFields(RegistrationFormContent registrationFormContent) {
 
-        String orgaName = pdAcroForm.getField(DocumentField.ORGANIZATIONNAME.getValue()).getValueAsString();
-        String orgaLegalName = pdAcroForm.getField(DocumentField.ORGANIZATIONLEGALNAME.getValue()).getValueAsString();
-        String registrationNumber = pdAcroForm.getField(DocumentField.REGISTRATIONNUMBER.getValue()).getValueAsString();
-        String mailAddress = pdAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString();
-        String tncLink = pdAcroForm.getField(DocumentField.TNCLINK.getValue()).getValueAsString();
-        String tncHash = pdAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString();
-        String countryCode = pdAcroForm.getField(DocumentField.COUNTRYCODE.getValue()).getValueAsString();
-        String city = pdAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString();
-        String postalCode = pdAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString();
-        String street = pdAcroForm.getField(DocumentField.STREET.getValue()).getValueAsString();
+        String orgaName = registrationFormContent.getOrganizationName();
+        String orgaLegalName = registrationFormContent.getOrganizationLegalName();
+        String registrationNumber = registrationFormContent.getRegistrationNumberLocal();
+        String mailAddress = registrationFormContent.getMailAddress();
+        String tncLink = registrationFormContent.getProviderTncLink();
+        String tncHash = registrationFormContent.getProviderTncHash();
+        String countryCode = registrationFormContent.getCountryCode();
+        String city = registrationFormContent.getCity();
+        String postalCode = registrationFormContent.getPostalCode();
+        String street = registrationFormContent.getStreet();
 
         boolean anyFieldEmptyOrBlank =
-            orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
+                orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
                 || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank()
                 || city.isBlank() || postalCode.isBlank() || street.isBlank();
 

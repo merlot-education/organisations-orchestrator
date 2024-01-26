@@ -16,7 +16,7 @@ public class MessageQueueService {
     ParticipantService participantService;
 
     @Autowired
-    OrganisationConnectorsService organisationConnectorsService;
+    ParticipantConnectorsService participantConnectorsService;
 
     private final Logger logger = LoggerFactory.getLogger(MessageQueueService.class);
 
@@ -47,7 +47,7 @@ public class MessageQueueService {
     public OrganizationConnectorDto organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
         logger.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
         try {
-            return organisationConnectorsService.getConnector(connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());
+            return participantConnectorsService.getConnector(connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());
         } catch (Exception e) {
             logger.error("Failed to find participant with this id, error: {}", e.getMessage());
             return null;

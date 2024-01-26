@@ -5,10 +5,14 @@ import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGra
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
+import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
+import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import jakarta.validation.Valid;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +33,9 @@ public class OrganizationQueryController {
 
     @Autowired
     private ParticipantService participantService;
+
+    @Autowired
+    private PdfContentMapper pdfContentMapper;
 
     private static final String PARTICIPANT = "Participant:";
 
@@ -62,7 +69,11 @@ public class OrganizationQueryController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files specified");
         }
         try (PDDocument pdDoc = Loader.loadPDF(files[0].getBytes())) {
-            return participantService.createParticipant(pdDoc);
+            PDDocumentCatalog pdCatalog = pdDoc.getDocumentCatalog();
+            PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
+            RegistrationFormContent content =
+                    pdfContentMapper.getRegistrationFormContentFromRegistrationForm(pdAcroForm);
+            return participantService.createParticipant(content);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }

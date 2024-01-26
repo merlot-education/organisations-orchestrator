@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantConnectorsService;
 import org.springframework.test.util.ReflectionTestUtils;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;
 
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class OrganisationConnectorsTests {
 
     @Autowired
-    private OrganisationConnectorsService connectorsService;
+    private ParticipantConnectorsService connectorsService;
 
     @Autowired
     private OrganisationConnectorsExtensionRepository connectorsRepo;

@@ -4,7 +4,7 @@ import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
-import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantConnectorsService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,15 +35,15 @@ class MessageQueueServiceTests {
     ParticipantService participantService;
 
     @Mock
-    OrganisationConnectorsService organisationConnectorsService;
+    ParticipantConnectorsService participantConnectorsService;
 
     @BeforeAll
     void beforeAll() throws Exception {
         ReflectionTestUtils.setField(messageQueueService, "participantService", participantService);
-        ReflectionTestUtils.setField(messageQueueService, "organisationConnectorsService", organisationConnectorsService);
+        ReflectionTestUtils.setField(messageQueueService, "organisationConnectorsService", participantConnectorsService);
         when(participantService.getParticipantById(any())).thenThrow(RuntimeException.class);
         doReturn(new MerlotParticipantDto()).when(participantService).getParticipantById("10");
-        doReturn(new OrganizationConnectorDto()).when(organisationConnectorsService).getConnector("10", "1234");
+        doReturn(new OrganizationConnectorDto()).when(participantConnectorsService).getConnector("10", "1234");
     }
 
 

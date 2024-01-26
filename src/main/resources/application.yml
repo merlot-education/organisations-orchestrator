@@ -89,6 +89,10 @@ keycloak:
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"
 
+edc-tokens:
+  edc1: "somevalue"
+  edc2: "somevalue"
+
 cors:
   global:
     origins:

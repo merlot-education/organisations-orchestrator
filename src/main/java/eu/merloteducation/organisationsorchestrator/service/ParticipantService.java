@@ -247,7 +247,7 @@ public class ParticipantService {
         try {
             validateMandatoryFields(pdAcroForm);
             credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(pdAcroForm);
-            metaData= organizationMapper.getOrganizationMetadataFromRegistrationFormAndId(pdAcroForm);
+            metaData= organizationMapper.getOrganizationMetadataFromRegistrationForm(pdAcroForm);
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }

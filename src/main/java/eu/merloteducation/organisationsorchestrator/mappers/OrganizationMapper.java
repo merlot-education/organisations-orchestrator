@@ -80,7 +80,7 @@ public interface OrganizationMapper {
 
     @Mapping(target = "mailAddress", expression = "java(pDAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString())")
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
-    MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationFormAndId(PDAcroForm pDAcroForm);
+    MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(PDAcroForm pDAcroForm);
 
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
 

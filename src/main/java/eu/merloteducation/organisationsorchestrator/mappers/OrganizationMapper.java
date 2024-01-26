@@ -4,6 +4,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescrip
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.mapstruct.*;
 
@@ -76,4 +77,8 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.streetAddress", expression = "java(pDAcroForm.getField(DocumentField.STREET.getValue()).getValueAsString())")
     @Mapping(target = "headquarterAddress.type", constant = "vcard:Address")
     MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(PDAcroForm pDAcroForm);
+
+    @Mapping(target = "mailAddress", expression = "java(pDAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString())")
+    @Mapping(target = "membershipClass", constant = "PARTICIPANT")
+    MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationFormAndId(PDAcroForm pDAcroForm);
 }

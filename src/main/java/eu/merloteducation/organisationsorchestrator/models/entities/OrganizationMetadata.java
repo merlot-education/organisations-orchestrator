@@ -1,5 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.models.entities;
 
+import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,7 +16,7 @@ import lombok.Setter;
 public class OrganizationMetadata {
     @Id
     @Setter(AccessLevel.NONE)
-    private String merlotId;
+    private String orgaId;
 
     private String mailAddress;
 
@@ -26,9 +27,9 @@ public class OrganizationMetadata {
 
     }
 
-    public OrganizationMetadata(String merlotId, String mailAddress, MembershipClass membershipClass) {
+    public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass) {
 
-        this.merlotId = merlotId;
+        this.orgaId = orgaId;
         this.mailAddress = mailAddress;
         this.membershipClass = membershipClass;
     }

@@ -89,7 +89,7 @@ public class ParticipantService {
         String[] participantUris = uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toArray(String[]::new);
 
         if (participantUris.length == 0) {
-            new PageImpl<>(Collections.emptyList(), pageable, 0);
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
         // request the ids from the self-description endpoint to get full SDs and map the result to objects

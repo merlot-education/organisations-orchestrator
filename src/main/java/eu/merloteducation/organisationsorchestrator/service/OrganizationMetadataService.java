@@ -18,11 +18,8 @@ public class OrganizationMetadataService {
     @Autowired
     private OrganizationMapper mapper;
 
-    public MerlotParticipantMetaDto getMerlotParticipantMetaDto(String merlotId) {
-
-        merlotId = merlotId.replace("Participant:", "");
-
-        OrganizationMetadata dbMeta = repository.findByOrgaId(merlotId).orElse(null);
+    public MerlotParticipantMetaDto getMerlotParticipantMetaDto(String orgaId) {
+        OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
 
         return mapper.organizationMetadataToMerlotParticipantMetaDto(dbMeta);
     }
@@ -33,10 +30,9 @@ public class OrganizationMetadataService {
     }
 
     public MerlotParticipantMetaDto updateMerlotParticipantMeta(MerlotParticipantMetaDto metaDtoWithEdits) {
+        String orgaId = metaDtoWithEdits.getOrgaId();
 
-        String orgaId = metaDtoWithEdits.getOrgaId().replace("Participant:", "");
-
-        OrganizationMetadata dbMetadata = repository.findByOrgaId(orgaId).orElse(null);
+        OrganizationMetadata dbMetadata = repository.findById(orgaId).orElse(null);
 
         if (dbMetadata == null) {
             return null;

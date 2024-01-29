@@ -8,9 +8,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrganizationMetadataRepository extends JpaRepository<OrganizationMetadata, String> {
-    Optional<OrganizationMetadata> findByOrgaId(String merlotId);
-
     List<OrganizationMetadata> findByMembershipClass(MembershipClass membershipClass);
-
-    void deleteByOrgaId(String merlotId);
 }

@@ -89,7 +89,7 @@ class OrganizationQueryControllerTests {
                 .thenReturn(participantDto);
         lenient().when(participantService.getParticipantById(eq("garbage")))
                 .thenThrow(HttpClientErrorException.NotFound.class);
-        lenient().when(participantService.updateParticipant(any(), any(), eq("10")))
+        lenient().when(participantService.updateParticipant(any(), any()))
                 .thenReturn(participantDto);
 
     }
@@ -173,7 +173,6 @@ class OrganizationQueryControllerTests {
         MerlotOrganizationCredentialSubject credentialSubject =
             (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription().getVerifiableCredential()
                 .getCredentialSubject();
-        credentialSubject.setMerlotId("30");
         credentialSubject.setId("Participant:30");
 
         mvc.perform(MockMvcRequestBuilders
@@ -324,7 +323,6 @@ class OrganizationQueryControllerTests {
         credentialSubject.setLegalAddress(address);
         credentialSubject.setHeadquarterAddress(address);
         credentialSubject.setOrgaName("MyOrga");
-        credentialSubject.setMerlotId("10");
         TermsAndConditions termsAndConditions = new TermsAndConditions();
         termsAndConditions.setContent("http://example.com");
         termsAndConditions.setHash("1234");

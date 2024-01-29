@@ -6,6 +6,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatyp
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.IOException;
 
@@ -31,6 +33,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class OrganizationMapperTests {
+
+    @MockBean
+    private InitialDataLoader initialDataLoader;
     @Autowired
     OrganizationMapper organizationMapper;
     @Autowired

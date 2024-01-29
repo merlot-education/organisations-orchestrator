@@ -130,16 +130,15 @@ public class ParticipantService {
             .map(item -> {
                 SelfDescription selfDescription = item.getMeta().getContent();
 
-                String merlotId = ((MerlotOrganizationCredentialSubject) selfDescription.getVerifiableCredential()
-                    .getCredentialSubject()).getMerlotId();
-                MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(merlotId);
+                String id = item.getMeta().getContent().getVerifiableCredential().getCredentialSubject().getId();
+                MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(id);
 
                 if (metaDto == null) {
                     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Error while retrieving Participant:" + merlotId);
+                        "Error while retrieving Participant with id: " + id);
                 }
 
-                return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(item.getMeta().getContent(),
+                return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription,
                     metaDto);
             }).sorted(
                 Comparator.comparing(
@@ -162,24 +161,24 @@ public class ParticipantService {
     }
 
     /**
-     * Given a new credential subject, attempt to update the self description in the gxfs catalog.
+     * Given a new credential subject, attempt to update the self-description in the GXFS catalog.
      *
-     * @param id id of the participant to update
      * @param participantDtoWithEdits dto with updated fields
      * @return update response from catalog
-     * @throws Exception mapping exception
+     * @throws JsonProcessingException mapping exception
      */
     @Transactional(rollbackOn = { ResponseStatusException.class })
     public MerlotParticipantDto updateParticipant(MerlotParticipantDto participantDtoWithEdits,
-        OrganizationRoleGrantedAuthority activeRole, String id) throws JsonProcessingException {
-
-        MerlotParticipantDto participantDto = getParticipantById(id);
+        OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
+        MerlotParticipantDto participantDto = getParticipantById(participantDtoWithEdits.getId());
         MerlotOrganizationCredentialSubject targetCredentialSubject =
-            (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
+            (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription()
+                    .getVerifiableCredential().getCredentialSubject();
         MerlotParticipantMetaDto targetMetadata = participantDto.getMetadata();
 
         MerlotOrganizationCredentialSubject editedCredentialSubject =
-            (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription().getVerifiableCredential().getCredentialSubject();
+            (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription()
+                    .getVerifiableCredential().getCredentialSubject();
         MerlotParticipantMetaDto editedMetadata = participantDtoWithEdits.getMetadata();
 
         if (activeRole.isRepresentative()) {
@@ -190,7 +189,7 @@ public class ParticipantService {
             organizationMapper.updateMerlotParticipantMetaDtoAsFedAdmin(editedMetadata, targetMetadata);
         }
 
-        MerlotParticipantMetaDto participantMetadata = null;
+        MerlotParticipantMetaDto participantMetadata;
         try {
             participantMetadata = organizationMetadataService.updateMerlotParticipantMeta(targetMetadata);
 
@@ -286,7 +285,6 @@ public class ParticipantService {
         }
 
         credentialSubject.setId(id);
-        credentialSubject.setMerlotId(id);
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
 

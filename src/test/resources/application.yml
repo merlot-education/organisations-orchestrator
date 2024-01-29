@@ -47,8 +47,10 @@ gxfscatalog:
   private-key-path: ""
   cert-path: ""
 
-gxfswizard:
+gxfswizardapi:
   base-uri: "http://localhost:8085"
+
+merlot-domain: "marketplace.dev.merlot-education.eu"
 
 jwt:
   auth:

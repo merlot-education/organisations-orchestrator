@@ -20,6 +20,7 @@ import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
@@ -86,6 +87,9 @@ class ParticipantServiceTests {
 
     @MockBean
     OrganizationMetadataService organizationMetadataService;
+
+    @MockBean
+    private InitialDataLoader initialDataLoader;
 
     String mailAddress = "test@test.de";
 
@@ -356,7 +360,7 @@ class ParticipantServiceTests {
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_10");
 
-        MerlotParticipantDto updatedParticipantDto = participantService.updateParticipant(participantDtoWithEdits, activeRole, "10");
+        MerlotParticipantDto updatedParticipantDto = participantService.updateParticipant(participantDtoWithEdits, activeRole);
 
         // following attributes of the organization credential subject should have been updated
         MerlotOrganizationCredentialSubject updatedCredentialSubject =
@@ -409,7 +413,7 @@ class ParticipantServiceTests {
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
 
-        MerlotParticipantDto participantDto = participantService.updateParticipant(dtoWithEdits, activeRole, "10");
+        MerlotParticipantDto participantDto = participantService.updateParticipant(dtoWithEdits, activeRole);
 
         // following attributes of the organization credential subject should have been updated
         MerlotOrganizationCredentialSubject updatedCredentialSubject =
@@ -462,7 +466,7 @@ class ParticipantServiceTests {
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_10");
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
-            () -> participantService.updateParticipant(dtoWithEdits, activeRole, "11"));
+            () -> participantService.updateParticipant(dtoWithEdits, activeRole));
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getStatusCode());
     }
 
@@ -501,7 +505,6 @@ class ParticipantServiceTests {
 
     @Test
     void createParticipantWithValidRegistrationForm() throws Exception {
-
         MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationFormContent());
         MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
                 participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
@@ -512,7 +515,7 @@ class ParticipantServiceTests {
         String merlotId = resultCredentialSubject.getMerlotId();
         assertThat(merlotId).isNotNull();
         assertThat(merlotId).isNotBlank();
-        assertThat(resultCredentialSubject.getId()).isNotBlank().isEqualTo("Participant:" + merlotId);
+        assertThat(resultCredentialSubject.getId()).isNotBlank().isEqualTo(merlotId);
 
         OrganizationMetadata metadataExpected = new OrganizationMetadata(merlotId, mailAddress,
             MembershipClass.PARTICIPANT);

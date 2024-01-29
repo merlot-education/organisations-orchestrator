@@ -65,7 +65,7 @@ public class ParticipantService {
      * @return organization data
      */
     public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
-        // input sanetization, for now we defined that ids must either only consist of numbers or be uuids
+        // input sanitization, for now we defined that ids must either only consist of numbers or be uuids
         String regex = "did:web:[-A-Za-z0-9]*." + merlotDomain;
         if (!id.matches(regex)) {
             throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did-web.");

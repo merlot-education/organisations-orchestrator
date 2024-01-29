@@ -50,7 +50,7 @@ gxfscatalog:
 gxfswizardapi:
   base-uri: "http://localhost:8085"
 
-merlot-domain: "marketplace.dev.merlot-education.eu"
+merlot-domain: "example.com"
 
 jwt:
   auth:

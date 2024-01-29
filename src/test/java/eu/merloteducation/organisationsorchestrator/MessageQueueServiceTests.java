@@ -45,7 +45,7 @@ class MessageQueueServiceTests {
     @BeforeAll
     void beforeAll() throws Exception {
         ReflectionTestUtils.setField(messageQueueService, "participantService", participantService);
-        ReflectionTestUtils.setField(messageQueueService, "organisationConnectorsService", participantConnectorsService);
+        ReflectionTestUtils.setField(messageQueueService, "participantConnectorsService", participantConnectorsService);
         when(participantService.getParticipantById(any())).thenThrow(RuntimeException.class);
         doReturn(new MerlotParticipantDto()).when(participantService).getParticipantById("10");
         doReturn(new OrganizationConnectorDto()).when(participantConnectorsService).getConnector("10", "1234");

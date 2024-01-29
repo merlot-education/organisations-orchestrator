@@ -132,14 +132,14 @@ class OrganizationQueryControllerTests {
 
         MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
-                        .put("/organization/10")
+                        .put("/organization")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectAsJsonString(participantDtoWithEdits))
-                        .header("Active-Role", "OrgLegRep_10")
+                        .header("Active-Role", "OrgLegRep_did:web:someorga.example.com")
                         .with(csrf())
                         .with(jwt().authorities(
-                                new OrganizationRoleGrantedAuthority("OrgLegRep_10"),
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someorga.example.com"),
                                 new SimpleGrantedAuthority("ROLE_some_other_role")
                         )))
                 .andDo(print())
@@ -151,15 +151,15 @@ class OrganizationQueryControllerTests {
 
         MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
-                .put("/organization/10")
+                .put("/organization")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectAsJsonString(participantDtoWithEdits))
-                .header("Active-Role", "FedAdmin_10")
+                .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_20"),
-                    new OrganizationRoleGrantedAuthority("FedAdmin_10"),
+                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com"),
+                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com"),
                     new SimpleGrantedAuthority("ROLE_some_other_role")
                 )))
             .andDo(print())
@@ -173,18 +173,18 @@ class OrganizationQueryControllerTests {
         MerlotOrganizationCredentialSubject credentialSubject =
             (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription().getVerifiableCredential()
                 .getCredentialSubject();
-        credentialSubject.setId("Participant:30");
+        credentialSubject.setId("Participant:did:web:somethirdorga.example.com");
 
         mvc.perform(MockMvcRequestBuilders
-                .put("/organization/10")
+                .put("/organization")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectAsJsonString(participantDtoWithEdits))
-                .header("Active-Role", "OrgLegRep_10")
+                .header("Active-Role", "OrgLegRep_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_20"),
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_10"),
+                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com"),
+                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someorga.example.com"),
                     new SimpleGrantedAuthority("ROLE_some_other_role")
                 )))
             .andDo(print())
@@ -196,14 +196,14 @@ class OrganizationQueryControllerTests {
 
         MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
         mvc.perform(MockMvcRequestBuilders
-                        .put("/organization/10")
+                        .put("/organization")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectAsJsonString(participantDtoWithEdits))
-                        .header("Active-Role", "OrgLegRep_20")
+                        .header("Active-Role", "OrgLegRep_did:web:someotherorga.example.com")
                         .with(csrf())
                         .with(jwt().authorities(
-                                new OrganizationRoleGrantedAuthority("OrgLegRep_20")
+                                new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com")
                         )))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -234,11 +234,11 @@ class OrganizationQueryControllerTests {
                 .file(multipartFile)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
-                .header("Active-Role", "FedAdmin_10")
+                .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isOk());
@@ -259,11 +259,11 @@ class OrganizationQueryControllerTests {
                 .file(multipartFile)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
-                .header("Active-Role", "FedAdmin_10")
+                .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
@@ -279,10 +279,10 @@ class OrganizationQueryControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
                 .accept(MediaType.APPLICATION_JSON)
-                .header("Active-Role", "FedAdmin_10")
+                .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_10")
+                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
@@ -311,7 +311,7 @@ class OrganizationQueryControllerTests {
     private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {
 
         MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
-        credentialSubject.setId("Participant:10");
+        credentialSubject.setId("did:web:someorga.example.com");
         RegistrationNumber registrationNumber = new RegistrationNumber();
         registrationNumber.setLocal("localRegNum");
         credentialSubject.setRegistrationNumber(registrationNumber);
@@ -342,7 +342,7 @@ class OrganizationQueryControllerTests {
         selfDescription.setVerifiableCredential(verifiableCredential);
 
         MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();
-        metaData.setOrgaId("changedMerlotId");
+        metaData.setOrgaId("did:web:someorga.example.com");
         metaData.setMailAddress("me@mail.me");
         metaData.setMembershipClass(MembershipClass.FEDERATOR);
 

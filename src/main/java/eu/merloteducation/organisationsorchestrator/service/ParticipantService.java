@@ -50,6 +50,8 @@ public class ParticipantService {
     @Autowired
     private OrganizationMetadataService organizationMetadataService;
 
+    private static final String PARTICIPANT = "Participant:";
+
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
      *
@@ -73,7 +75,7 @@ public class ParticipantService {
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
         ParticipantItem response = null;
         try {
-            response = gxfsCatalogService.getParticipantById("Participant:" + id);
+            response = gxfsCatalogService.getParticipantById(PARTICIPANT + id);
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         }
@@ -183,9 +185,9 @@ public class ParticipantService {
             participantMetadata = organizationMetadataService.updateMerlotParticipantMeta(targetMetadata);
 
             if (participantMetadata == null) {
-                throw new Exception();
+                throw new NullPointerException();
             }
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be updated.");
         }
 
@@ -207,14 +209,14 @@ public class ParticipantService {
      *
      * @return list of organizations that are federators
      */
-    public List<MerlotParticipantDto> getFederators() throws JsonProcessingException {
+    public List<MerlotParticipantDto> getFederators() {
         List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
 
         Map<String, MerlotParticipantMetaDto> metadataMap = new HashMap<>();
 
         metadataList.forEach(metadata -> {
             String orgaId = metadata.getOrgaId();
-            orgaId = orgaId.startsWith("Participant:") ? orgaId : "Participant:" + orgaId;
+            orgaId = orgaId.startsWith(PARTICIPANT) ? orgaId : PARTICIPANT + orgaId;
             metadataMap.put(orgaId, metadata);
         });
 
@@ -228,7 +230,7 @@ public class ParticipantService {
         selfDescriptionItems.forEach(sdItem -> {
             SelfDescription selfDescription = sdItem.getMeta().getContent();
             String orgaId = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
-            orgaId = orgaId.startsWith("Participant:") ? orgaId : "Participant:" + orgaId;
+            orgaId = orgaId.startsWith(PARTICIPANT) ? orgaId : PARTICIPANT + orgaId;
 
             sdMap.put(orgaId, selfDescription);
         });
@@ -254,7 +256,7 @@ public class ParticipantService {
         PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
 
         String uuid = UUID.randomUUID().toString();
-        String id = "Participant:" + uuid;
+        String id = PARTICIPANT + uuid;
 
         MerlotOrganizationCredentialSubject credentialSubject;
         MerlotParticipantMetaDto metaData;

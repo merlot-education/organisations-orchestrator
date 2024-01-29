@@ -208,22 +208,36 @@ public class ParticipantService {
      * @return list of organizations that are federators
      */
     public List<MerlotParticipantDto> getFederators() throws JsonProcessingException {
-        List<MerlotParticipantMetaDto> orgaMetadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
+        List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
 
-        List<String> participantIds = orgaMetadataList.stream()
-            .map(metadata -> metadata.getOrgaId().startsWith("Participant:") ? metadata.getOrgaId() : "Participant:" + metadata.getOrgaId()).toList();
+        Map<String, MerlotParticipantMetaDto> metadataMap = new HashMap<>();
+
+        metadataList.forEach(metadata -> {
+            String orgaId = metadata.getOrgaId();
+            orgaId = orgaId.startsWith("Participant:") ? orgaId : "Participant:" + orgaId;
+            metadataMap.put(orgaId, metadata);
+        });
+
+        List<String> participantIds = metadataMap.keySet().stream().toList();
 
         List<SelfDescriptionItem> selfDescriptionItems = gxfsCatalogService.getSelfDescriptionsByIds(participantIds.toArray(String[]::new))
             .getItems();
 
-        return selfDescriptionItems.stream().map(item -> {
-            SelfDescription selfDescription = item.getMeta().getContent();
+        Map<String, SelfDescription> sdMap = new HashMap<>();
+
+        selfDescriptionItems.forEach(sdItem -> {
+            SelfDescription selfDescription = sdItem.getMeta().getContent();
             String orgaId = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
+            orgaId = orgaId.startsWith("Participant:") ? orgaId : "Participant:" + orgaId;
 
-            MerlotParticipantMetaDto metadata = orgaMetadataList.stream()
-                .filter(orgaMetadata -> orgaMetadata.getOrgaId().equals(orgaId)).findFirst().orElse(null);
+            sdMap.put(orgaId, selfDescription);
+        });
 
-            return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription, metadata);
+        return participantIds.stream().map(participantId -> {
+            SelfDescription sd = sdMap.get(participantId);
+            MerlotParticipantMetaDto metadata = metadataMap.get(participantId);
+
+            return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(sd, metadata);
         }).toList();
     }
 
@@ -247,7 +261,7 @@ public class ParticipantService {
         try {
             validateMandatoryFields(pdAcroForm);
             credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(pdAcroForm);
-            metaData= organizationMapper.getOrganizationMetadataFromRegistrationForm(pdAcroForm);
+            metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(pdAcroForm);
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }

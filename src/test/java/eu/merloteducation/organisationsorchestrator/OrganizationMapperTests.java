@@ -4,9 +4,12 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatyp
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.modelslib.api.organization.MembershipClass;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -24,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.IOException;
 
 import static org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class OrganizationMapperTests {
@@ -42,6 +46,8 @@ class OrganizationMapperTests {
     String organizationName = "Organization Name";
     String postalCode = "12345";
 
+    String orgaId = "10";
+
     @Test
     void mapRegistrationFormToSelfDescriptionCorrectly() throws IOException {
         MerlotOrganizationCredentialSubject expected = getExpectedCredentialSubject();
@@ -54,7 +60,6 @@ class OrganizationMapperTests {
 
     MerlotOrganizationCredentialSubject getExpectedCredentialSubject(){
         MerlotOrganizationCredentialSubject expected = new MerlotOrganizationCredentialSubject();
-        expected.setMailAddress(mailAddress);
         expected.setOrgaName(organizationName);
         expected.setLegalName(organizationLegalName);
 
@@ -156,5 +161,104 @@ class OrganizationMapperTests {
         textField10.setDefaultAppearance(defaultAppearance);
         textField10.setValue(providerTncHash);
         return form;
+    }
+
+    @Test
+    void mapOrganizationMetadataToMerlotParticipantMetaDtoCorrectly() {
+
+        MerlotParticipantMetaDto expected = new MerlotParticipantMetaDto();
+        expected.setOrgaId(orgaId);
+        expected.setMailAddress(mailAddress);
+        expected.setMembershipClass(MembershipClass.PARTICIPANT);
+
+        OrganizationMetadata entity = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT);
+
+        MerlotParticipantMetaDto mapped = organizationMapper.organizationMetadataToMerlotParticipantMetaDto(entity);
+        assertEquals(expected.getOrgaId(), mapped.getOrgaId());
+        assertEquals(expected.getMembershipClass(), mapped.getMembershipClass());
+        assertEquals(expected.getMailAddress(), mapped.getMailAddress());
+
+        expected.setMembershipClass(MembershipClass.FEDERATOR);
+        entity.setMembershipClass(MembershipClass.FEDERATOR);
+
+        mapped = organizationMapper.organizationMetadataToMerlotParticipantMetaDto(entity);
+        assertEquals(expected.getOrgaId(), mapped.getOrgaId());
+        assertEquals(expected.getMembershipClass(), mapped.getMembershipClass());
+        assertEquals(expected.getMailAddress(), mapped.getMailAddress());
+    }
+
+    @Test
+    void updateOrganizationMetadataWithMerlotParticipantMetaDtoCorrectly() {
+
+        OrganizationMetadata expectedMetadata = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT);
+
+        MerlotParticipantMetaDto dto = new MerlotParticipantMetaDto();
+        dto.setOrgaId("changedId");
+        dto.setMailAddress(mailAddress);
+        dto.setMembershipClass(MembershipClass.PARTICIPANT);
+
+        OrganizationMetadata targetMetadata = new OrganizationMetadata(orgaId, null, null);
+
+        organizationMapper.updateOrganizationMetadataWithMerlotParticipantMetaDto(dto, targetMetadata);
+        assertEquals(expectedMetadata.getOrgaId(), targetMetadata.getOrgaId());
+        assertEquals(expectedMetadata.getMailAddress(), targetMetadata.getMailAddress());
+        assertEquals(expectedMetadata.getMembershipClass(), targetMetadata.getMembershipClass());
+
+        targetMetadata = new OrganizationMetadata(orgaId, null, null);
+        expectedMetadata.setMembershipClass(MembershipClass.FEDERATOR);
+        dto.setMembershipClass(MembershipClass.FEDERATOR);
+
+        organizationMapper.updateOrganizationMetadataWithMerlotParticipantMetaDto(dto, targetMetadata);
+        assertEquals(expectedMetadata.getOrgaId(), targetMetadata.getOrgaId());
+        assertEquals(expectedMetadata.getMailAddress(), targetMetadata.getMailAddress());
+        assertEquals(expectedMetadata.getMembershipClass(), targetMetadata.getMembershipClass());
+    }
+
+    @Test
+    void updateOrganizationMetadataAsParticipantCorrectly() {
+
+        MerlotParticipantMetaDto expected = new MerlotParticipantMetaDto();
+        expected.setOrgaId(orgaId);
+        expected.setMailAddress("changedMail");
+        expected.setMembershipClass(MembershipClass.PARTICIPANT);
+
+        MerlotParticipantMetaDto target = new MerlotParticipantMetaDto();
+        target.setOrgaId(orgaId);
+        target.setMailAddress(mailAddress);
+        target.setMembershipClass(MembershipClass.PARTICIPANT);
+
+        MerlotParticipantMetaDto edited = new MerlotParticipantMetaDto();
+        edited.setOrgaId("Participant:foo");
+        edited.setMailAddress("changedMail");
+        edited.setMembershipClass(MembershipClass.FEDERATOR);
+
+        organizationMapper.updateMerlotParticipantMetaDtoAsParticipant(edited, target);
+        assertEquals(expected.getOrgaId(), target.getOrgaId());
+        assertEquals(expected.getMembershipClass(), target.getMembershipClass());
+        assertEquals(expected.getMailAddress(), target.getMailAddress());
+    }
+
+    @Test
+    void updateOrganizationMetadataAsFedAdminCorrectly() {
+
+        MerlotParticipantMetaDto expected = new MerlotParticipantMetaDto();
+        expected.setOrgaId(orgaId);
+        expected.setMailAddress("changedMail");
+        expected.setMembershipClass(MembershipClass.FEDERATOR);
+
+        MerlotParticipantMetaDto target = new MerlotParticipantMetaDto();
+        target.setOrgaId(orgaId);
+        target.setMailAddress(mailAddress);
+        target.setMembershipClass(MembershipClass.PARTICIPANT);
+
+        MerlotParticipantMetaDto edited = new MerlotParticipantMetaDto();
+        edited.setOrgaId("20");
+        edited.setMailAddress("changedMail");
+        edited.setMembershipClass(MembershipClass.FEDERATOR);
+
+        organizationMapper.updateMerlotParticipantMetaDtoAsFedAdmin(edited, target);
+        assertEquals(expected.getOrgaId(), target.getOrgaId());
+        assertEquals(expected.getMembershipClass(), target.getMembershipClass());
+        assertEquals(expected.getMailAddress(), target.getMailAddress());
     }
 }

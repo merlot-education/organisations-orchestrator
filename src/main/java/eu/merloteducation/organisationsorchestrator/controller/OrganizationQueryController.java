@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -43,13 +44,12 @@ public class OrganizationQueryController {
      * GET endpoint for retrieving all enrolled organizations.
      *
      * @return list of all enrolled organizations
-     * @throws Exception exception during participant retrieval
+     * @throws JsonProcessingException exception during participant retrieval
      */
     @GetMapping("")
     @JsonView(OrganisationViews.PublicView.class)
     public Page<MerlotParticipantDto> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
-        @RequestParam(value = "size", defaultValue = "9") int size) throws Exception {
-
+        @RequestParam(value = "size", defaultValue = "9") int size) throws JsonProcessingException {
         return participantService.getParticipants(PageRequest.of(page, size));
     }
 
@@ -57,13 +57,12 @@ public class OrganizationQueryController {
      * POST endpoint for creating an organization.
      *
      * @return created organization
-     * @throws Exception exception during participant creation
      */
     @PostMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
     @PreAuthorize("#activeRole.isFedAdmin()")
     public MerlotParticipantDto createOrganization(@Valid @RequestPart("file") MultipartFile[] files,
-        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole) throws Exception {
+        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole) {
 
         if (files.length != 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files specified");
@@ -87,14 +86,16 @@ public class OrganizationQueryController {
      */
     @PutMapping("/organization/{orgaId}")
     @JsonView(OrganisationViews.PublicView.class)
-    @PreAuthorize("#orgaId.replace('Participant:', '').equals(#credentialSubject.merlotId) "
-        + "and #credentialSubject.id.replace('Participant:', '').equals(#credentialSubject.merlotId) "
+    @PreAuthorize("#orgaId.replace('Participant:', '')"
+        + ".equals(#participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.merlotId) "
+        + "and #participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.id.replace('Participant:', '')"
+        + ".equals(#participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.merlotId) "
         + "and (@authorityChecker.representsOrganization(authentication, #orgaId) or #activeRole.isFedAdmin())")
     public MerlotParticipantDto updateOrganization(
-        @Valid @RequestBody MerlotOrganizationCredentialSubject credentialSubject,
+        @Valid @RequestBody MerlotParticipantDto participantDtoWithEdits,
         @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole, @PathVariable(value = "orgaId") String orgaId)
         throws Exception {
-        return participantService.updateParticipant(credentialSubject, activeRole, orgaId.replace(PARTICIPANT, ""));
+        return participantService.updateParticipant(participantDtoWithEdits, activeRole, orgaId.replace(PARTICIPANT, ""));
     }
 
     /**
@@ -102,15 +103,13 @@ public class OrganizationQueryController {
      *
      * @param orgaId organization id
      * @return organization data
-     * @throws Exception exception during participant retrieval
      */
     @GetMapping("/organization/{orgaId}")
     @JsonView(OrganisationViews.PublicView.class)
-    public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId) throws Exception {
-
+    public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId){
         try {
             return participantService.getParticipantById(orgaId.replace(PARTICIPANT, ""));
-        } catch (HttpClientErrorException.NotFound e) {
+        } catch (HttpClientErrorException.NotFound | JsonProcessingException e) {
             throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
         }
 
@@ -120,13 +119,11 @@ public class OrganizationQueryController {
      * GET endpoint for retrieving all enrolled organizations that are federators.
      *
      * @return list of the enrolled organizations that are federators
-     * @throws Exception exception during participant retrieval
      */
     @GetMapping("/federators")
     @JsonView(OrganisationViews.PublicView.class)
-    public Page<MerlotParticipantDto> getAllFederators() throws Exception {
-
-        return participantService.getFederators(PageRequest.of(0, Integer.MAX_VALUE));
+    public List<MerlotParticipantDto> getAllFederators() {
+        return participantService.getFederators();
     }
 }
 

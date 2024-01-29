@@ -4,19 +4,19 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescrip
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface OrganizationMapper {
 
     @Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
+    @Mapping(target = "metadata", source = "metaData")
     @Mapping(target = "selfDescription", source = "selfDescription")
-    MerlotParticipantDto selfDescriptionToMerlotParticipantDto(SelfDescription selfDescription);
+    MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(SelfDescription selfDescription, MerlotParticipantMetaDto metaData);
 
     @BeanMapping(ignoreByDefault = true)
-    // allow to edit mail
-    @Mapping(target = "mailAddress", source = "mailAddress")
     // allow to edit tnc
     @Mapping(target = "termsAndConditions.content", source = "termsAndConditions.content")
     @Mapping(target = "termsAndConditions.hash", source = "termsAndConditions.hash")
@@ -43,8 +43,6 @@ public interface OrganizationMapper {
     @Mapping(target = "registrationNumber.eori", source = "registrationNumber.eori")
     @Mapping(target = "registrationNumber.vatId", source = "registrationNumber.vatId")
     @Mapping(target = "registrationNumber.leiCode", source = "registrationNumber.leiCode")
-    // allow to edit mail
-    @Mapping(target = "mailAddress", source = "mailAddress")
     // allow to edit tnc
     @Mapping(target = "termsAndConditions.content", source = "termsAndConditions.content")
     @Mapping(target = "termsAndConditions.hash", source = "termsAndConditions.hash")
@@ -65,7 +63,6 @@ public interface OrganizationMapper {
     @Mapping(target = "legalName", source = "content.organizationLegalName")
     @Mapping(target = "registrationNumber.local", source = "content.registrationNumberLocal")
     @Mapping(target = "registrationNumber.type", constant = "gax-trust-framework:RegistrationNumber")
-    @Mapping(target = "mailAddress", source = "content.mailAddress")
     @Mapping(target = "termsAndConditions.content", source = "content.providerTncLink")
     @Mapping(target = "termsAndConditions.hash", source = "content.providerTncHash")
     @Mapping(target = "termsAndConditions.type", constant = "gax-trust-framework:TermsAndConditions")
@@ -80,4 +77,29 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.streetAddress", source = "content.street")
     @Mapping(target = "headquarterAddress.type", constant = "vcard:Address")
     MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
+
+    @Mapping(target = "mailAddress", source = "content.mailAddress")
+    @Mapping(target = "membershipClass", constant = "PARTICIPANT")
+    MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
+
+    MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
+
+    default OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto) {
+        return new OrganizationMetadata(metadataDto.getOrgaId(), metadataDto.getMailAddress(), metadataDto.getMembershipClass());
+    }
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source, @MappingTarget OrganizationMetadata target);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source, @MappingTarget MerlotParticipantMetaDto target);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    void updateMerlotParticipantMetaDtoAsFedAdmin(MerlotParticipantMetaDto source, @MappingTarget MerlotParticipantMetaDto target);
+
 }

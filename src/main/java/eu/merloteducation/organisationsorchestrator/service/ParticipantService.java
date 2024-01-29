@@ -203,7 +203,7 @@ public class ParticipantService {
     }
 
     /**
-     * Return all participants/organizations enrolled in the GXFS catalog that are federators.
+     * Return all participants enrolled in the GXFS catalog that are federators.
      *
      * @return list of organizations that are federators
      */

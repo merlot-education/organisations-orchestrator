@@ -1,8 +1,8 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
-import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMetadataMapper;
-import eu.merloteducation.organisationsorchestrator.models.entities.MembershipClass;
+import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
 import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
@@ -30,7 +30,7 @@ class OrganisationMetadataServiceTests {
     private OrganizationMetadataRepository metadataRepository;
 
     @Autowired
-    private OrganizationMetadataMapper metadataMapper;
+    private OrganizationMapper metadataMapper;
 
     private static final String MERLOT_ID_NUMBER = "10";
 
@@ -39,8 +39,8 @@ class OrganisationMetadataServiceTests {
     @BeforeAll
     void beforeAll() {
 
-        ReflectionTestUtils.setField(metadataService, "metadataRepository", metadataRepository);
-        ReflectionTestUtils.setField(metadataService, "metadataMapper", metadataMapper);
+        ReflectionTestUtils.setField(metadataService, "repository", metadataRepository);
+        ReflectionTestUtils.setField(metadataService, "mapper", metadataMapper);
     }
 
     @BeforeEach
@@ -58,8 +58,8 @@ class OrganisationMetadataServiceTests {
     @AfterEach
     void cleanUpData() {
 
-        metadataRepository.deleteByMerlotId(MERLOT_ID_NUMBER);
-        metadataRepository.deleteByMerlotId(MERLOT_ID_UUID);
+        metadataRepository.deleteByOrgaId(MERLOT_ID_NUMBER);
+        metadataRepository.deleteByOrgaId(MERLOT_ID_UUID);
     }
 
     @Transactional
@@ -69,7 +69,7 @@ class OrganisationMetadataServiceTests {
         MerlotParticipantMetaDto expected1 = new MerlotParticipantMetaDto();
         expected1.setOrgaId(MERLOT_ID_NUMBER);
         expected1.setMailAddress("abd@de.fg");
-        expected1.setMembershipClass("FEDERATOR");
+        expected1.setMembershipClass(MembershipClass.FEDERATOR);
 
         MerlotParticipantMetaDto actual1 = metadataService.getMerlotParticipantMetaDto(MERLOT_ID_NUMBER);
         assertEquals(expected1.getOrgaId(), actual1.getOrgaId());
@@ -79,7 +79,7 @@ class OrganisationMetadataServiceTests {
         MerlotParticipantMetaDto expected2 = new MerlotParticipantMetaDto();
         expected2.setOrgaId(MERLOT_ID_UUID);
         expected2.setMailAddress("hij@kl.mn");
-        expected2.setMembershipClass("PARTICIPANT");
+        expected2.setMembershipClass(MembershipClass.PARTICIPANT);
 
         MerlotParticipantMetaDto actual2 = metadataService.getMerlotParticipantMetaDto(MERLOT_ID_UUID);
         assertEquals(expected2.getOrgaId(), actual2.getOrgaId());
@@ -93,21 +93,24 @@ class OrganisationMetadataServiceTests {
 
         String id = "7d0ad7ce-cb1f-479f-9b7d-33b0d7d6f347";
 
-        OrganizationMetadata metadata = new OrganizationMetadata(id, "foo@bar.de", MembershipClass.FEDERATOR);
+        MerlotParticipantMetaDto metadataToSave = new MerlotParticipantMetaDto();
+        metadataToSave.setOrgaId(id);
+        metadataToSave.setMailAddress("foo@bar.de");
+        metadataToSave.setMembershipClass(MembershipClass.FEDERATOR);
 
         MerlotParticipantMetaDto expected = new MerlotParticipantMetaDto();
         expected.setOrgaId(id);
         expected.setMailAddress("foo@bar.de");
-        expected.setMembershipClass("FEDERATOR");
+        expected.setMembershipClass(MembershipClass.FEDERATOR);
 
-        MerlotParticipantMetaDto actual = metadataService.saveMerlotParticipantMeta(metadata);
+        MerlotParticipantMetaDto actual = metadataService.saveMerlotParticipantMeta(metadataToSave);
 
         assertEquals(expected.getOrgaId(), actual.getOrgaId());
         assertEquals(expected.getMembershipClass(), actual.getMembershipClass());
         assertEquals(expected.getMailAddress(), actual.getMailAddress());
 
         // clean-up
-        metadataRepository.deleteByMerlotId(id);
+        metadataRepository.deleteByOrgaId(id);
     }
 
     @Transactional
@@ -117,7 +120,7 @@ class OrganisationMetadataServiceTests {
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         metaDto.setOrgaId("7d0ad7ce-cb1f-479f-9b7d-33b0d7d6f347");
         metaDto.setMailAddress("foo@bar.de");
-        metaDto.setMembershipClass("FEDERATOR");
+        metaDto.setMembershipClass(MembershipClass.FEDERATOR);
 
         MerlotParticipantMetaDto actual = metadataService.updateMerlotParticipantMeta(metaDto);
         assertNull(actual);
@@ -130,7 +133,7 @@ class OrganisationMetadataServiceTests {
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         metaDto.setOrgaId(MERLOT_ID_UUID);
         metaDto.setMailAddress("foo@bar.de");
-        metaDto.setMembershipClass("FEDERATOR");
+        metaDto.setMembershipClass(MembershipClass.FEDERATOR);
 
         MerlotParticipantMetaDto actual = metadataService.updateMerlotParticipantMeta(metaDto);
         assertEquals(metaDto.getOrgaId(), actual.getOrgaId());

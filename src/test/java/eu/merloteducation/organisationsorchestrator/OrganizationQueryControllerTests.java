@@ -10,6 +10,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatyp
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
@@ -319,7 +320,6 @@ class OrganizationQueryControllerTests {
         credentialSubject.setHeadquarterAddress(address);
         credentialSubject.setOrgaName("MyOrga");
         credentialSubject.setMerlotId("10");
-        credentialSubject.setMailAddress("me@mail.me");
         TermsAndConditions termsAndConditions = new TermsAndConditions();
         termsAndConditions.setContent("http://example.com");
         termsAndConditions.setHash("1234");
@@ -341,7 +341,7 @@ class OrganizationQueryControllerTests {
         MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();
         metaData.setOrgaId("changedMerlotId");
         metaData.setMailAddress("me@mail.me");
-        metaData.setMembershipClass("Federator");
+        metaData.setMembershipClass(MembershipClass.FEDERATOR);
 
         dtoWithEdits.setSelfDescription(selfDescription);
         dtoWithEdits.setId(editedCredentialSubject.getId());

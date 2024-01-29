@@ -84,7 +84,9 @@ public interface OrganizationMapper {
 
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
 
-    OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
+    default OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto) {
+        return new OrganizationMetadata(metadataDto.getOrgaId(), metadataDto.getMailAddress(), metadataDto.getMembershipClass());
+    }
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")

@@ -5,4 +5,4 @@ cors:
       https://api.demo.merlot-education.eu
     patterns:
 
-merlot-domain: "marketplace.dev.merlot-education.eu"
+merlot-domain: "marketplace.demo.merlot-education.eu"

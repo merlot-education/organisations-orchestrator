@@ -15,10 +15,10 @@ import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +41,9 @@ public class ParticipantService {
     @Autowired
     private GxfsCatalogService gxfsCatalogService;
 
+    @Value("${merlot-domain}")
+    private String merlotDomain;
+
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
      *
@@ -49,7 +52,7 @@ public class ParticipantService {
      */
     public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
         // input sanetization, for now we defined that ids must either only consist of numbers or be uuids
-        String regex = "did:web:[-A-Za-z0-9]*.merlot-education.eu";
+        String regex = "did:web:[-A-Za-z0-9]*." + merlotDomain;
         if (!id.matches(regex)) {
             throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did-web.");
         }
@@ -57,7 +60,7 @@ public class ParticipantService {
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
         ParticipantItem response = null;
         try {
-            response = gxfsCatalogService.getParticipantById("Participant:" + id);
+            response = gxfsCatalogService.getParticipantById(id);
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         }
@@ -185,7 +188,7 @@ public class ParticipantService {
         }
 
         String id = generateMerlotSubdomain(credentialSubject);
-        credentialSubject.setId("Participant:" + id);
+        credentialSubject.setId(id);
         credentialSubject.setMerlotId(id);
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
@@ -196,14 +199,14 @@ public class ParticipantService {
     }
 
     private String generateMerlotSubdomain(MerlotOrganizationCredentialSubject credentialSubject) {
-        String merlotSubdomain = credentialSubject.getOrgaName()
+        String subdomain = credentialSubject.getOrgaName()
                 .replace(" ", "-") // replace whitespace with dash
                 .replace("ä", "ae") // replace german umlauts
                 .replace("ö", "oe")
                 .replace("ü","ue")
-                .replaceAll("[^- A-Za-z0-9]", "")  // replace any non-alphanumeric character (except dash and space) with nothing
+                .replaceAll("[^-A-Za-z0-9]", "")  // remove any non-alphanumeric character (except dash)
                 .toLowerCase(); // convert to lowercase
-        return "did:web:" + merlotSubdomain + ".merlot-education.eu";
+        return "did:web:" + subdomain + "." + merlotDomain;
     }
 
     private Map<String, String> getContext() {

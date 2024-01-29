@@ -93,6 +93,8 @@ edc-tokens:
   edc1: "somevalue"
   edc2: "somevalue"
 
+merlot-domain: "marketplace.dev.merlot-education.eu"
+
 cors:
   global:
     origins:

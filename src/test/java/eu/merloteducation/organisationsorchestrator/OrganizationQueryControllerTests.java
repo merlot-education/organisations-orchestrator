@@ -79,6 +79,9 @@ class OrganizationQueryControllerTests {
     public void beforeEach() throws Exception {
         List<MerlotParticipantDto> participants = new ArrayList<>();
         MerlotParticipantDto participantDto = new MerlotParticipantDto();
+        participantDto.setId("did:web:example.com#someid");
+        participantDto.setMetadata(new MerlotParticipantMetaDto());
+        participantDto.getMetadata().setMembershipClass(MembershipClass.PARTICIPANT);
         participants.add(participantDto);
 
         Page<MerlotParticipantDto> participantsPage = new PageImpl<>(participants);

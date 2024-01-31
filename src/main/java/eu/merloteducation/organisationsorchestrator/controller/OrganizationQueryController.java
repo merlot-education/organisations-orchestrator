@@ -38,8 +38,6 @@ public class OrganizationQueryController {
     @Autowired
     private PdfContentMapper pdfContentMapper;
 
-    private static final String PARTICIPANT = "Participant:";
-
     /**
      * GET endpoint for retrieving all enrolled organizations.
      *
@@ -107,7 +105,7 @@ public class OrganizationQueryController {
     @JsonView(OrganisationViews.PublicView.class)
     public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId){
         try {
-            return participantService.getParticipantById(orgaId.replace(PARTICIPANT, ""));
+            return participantService.getParticipantById(orgaId);
         } catch (HttpClientErrorException.NotFound | JsonProcessingException e) {
             throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
         }

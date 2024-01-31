@@ -53,66 +53,70 @@ public class InitialDataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws IOException, CredentialSignatureException, CredentialPresentationException {
-        if (!participantService.getParticipants(Pageable.ofSize(1)).getContent().isEmpty()) {
-            logger.info("Database will not be reinitialised since organisations exist.");
-            return;
-        }
-        logger.info("Initializing database since no organisations were found.");
+        try {
+            if (!participantService.getParticipants(Pageable.ofSize(1)).getContent().isEmpty()) {
+                logger.info("Database will not be reinitialised since organisations exist.");
+                return;
+            }
+            logger.info("Initializing database since no organisations were found.");
 
-        ArrayNode initialOrgas = (ArrayNode) objectMapper.readTree(initialOrgasResource.getFile()); // TODO replace this with the pdf reader
-        JsonNode initialOrgaConnectors = objectMapper.readTree(initialOrgaConnectorsResource.getFile());
+            ArrayNode initialOrgas = (ArrayNode) objectMapper.readTree(initialOrgasResource.getFile()); // TODO replace this with the pdf reader
+            JsonNode initialOrgaConnectors = objectMapper.readTree(initialOrgaConnectorsResource.getFile());
 
-        for (JsonNode orga : initialOrgas) {
-            RegistrationFormContent content = new RegistrationFormContent();
+            for (JsonNode orga : initialOrgas) {
+                RegistrationFormContent content = new RegistrationFormContent();
 
-            content.setOrganizationName(orga.get("organizationName").textValue());
-            content.setOrganizationLegalName(orga.get("organizationLegalName").textValue());
-            content.setRegistrationNumberLocal(orga.get("registrationNumber").textValue());
-            content.setMailAddress(orga.get("mailAddress").textValue());
+                content.setOrganizationName(orga.get("organizationName").textValue());
+                content.setOrganizationLegalName(orga.get("organizationLegalName").textValue());
+                content.setRegistrationNumberLocal(orga.get("registrationNumber").textValue());
+                content.setMailAddress(orga.get("mailAddress").textValue());
 
-            content.setStreet(orga.get("legalAddress").get("street").textValue());
-            content.setCity(orga.get("legalAddress").get("city").textValue());
-            content.setPostalCode(orga.get("legalAddress").get("postalCode").textValue());
-            content.setCountryCode(orga.get("legalAddress").get("countryCode").textValue());
+                content.setStreet(orga.get("legalAddress").get("street").textValue());
+                content.setCity(orga.get("legalAddress").get("city").textValue());
+                content.setPostalCode(orga.get("legalAddress").get("postalCode").textValue());
+                content.setCountryCode(orga.get("legalAddress").get("countryCode").textValue());
 
-            content.setProviderTncLink(orga.get("termsAndConditionsLink").textValue());
-            content.setProviderTncHash(orga.get("termsAndConditionsHash").textValue());
-            MerlotParticipantDto participant = participantService.createParticipant(content); // TODO consider fixed id generation
+                content.setProviderTncLink(orga.get("termsAndConditionsLink").textValue());
+                content.setProviderTncHash(orga.get("termsAndConditionsHash").textValue());
+                MerlotParticipantDto participant = participantService.createParticipant(content);
 
-            // check if we need to add connectors as well
-            List<OrganizationConnectorDto> existingConnectors =
-                    participantConnectorsService.getAllConnectors(participant.getId());
+                // check if we need to add connectors as well
+                List<OrganizationConnectorDto> existingConnectors =
+                        participantConnectorsService.getAllConnectors(participant.getId());
 
-            // collect buckets of this orga
-            ArrayNode orgaBucketsNode = (ArrayNode) initialOrgaConnectors.get(content.getOrganizationLegalName());
-            List<String> orgaBuckets = new ArrayList<>();
-            for (JsonNode bucket : orgaBucketsNode) {
-                orgaBuckets.add(bucket.textValue());
+                // collect buckets of this orga
+                ArrayNode orgaBucketsNode = (ArrayNode) initialOrgaConnectors.get(content.getOrganizationLegalName());
+                List<String> orgaBuckets = new ArrayList<>();
+                for (JsonNode bucket : orgaBucketsNode) {
+                    orgaBuckets.add(bucket.textValue());
+                }
+
+                // only add if we have no existing connectors and we have buckets
+                if (!existingConnectors.isEmpty() || orgaBuckets.isEmpty()) {
+                    continue;
+                }
+
+
+                // add pool edcs with the found buckets
+                PostOrganisationConnectorModel connector1 = new PostOrganisationConnectorModel();
+                connector1.setConnectorId("edc1");
+                connector1.setConnectorEndpoint("http://edc-1.merlot.svc.cluster.local");
+                connector1.setConnectorAccessToken(poolEdc1Token);
+                connector1.setBucketNames(orgaBuckets);
+
+                participantConnectorsService.postConnector(participant.getId(), connector1);
+
+                PostOrganisationConnectorModel connector2 = new PostOrganisationConnectorModel();
+                connector2.setConnectorId("edc2");
+                connector2.setConnectorEndpoint("http://edc-2.merlot.svc.cluster.local");
+                connector2.setConnectorAccessToken(poolEdc2Token);
+                connector2.setBucketNames(orgaBuckets);
+
+                participantConnectorsService.postConnector(participant.getId(), connector2);
             }
 
-            // only add if we have no existing connectors and we have buckets
-            if (!existingConnectors.isEmpty() || orgaBuckets.isEmpty()) {
-                continue;
-            }
-
-
-            // add pool edcs with the found buckets
-            PostOrganisationConnectorModel connector1 = new PostOrganisationConnectorModel();
-            connector1.setConnectorId("edc1");
-            connector1.setConnectorEndpoint("http://edc-1.merlot.svc.cluster.local");
-            connector1.setConnectorAccessToken(poolEdc1Token);
-            connector1.setBucketNames(orgaBuckets);
-
-            participantConnectorsService.postConnector(participant.getId(), connector1);
-
-            PostOrganisationConnectorModel connector2 = new PostOrganisationConnectorModel();
-            connector2.setConnectorId("edc2");
-            connector2.setConnectorEndpoint("http://edc-2.merlot.svc.cluster.local");
-            connector2.setConnectorAccessToken(poolEdc2Token);
-            connector2.setBucketNames(orgaBuckets);
-
-            participantConnectorsService.postConnector(participant.getId(), connector2);
+        } catch (Exception e) {
+            logger.warn("Failed to import initial participant dataset. {}", e.getMessage());
         }
-
     }
 }

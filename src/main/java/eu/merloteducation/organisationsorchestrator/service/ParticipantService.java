@@ -18,13 +18,7 @@ import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
-import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
-import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Null;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +60,7 @@ public class ParticipantService {
      */
     public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
         // input sanitization, must be a did:web
-        String regex = "did:web:[-.A-Za-z0-9]*";
+        String regex = "did:web:[-.#A-Za-z0-9]*";
         if (!id.matches(regex)) {
             throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did:web.");
         }
@@ -130,7 +124,7 @@ public class ParticipantService {
             .map(item -> {
                 SelfDescription selfDescription = item.getMeta().getContent();
 
-                String id = item.getMeta().getContent().getVerifiableCredential().getCredentialSubject().getId();
+                String id = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
                 MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(id);
 
                 if (metaDto == null) {
@@ -274,7 +268,7 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }
 
-        String id = generateMerlotSubdomain(credentialSubject);
+        String id = generateDidWeb(credentialSubject);
         metaData.setOrgaId(id);
 
         MerlotParticipantMetaDto metaDataDto;
@@ -305,15 +299,15 @@ public class ParticipantService {
             metaDataDto);
     }
 
-    private String generateMerlotSubdomain(MerlotOrganizationCredentialSubject credentialSubject) {
-        String subdomain = credentialSubject.getOrgaName()
+    private String generateDidWeb(MerlotOrganizationCredentialSubject credentialSubject) {
+        String keyId = credentialSubject.getOrgaName()
                 .replace(" ", "-") // replace whitespace with dash
                 .replace("ä", "ae") // replace german umlauts
                 .replace("ö", "oe")
                 .replace("ü","ue")
                 .replaceAll("[^-A-Za-z0-9]", "")  // remove any non-alphanumeric character (except dash)
                 .toLowerCase(); // convert to lowercase
-        return "did:web:" + subdomain + "." + merlotDomain;
+        return "did:web:" + merlotDomain + "#" + keyId;
     }
 
     private Map<String, String> getContext() {

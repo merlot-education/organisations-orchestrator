@@ -507,8 +507,7 @@ class ParticipantServiceTests {
             .isEqualTo(getExpectedCredentialSubject());
 
         String id = resultCredentialSubject.getId();
-        assertThat(id).isNotNull();
-        assertThat(id).isNotBlank();
+        assertThat(id).isNotNull().isNotBlank();
 
         OrganizationMetadata metadataExpected = new OrganizationMetadata(id, mailAddress,
             MembershipClass.PARTICIPANT);

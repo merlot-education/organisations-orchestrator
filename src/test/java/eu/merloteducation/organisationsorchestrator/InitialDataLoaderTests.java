@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
 @EnableConfigurationProperties
-public class InitialDataLoaderTests {
+class InitialDataLoaderTests {
 
     @MockBean
     private InitialDataLoader initialDataLoader;  // mock the spring-created data loader as we create it manually

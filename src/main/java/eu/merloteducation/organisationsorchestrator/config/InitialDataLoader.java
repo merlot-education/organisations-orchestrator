@@ -3,8 +3,6 @@ package eu.merloteducation.organisationsorchestrator.config;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
-import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
@@ -20,7 +18,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +33,9 @@ public class InitialDataLoader implements CommandLineRunner {
     private final Resource initialOrgaConnectorsResource;
     private final String poolEdc1Token;
     private final String poolEdc2Token;
+
+    private static final String LEGAL_ADDRESS = "legalAddress";
+
 
     public InitialDataLoader(@Autowired ParticipantService participantService,
                              @Autowired ParticipantConnectorsService participantConnectorsService,
@@ -55,7 +55,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
 
     @Override
-    public void run(String... args) throws IOException, CredentialSignatureException, CredentialPresentationException {
+    public void run(String... args) {
         try {
             if (!participantService.getParticipants(Pageable.ofSize(1)).getContent().isEmpty()) {
                 logger.info("Database will not be reinitialised since organisations exist.");
@@ -74,10 +74,10 @@ public class InitialDataLoader implements CommandLineRunner {
                 content.setRegistrationNumberLocal(orga.get("registrationNumber").textValue());
                 content.setMailAddress(orga.get("mailAddress").textValue());
 
-                content.setStreet(orga.get("legalAddress").get("street").textValue());
-                content.setCity(orga.get("legalAddress").get("city").textValue());
-                content.setPostalCode(orga.get("legalAddress").get("postalCode").textValue());
-                content.setCountryCode(orga.get("legalAddress").get("countryCode").textValue());
+                content.setStreet(orga.get(LEGAL_ADDRESS).get("street").textValue());
+                content.setCity(orga.get(LEGAL_ADDRESS).get("city").textValue());
+                content.setPostalCode(orga.get(LEGAL_ADDRESS).get("postalCode").textValue());
+                content.setCountryCode(orga.get(LEGAL_ADDRESS).get("countryCode").textValue());
 
                 content.setProviderTncLink(orga.get("termsAndConditionsLink").textValue());
                 content.setProviderTncHash(orga.get("termsAndConditionsHash").textValue());

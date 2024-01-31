@@ -1,0 +1,16 @@
+[
+  {
+    "organizationName": "MERLOT Federation",
+    "organizationLegalName": "MERLOT Federation",
+    "registrationNumber": "-",
+    "mailAddress": "mymail@example.com",
+    "termsAndConditionsLink": "https://www.merlot-education.eu/",
+    "termsAndConditionsHash": "hash1234",
+    "legalAddress": {
+      "countryCode": "-",
+      "postalCode": "-",
+      "city": "-",
+      "street": "-"
+    }
+  }
+]

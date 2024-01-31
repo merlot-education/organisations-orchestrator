@@ -29,26 +29,29 @@ public class InitialDataLoader implements CommandLineRunner {
 
     private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
 
-    @Autowired
-    private ParticipantService participantService;
+    private final ParticipantService participantService;
+    private final ParticipantConnectorsService participantConnectorsService;
+    private final ObjectMapper objectMapper;
+    private final Resource initialOrgasResource;
+    private final Resource initialOrgaConnectorsResource;
+    private final String poolEdc1Token;
+    private final String poolEdc2Token;
 
-    @Autowired
-    private ParticipantConnectorsService participantConnectorsService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Value("classpath:initial-orgas.json")
-    private Resource initialOrgasResource;
-
-    @Value("classpath:initial-orga-connectors.json")
-    private Resource initialOrgaConnectorsResource;
-
-    @Value("${edc-tokens.edc1:#{null}}")
-    private String poolEdc1Token;
-
-    @Value("${edc-tokens.edc2:#{null}}")
-    private String poolEdc2Token;
+    public InitialDataLoader(@Autowired ParticipantService participantService,
+                             @Autowired ParticipantConnectorsService participantConnectorsService,
+                             @Autowired ObjectMapper objectMapper,
+                             @Value("classpath:initial-orgas.json") Resource initialOrgasResource,
+                             @Value("classpath:initial-orga-connectors.json") Resource initialOrgaConnectorsResource,
+                             @Value("${edc-tokens.edc1:#{null}}") String poolEdc1Token,
+                             @Value("${edc-tokens.edc2:#{null}}") String poolEdc2Token) {
+        this.participantService = participantService;
+        this.participantConnectorsService = participantConnectorsService;
+        this.objectMapper = objectMapper;
+        this.initialOrgasResource = initialOrgasResource;
+        this.initialOrgaConnectorsResource = initialOrgaConnectorsResource;
+        this.poolEdc1Token = poolEdc1Token;
+        this.poolEdc2Token = poolEdc2Token;
+    }
 
 
     @Override

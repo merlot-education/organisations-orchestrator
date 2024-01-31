@@ -18,6 +18,7 @@ import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
@@ -274,6 +276,8 @@ public class ParticipantService {
         MerlotParticipantMetaDto metaDataDto;
         try {
             metaDataDto = organizationMetadataService.saveMerlotParticipantMeta(metaData);
+        } catch (ParticipantConflictException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Participant with this legal name already exists.");
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
         }
@@ -300,14 +304,9 @@ public class ParticipantService {
     }
 
     private String generateDidWeb(MerlotOrganizationCredentialSubject credentialSubject) {
-        String keyId = credentialSubject.getOrgaName()
-                .replace(" ", "-") // replace whitespace with dash
-                .replace("ä", "ae") // replace german umlauts
-                .replace("ö", "oe")
-                .replace("ü","ue")
-                .replaceAll("[^-A-Za-z0-9]", "")  // remove any non-alphanumeric character (except dash)
-                .toLowerCase(); // convert to lowercase
-        return "did:web:" + merlotDomain + "#" + keyId;
+        String uuid = UUID.nameUUIDFromBytes(credentialSubject.getLegalName().getBytes(StandardCharsets.UTF_8))
+                .toString(); // uuid v3 from md5
+        return "did:web:" + merlotDomain + "#" + uuid;
     }
 
     private Map<String, String> getContext() {

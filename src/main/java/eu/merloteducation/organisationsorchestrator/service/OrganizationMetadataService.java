@@ -4,6 +4,7 @@ import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
+import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,10 @@ public class OrganizationMetadataService {
     }
 
     public MerlotParticipantMetaDto saveMerlotParticipantMeta(MerlotParticipantMetaDto metaDto) {
+        OrganizationMetadata dbMeta = repository.findById(metaDto.getOrgaId()).orElse(null);
+        if (dbMeta != null) {
+            throw new ParticipantConflictException("Participant with this id already exists");
+        }
         OrganizationMetadata metadata = mapper.merlotParticipantMetaDtoToOrganizationMetadata(metaDto);
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));
     }

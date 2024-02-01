@@ -165,41 +165,48 @@ class OrganizationMapperTests {
         expected.setOrgaId(orgaId);
         expected.setMailAddress(mailAddress);
         expected.setMembershipClass(MembershipClass.PARTICIPANT);
+        expected.setActive(false);
 
-        OrganizationMetadata entity = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT);
+        OrganizationMetadata entity = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT, false);
 
         MerlotParticipantMetaDto mapped = organizationMapper.organizationMetadataToMerlotParticipantMetaDto(entity);
         assertEquals(expected.getOrgaId(), mapped.getOrgaId());
         assertEquals(expected.getMembershipClass(), mapped.getMembershipClass());
         assertEquals(expected.getMailAddress(), mapped.getMailAddress());
+        assertEquals(expected.isActive(), mapped.isActive());
 
         expected.setMembershipClass(MembershipClass.FEDERATOR);
+        expected.setActive(true);
         entity.setMembershipClass(MembershipClass.FEDERATOR);
+        entity.setActive(true);
 
         mapped = organizationMapper.organizationMetadataToMerlotParticipantMetaDto(entity);
         assertEquals(expected.getOrgaId(), mapped.getOrgaId());
         assertEquals(expected.getMembershipClass(), mapped.getMembershipClass());
         assertEquals(expected.getMailAddress(), mapped.getMailAddress());
+        assertEquals(expected.isActive(), mapped.isActive());
     }
 
     @Test
     void updateOrganizationMetadataWithMerlotParticipantMetaDtoCorrectly() {
 
-        OrganizationMetadata expectedMetadata = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT);
+        OrganizationMetadata expectedMetadata = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT, true);
 
         MerlotParticipantMetaDto dto = new MerlotParticipantMetaDto();
         dto.setOrgaId("changedId");
         dto.setMailAddress(mailAddress);
         dto.setMembershipClass(MembershipClass.PARTICIPANT);
+        dto.setActive(true);
 
-        OrganizationMetadata targetMetadata = new OrganizationMetadata(orgaId, null, null);
+        OrganizationMetadata targetMetadata = new OrganizationMetadata(orgaId, null, null, false);
 
         organizationMapper.updateOrganizationMetadataWithMerlotParticipantMetaDto(dto, targetMetadata);
         assertEquals(expectedMetadata.getOrgaId(), targetMetadata.getOrgaId());
         assertEquals(expectedMetadata.getMailAddress(), targetMetadata.getMailAddress());
         assertEquals(expectedMetadata.getMembershipClass(), targetMetadata.getMembershipClass());
+        assertEquals(expectedMetadata.isActive(), targetMetadata.isActive());
 
-        targetMetadata = new OrganizationMetadata(orgaId, null, null);
+        targetMetadata = new OrganizationMetadata(orgaId, null, null, false);
         expectedMetadata.setMembershipClass(MembershipClass.FEDERATOR);
         dto.setMembershipClass(MembershipClass.FEDERATOR);
 
@@ -207,6 +214,7 @@ class OrganizationMapperTests {
         assertEquals(expectedMetadata.getOrgaId(), targetMetadata.getOrgaId());
         assertEquals(expectedMetadata.getMailAddress(), targetMetadata.getMailAddress());
         assertEquals(expectedMetadata.getMembershipClass(), targetMetadata.getMembershipClass());
+        assertEquals(expectedMetadata.isActive(), targetMetadata.isActive());
     }
 
     @Test

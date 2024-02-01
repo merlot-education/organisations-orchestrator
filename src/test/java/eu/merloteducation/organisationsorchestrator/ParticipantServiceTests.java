@@ -3,6 +3,7 @@ package eu.merloteducation.organisationsorchestrator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.merloteducation.authorizationlibrary.authorization.OrganizationRole;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
@@ -55,10 +56,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -336,16 +334,19 @@ class ParticipantServiceTests {
         metaDto.setOrgaId("10");
         metaDto.setMailAddress("mymail@example.com");
         metaDto.setMembershipClass(MembershipClass.PARTICIPANT);
+        metaDto.setActive(true);
 
         lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("10"))).thenReturn(metaDto);
         lenient().when(organizationMetadataService.getParticipantsByMembershipClass(eq(MembershipClass.FEDERATOR))).thenReturn(new ArrayList<>());
         lenient().when(organizationMetadataService.updateMerlotParticipantMeta(any())).thenAnswer(i -> i.getArguments()[0]);
+        lenient().when(organizationMetadataService.getInactiveParticipants()).thenReturn(new ArrayList<>());
     }
 
     @Test
     void getAllParticipants() throws Exception {
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN.getRoleName() + "_anything");
 
-        Page<MerlotParticipantDto> organizations = participantService.getParticipants(PageRequest.of(0, 9));
+        Page<MerlotParticipantDto> organizations = participantService.getParticipants(PageRequest.of(0, 9), activeRole);
         assertThat(organizations.getContent(), isA(List.class));
         assertThat(organizations.getContent(), not(empty()));
         assertEquals(1, organizations.getContent().size());
@@ -362,20 +363,55 @@ class ParticipantServiceTests {
     }
 
     @Test
+    void getAllParticipantsNotAsFedAdmin() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String mockQueryResponse = """
+            {
+                "totalCount": 0,
+                "items": []
+            }
+            """;
+        mockQueryResponse = StringEscapeUtils.unescapeJson(mockQueryResponse);
+        if (mockQueryResponse != null)
+            mockQueryResponse = mockQueryResponse.replace("\"{", "{").replace("}\"", "}");
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriItems = mapper.readValue(mockQueryResponse, new TypeReference<>() {});
+
+        lenient().when(gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(any(), any(), any(), anyLong(), anyLong()))
+            .thenReturn(uriItems);
+
+        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
+        metaDto.setOrgaId("10");
+        metaDto.setMailAddress("mymail@example.com");
+        metaDto.setMembershipClass(MembershipClass.PARTICIPANT);
+        metaDto.setActive(false);
+
+        lenient().when(organizationMetadataService.getInactiveParticipants()).thenReturn(List.of("10"));
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP.getRoleName() + "_anything");
+        participantService.getParticipants(PageRequest.of(0, 9), activeRole);
+
+        verify(organizationMetadataService, times(1)).getInactiveParticipants();
+        verify(gxfsCatalogService, times(1)).getSortedParticipantUriPageWithExcludedUris(any(), any(), eq(List.of("10")), anyLong(), anyLong());
+        verify(gxfsCatalogService, times(1)).getSelfDescriptionsByIds(argThat(strings -> strings != null && strings.length == 0));
+    }
+
+    @Test
     void getAllParticipantsFailAtSdUri() throws Exception {
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN.getRoleName() + "_anything");
         doThrow(getWebClientResponseException()).when(gxfsCatalogService).getSelfDescriptionsByIds(any());
 
         PageRequest pageRequest = PageRequest.of(0, 9);
-        assertThrows(ResponseStatusException.class, () -> participantService.getParticipants(pageRequest));
+        assertThrows(ResponseStatusException.class, () -> participantService.getParticipants(pageRequest, activeRole));
     }
 
     @Test
     void getAllParticipantsFailAtQueryUri() throws Exception {
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN.getRoleName() + "_anything");
         doThrow(getWebClientResponseException()).when(gxfsCatalogService)
                 .getSortedParticipantUriPage(any(), any(), anyLong(), anyLong());
 
         PageRequest pageRequest = PageRequest.of(0, 9);
-        assertThrows(ResponseStatusException.class, () -> participantService.getParticipants(pageRequest));
+        assertThrows(ResponseStatusException.class, () -> participantService.getParticipants(pageRequest, activeRole));
     }
 
     @Test
@@ -584,7 +620,7 @@ class ParticipantServiceTests {
         assertThat(resultCredentialSubject.getId()).isNotBlank().isEqualTo("Participant:" + merlotId);
 
         OrganizationMetadata metadataExpected = new OrganizationMetadata(merlotId, mailAddress,
-            MembershipClass.PARTICIPANT);
+            MembershipClass.PARTICIPANT, true);
 
         ArgumentCaptor<MerlotParticipantMetaDto> varArgs = ArgumentCaptor.forClass(MerlotParticipantMetaDto.class);
         verify(organizationMetadataService, times(1)).saveMerlotParticipantMeta(varArgs.capture());

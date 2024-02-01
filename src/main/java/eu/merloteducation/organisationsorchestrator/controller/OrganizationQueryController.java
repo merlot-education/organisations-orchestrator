@@ -42,8 +42,9 @@ public class OrganizationQueryController {
     @GetMapping("")
     @JsonView(OrganisationViews.PublicView.class)
     public Page<MerlotParticipantDto> getAllOrganizations(@RequestParam(value = "page", defaultValue = "0") int page,
-        @RequestParam(value = "size", defaultValue = "9") int size) throws JsonProcessingException {
-        return participantService.getParticipants(PageRequest.of(page, size));
+        @RequestParam(value = "size", defaultValue = "9") int size,
+        @RequestHeader(value = "Active-Role", required = false) OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
+        return participantService.getParticipants(PageRequest.of(page, size), activeRole);
     }
 
     /**

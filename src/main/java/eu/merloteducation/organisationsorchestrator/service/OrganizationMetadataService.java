@@ -28,6 +28,7 @@ public class OrganizationMetadataService {
     }
 
     public MerlotParticipantMetaDto saveMerlotParticipantMeta(MerlotParticipantMetaDto metaDto) {
+
         OrganizationMetadata metadata = mapper.merlotParticipantMetaDtoToOrganizationMetadata(metaDto);
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));
     }
@@ -47,9 +48,16 @@ public class OrganizationMetadataService {
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(dbMetadata));
     }
 
-    public List<MerlotParticipantMetaDto> getParticipantsByMembershipClass(MembershipClass membershipClass){
+    public List<MerlotParticipantMetaDto> getParticipantsByMembershipClass(MembershipClass membershipClass) {
+
         List<OrganizationMetadata> orgaMetadataList = repository.findByMembershipClass(membershipClass);
-        return orgaMetadataList.stream().map(orgaMetadata -> mapper.organizationMetadataToMerlotParticipantMetaDto(orgaMetadata)).toList();
+        return orgaMetadataList.stream()
+            .map(orgaMetadata -> mapper.organizationMetadataToMerlotParticipantMetaDto(orgaMetadata)).toList();
+    }
+
+    public List<String> getInactiveParticipants() {
+
+        return repository.findByActive(false);
     }
 
 }

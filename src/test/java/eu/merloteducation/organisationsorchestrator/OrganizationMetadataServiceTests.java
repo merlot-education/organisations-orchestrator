@@ -15,8 +15,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -47,9 +48,9 @@ class OrganizationMetadataServiceTests {
     void setUpData() {
 
         OrganizationMetadata metadata1 = new OrganizationMetadata(MERLOT_ID_NUMBER, "abd@de.fg",
-            MembershipClass.FEDERATOR);
+            MembershipClass.FEDERATOR, true);
         OrganizationMetadata metadata2 = new OrganizationMetadata(MERLOT_ID_UUID, "hij@kl.mn",
-            MembershipClass.PARTICIPANT);
+            MembershipClass.PARTICIPANT, false);
 
         metadataRepository.save(metadata1);
         metadataRepository.save(metadata2);
@@ -70,21 +71,25 @@ class OrganizationMetadataServiceTests {
         expected1.setOrgaId(MERLOT_ID_NUMBER);
         expected1.setMailAddress("abd@de.fg");
         expected1.setMembershipClass(MembershipClass.FEDERATOR);
+        expected1.setActive(true);
 
         MerlotParticipantMetaDto actual1 = metadataService.getMerlotParticipantMetaDto(MERLOT_ID_NUMBER);
         assertEquals(expected1.getOrgaId(), actual1.getOrgaId());
         assertEquals(expected1.getMembershipClass(), actual1.getMembershipClass());
         assertEquals(expected1.getMailAddress(), actual1.getMailAddress());
+        assertEquals(expected1.isActive(), actual1.isActive());
 
         MerlotParticipantMetaDto expected2 = new MerlotParticipantMetaDto();
         expected2.setOrgaId(MERLOT_ID_UUID);
         expected2.setMailAddress("hij@kl.mn");
         expected2.setMembershipClass(MembershipClass.PARTICIPANT);
+        expected2.setActive(false);
 
         MerlotParticipantMetaDto actual2 = metadataService.getMerlotParticipantMetaDto(MERLOT_ID_UUID);
         assertEquals(expected2.getOrgaId(), actual2.getOrgaId());
         assertEquals(expected2.getMembershipClass(), actual2.getMembershipClass());
         assertEquals(expected2.getMailAddress(), actual2.getMailAddress());
+        assertEquals(expected2.isActive(), actual2.isActive());
     }
 
     @Transactional
@@ -97,17 +102,20 @@ class OrganizationMetadataServiceTests {
         metadataToSave.setOrgaId(id);
         metadataToSave.setMailAddress("foo@bar.de");
         metadataToSave.setMembershipClass(MembershipClass.FEDERATOR);
+        metadataToSave.setActive(true);
 
         MerlotParticipantMetaDto expected = new MerlotParticipantMetaDto();
         expected.setOrgaId(id);
         expected.setMailAddress("foo@bar.de");
         expected.setMembershipClass(MembershipClass.FEDERATOR);
+        expected.setActive(true);
 
         MerlotParticipantMetaDto actual = metadataService.saveMerlotParticipantMeta(metadataToSave);
 
         assertEquals(expected.getOrgaId(), actual.getOrgaId());
         assertEquals(expected.getMembershipClass(), actual.getMembershipClass());
         assertEquals(expected.getMailAddress(), actual.getMailAddress());
+        assertEquals(expected.isActive(), actual.isActive());
 
         // clean-up
         metadataRepository.deleteByOrgaId(id);
@@ -121,6 +129,7 @@ class OrganizationMetadataServiceTests {
         metaDto.setOrgaId("7d0ad7ce-cb1f-479f-9b7d-33b0d7d6f347");
         metaDto.setMailAddress("foo@bar.de");
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
+        metaDto.setActive(false);
 
         MerlotParticipantMetaDto actual = metadataService.updateMerlotParticipantMeta(metaDto);
         assertNull(actual);
@@ -134,10 +143,35 @@ class OrganizationMetadataServiceTests {
         metaDto.setOrgaId(MERLOT_ID_UUID);
         metaDto.setMailAddress("foo@bar.de");
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
+        metaDto.setActive(true);
 
         MerlotParticipantMetaDto actual = metadataService.updateMerlotParticipantMeta(metaDto);
         assertEquals(metaDto.getOrgaId(), actual.getOrgaId());
         assertEquals(metaDto.getMembershipClass(), actual.getMembershipClass());
         assertEquals(metaDto.getMailAddress(), actual.getMailAddress());
+        assertEquals(metaDto.isActive(), actual.isActive());
+    }
+
+    @Transactional
+    @Test
+    void getIdsOfInactiveParticipantsCorrectly() {
+        List<String> inactiveOrgas = metadataService.getInactiveParticipants();
+
+        assertEquals(1, inactiveOrgas.size());
+        assertEquals(MERLOT_ID_UUID, inactiveOrgas.get(0));
+
+        MerlotParticipantMetaDto metadata = new MerlotParticipantMetaDto();
+        metadata.setOrgaId(MERLOT_ID_NUMBER);
+        metadata.setMailAddress("abd@de.fg");
+        metadata.setMembershipClass(MembershipClass.PARTICIPANT);
+        metadata.setActive(false);
+
+
+
+        metadataService.updateMerlotParticipantMeta(metadata);
+        inactiveOrgas = metadataService.getInactiveParticipants();
+        assertEquals(2, inactiveOrgas.size());
+        assertTrue(inactiveOrgas.contains(MERLOT_ID_NUMBER));
+        assertTrue(inactiveOrgas.contains(MERLOT_ID_UUID));
     }
 }

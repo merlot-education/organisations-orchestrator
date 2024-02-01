@@ -92,19 +92,19 @@ public class ParticipantService {
      *
      * @return page of organizations
      */
-    public Page<MerlotParticipantDto> getParticipants(Pageable pageable) throws JsonProcessingException {
-        // post a query to get a paginated and sorted list of participants
+    public Page<MerlotParticipantDto> getParticipants(Pageable pageable, OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
-        try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(
-                    "MerlotOrganization", "orgaName",
-                    pageable.getOffset(), pageable.getPageSize());
-        } catch (WebClientResponseException e) {
-            handleCatalogError(e);
+
+        if (activeRole != null && activeRole.isFedAdmin()) {
+            uriResponse = getAllParticipantsUris(pageable);
+        } else {
+            uriResponse = getActiveParticipantsUris(pageable);
         }
+
         if (uriResponse == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch uris from catalog.");
         }
+
         String[] participantUris = uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toArray(String[]::new);
 
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
@@ -134,11 +134,39 @@ public class ParticipantService {
             }).sorted(
                 Comparator.comparing(
                     p -> ((MerlotOrganizationCredentialSubject)
-                            p.getSelfDescription().getVerifiableCredential().getCredentialSubject())
-                            .getOrgaName().toLowerCase())).toList();
+                        p.getSelfDescription().getVerifiableCredential().getCredentialSubject())
+                        .getOrgaName().toLowerCase())).toList();
 
         // wrap result into page
         return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());
+    }
+
+    private GXFSCatalogListResponse<GXFSQueryUriItem> getActiveParticipantsUris(Pageable pageable) throws JsonProcessingException {
+        List<String> inactiveOrgasIds = organizationMetadataService.getInactiveParticipants();
+
+        // post a query to get a paginated and sorted list of active participants
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
+        try {
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(
+                "MerlotOrganization", "orgaName", inactiveOrgasIds,
+                pageable.getOffset(), pageable.getPageSize());
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+        return uriResponse;
+    }
+
+    private GXFSCatalogListResponse<GXFSQueryUriItem> getAllParticipantsUris(Pageable pageable) throws JsonProcessingException {
+        // post a query to get a paginated and sorted list of participants
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
+        try {
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(
+                    "MerlotOrganization", "orgaName",
+                    pageable.getOffset(), pageable.getPageSize());
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+       return uriResponse;
     }
 
     private void handleCatalogError(WebClientResponseException e)

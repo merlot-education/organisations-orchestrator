@@ -52,7 +52,7 @@ public class ParticipantService {
     @Autowired
     private OrganizationMetadataService organizationMetadataService;
     @Autowired
-    private MessageQueueService messageQueueService;
+    private OutgoingMessageService outgoingMessageService;
 
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
@@ -236,7 +236,7 @@ public class ParticipantService {
         }
 
         if(!participantMetadata.isActive() && participantMetadata.isActive() != initialOrgaActiveValue) {
-            messageQueueService.sendOrganizationMembershipRevokedMessage(participantMetadata.getOrgaId());
+            outgoingMessageService.sendOrganizationMembershipRevokedMessage(participantMetadata.getOrgaId());
         }
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),

@@ -14,9 +14,6 @@ import eu.merloteducation.organisationsorchestrator.config.MessageQueueConfig;
 @Service
 public class MessageQueueService {
     @Autowired
-    RabbitTemplate rabbitTemplate;
-
-    @Autowired
     ParticipantService participantService;
 
     @Autowired
@@ -56,20 +53,5 @@ public class MessageQueueService {
             logger.error("Failed to find participant with this id, error: {}", e.getMessage());
             return null;
         }
-    }
-
-    /**
-     * Send an organization membership revoked message to the message bus.
-     *
-     * @param orgaId id of the organization whose membership has been revoked
-     */
-    public void sendOrganizationMembershipRevokedMessage(String orgaId) {
-        logger.info("Sending organization membership revocation message for organization with id {}", orgaId);
-
-        rabbitTemplate.convertAndSend(
-            MessageQueueConfig.ORCHESTRATOR_EXCHANGE,
-            MessageQueueConfig.ORGANIZATION_REVOKED_KEY,
-            orgaId
-        );
     }
 }

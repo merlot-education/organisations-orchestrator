@@ -9,7 +9,7 @@ import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorM
 import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganisationConnectorsController;
-import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantConnectorsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class OrganisationConnectorsControllerTests {
 
     @MockBean
-    private OrganisationConnectorsService organisationConnectorsService;
+    private ParticipantConnectorsService participantConnectorsService;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;
@@ -61,15 +61,15 @@ class OrganisationConnectorsControllerTests {
     public void beforeEach() {
         List<OrganizationConnectorDto> connectors = List.of(new OrganizationConnectorDto());
 
-        lenient().when(organisationConnectorsService.getAllConnectors(any()))
+        lenient().when(participantConnectorsService.getAllConnectors(any()))
                 .thenReturn(connectors);
-        lenient().when(organisationConnectorsService.getConnector(any(), any()))
+        lenient().when(participantConnectorsService.getConnector(any(), any()))
                 .thenReturn(null);
-        lenient().when(organisationConnectorsService.getConnector(eq("10"), eq("1234")))
+        lenient().when(participantConnectorsService.getConnector(eq("10"), eq("1234")))
                 .thenReturn(new OrganizationConnectorDto());
-        lenient().when(organisationConnectorsService.postConnector(any(), any()))
+        lenient().when(participantConnectorsService.postConnector(any(), any()))
                 .thenReturn(new OrganizationConnectorDto());
-        lenient().when(organisationConnectorsService.patchConnector(any(), any(), any()))
+        lenient().when(participantConnectorsService.patchConnector(any(), any(), any()))
                 .thenReturn(new OrganizationConnectorDto());
     }
 

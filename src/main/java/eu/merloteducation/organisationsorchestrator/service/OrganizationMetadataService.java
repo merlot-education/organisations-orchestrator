@@ -4,6 +4,7 @@ import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
+import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,26 +19,25 @@ public class OrganizationMetadataService {
     @Autowired
     private OrganizationMapper mapper;
 
-    public MerlotParticipantMetaDto getMerlotParticipantMetaDto(String merlotId) {
-
-        merlotId = merlotId.replace("Participant:", "");
-
-        OrganizationMetadata dbMeta = repository.findByOrgaId(merlotId).orElse(null);
+    public MerlotParticipantMetaDto getMerlotParticipantMetaDto(String orgaId) {
+        OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
 
         return mapper.organizationMetadataToMerlotParticipantMetaDto(dbMeta);
     }
 
     public MerlotParticipantMetaDto saveMerlotParticipantMeta(MerlotParticipantMetaDto metaDto) {
-
+        OrganizationMetadata dbMeta = repository.findById(metaDto.getOrgaId()).orElse(null);
+        if (dbMeta != null) {
+            throw new ParticipantConflictException("Participant with this id already exists");
+        }
         OrganizationMetadata metadata = mapper.merlotParticipantMetaDtoToOrganizationMetadata(metaDto);
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));
     }
 
     public MerlotParticipantMetaDto updateMerlotParticipantMeta(MerlotParticipantMetaDto metaDtoWithEdits) {
+        String orgaId = metaDtoWithEdits.getOrgaId();
 
-        String orgaId = metaDtoWithEdits.getOrgaId().replace("Participant:", "");
-
-        OrganizationMetadata dbMetadata = repository.findByOrgaId(orgaId).orElse(null);
+        OrganizationMetadata dbMetadata = repository.findById(orgaId).orElse(null);
 
         if (dbMetadata == null) {
             return null;

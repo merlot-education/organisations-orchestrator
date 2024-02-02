@@ -15,16 +15,15 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
-import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
+import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +33,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
@@ -47,13 +47,12 @@ public class ParticipantService {
     @Autowired
     private GxfsCatalogService gxfsCatalogService;
 
+    @Value("${merlot-domain}")
+    private String merlotDomain;
     @Autowired
     private OrganizationMetadataService organizationMetadataService;
-
     @Autowired
     private MessageQueueService messageQueueService;
-
-    private static final String PARTICIPANT = "Participant:";
 
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
@@ -62,10 +61,10 @@ public class ParticipantService {
      * @return organization data
      */
     public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
-        // input sanitization, for now we defined that ids must either only consist of numbers or be uuids
-        String regex = "(^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$)|(^\\d+$)";
+        // input sanitization, must be a did:web
+        String regex = "did:web:[-.#A-Za-z0-9]*";
         if (!id.matches(regex)) {
-            throw new IllegalArgumentException("Provided id is invalid. It has to be a number or a uuid.");
+            throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did:web.");
         }
 
         // retrieve participant's meta information from db
@@ -78,7 +77,7 @@ public class ParticipantService {
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
         ParticipantItem response = null;
         try {
-            response = gxfsCatalogService.getParticipantById(PARTICIPANT + id);
+            response = gxfsCatalogService.getParticipantById(id);
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         }
@@ -110,6 +109,10 @@ public class ParticipantService {
 
         String[] participantUris = uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toArray(String[]::new);
 
+        if (participantUris.length == 0) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
         // request the ids from the self-description endpoint to get full SDs and map the result to objects
         GXFSCatalogListResponse<SelfDescriptionItem> sdResponse = null;
         try {
@@ -123,16 +126,15 @@ public class ParticipantService {
             .map(item -> {
                 SelfDescription selfDescription = item.getMeta().getContent();
 
-                String merlotId = ((MerlotOrganizationCredentialSubject) selfDescription.getVerifiableCredential()
-                    .getCredentialSubject()).getMerlotId();
-                MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(merlotId);
+                String id = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
+                MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(id);
 
                 if (metaDto == null) {
                     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Error while retrieving Participant:" + merlotId);
+                        "Error while retrieving Participant with id: " + id);
                 }
 
-                return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(item.getMeta().getContent(),
+                return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription,
                     metaDto);
             }).sorted(
                 Comparator.comparing(
@@ -183,26 +185,26 @@ public class ParticipantService {
     }
 
     /**
-     * Given a new credential subject, attempt to update the self description in the gxfs catalog.
+     * Given a new credential subject, attempt to update the self-description in the GXFS catalog.
      *
-     * @param id id of the participant to update
      * @param participantDtoWithEdits dto with updated fields
      * @return update response from catalog
-     * @throws Exception mapping exception
+     * @throws JsonProcessingException mapping exception
      */
     @Transactional(rollbackOn = { ResponseStatusException.class })
     public MerlotParticipantDto updateParticipant(MerlotParticipantDto participantDtoWithEdits,
-        OrganizationRoleGrantedAuthority activeRole, String id) throws JsonProcessingException {
-
-        MerlotParticipantDto participantDto = getParticipantById(id);
+        OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
+        MerlotParticipantDto participantDto = getParticipantById(participantDtoWithEdits.getId());
         MerlotOrganizationCredentialSubject targetCredentialSubject =
-            (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
+            (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription()
+                    .getVerifiableCredential().getCredentialSubject();
         MerlotParticipantMetaDto targetMetadata = participantDto.getMetadata();
 
         boolean initialOrgaActiveValue = targetMetadata.isActive();
 
         MerlotOrganizationCredentialSubject editedCredentialSubject =
-            (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription().getVerifiableCredential().getCredentialSubject();
+            (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription()
+                    .getVerifiableCredential().getCredentialSubject();
         MerlotParticipantMetaDto editedMetadata = participantDtoWithEdits.getMetadata();
 
         if (activeRole.isRepresentative()) {
@@ -213,7 +215,7 @@ public class ParticipantService {
             organizationMapper.updateMerlotParticipantMetaDtoAsFedAdmin(editedMetadata, targetMetadata);
         }
 
-        MerlotParticipantMetaDto participantMetadata = null;
+        MerlotParticipantMetaDto participantMetadata;
         try {
             participantMetadata = organizationMetadataService.updateMerlotParticipantMeta(targetMetadata);
 
@@ -253,7 +255,6 @@ public class ParticipantService {
 
         metadataList.forEach(metadata -> {
             String orgaId = metadata.getOrgaId();
-            orgaId = orgaId.startsWith(PARTICIPANT) ? orgaId : PARTICIPANT + orgaId;
             metadataMap.put(orgaId, metadata);
         });
 
@@ -267,7 +268,6 @@ public class ParticipantService {
         selfDescriptionItems.forEach(sdItem -> {
             SelfDescription selfDescription = sdItem.getMeta().getContent();
             String orgaId = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
-            orgaId = orgaId.startsWith(PARTICIPANT) ? orgaId : PARTICIPANT + orgaId;
 
             sdMap.put(orgaId, selfDescription);
         });
@@ -281,54 +281,64 @@ public class ParticipantService {
     }
 
     /**
-     * Given a registration PDF form, attempt to create the self description of the participant in the gxfs catalog.
+     * Given the content of a registration form, attempt to create the self-description of the participant in the GXFS catalog.
      *
-     * @param pdDoc in-memory representation of the PDF document
+     * @param registrationFormContent content of the registration form
      * @return post response from catalog
+     * @throws JsonProcessingException failed to read catalog response
      */
     @Transactional(rollbackOn = { ResponseStatusException.class })
-    public MerlotParticipantDto createParticipant(PDDocument pdDoc) {
+    public MerlotParticipantDto createParticipant(RegistrationFormContent registrationFormContent)
+            throws JsonProcessingException {
 
-        PDDocumentCatalog pdCatalog = pdDoc.getDocumentCatalog();
-        PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
-
-        String uuid = UUID.randomUUID().toString();
-        String id = PARTICIPANT + uuid;
 
         MerlotOrganizationCredentialSubject credentialSubject;
         MerlotParticipantMetaDto metaData;
         try {
-            validateMandatoryFields(pdAcroForm);
-            credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(pdAcroForm);
-            metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(pdAcroForm);
+            validateMandatoryFields(registrationFormContent);
+            credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(registrationFormContent);
+            metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(registrationFormContent);
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }
 
-        metaData.setOrgaId(uuid);
+        String id = generateDidWeb(credentialSubject);
+        metaData.setOrgaId(id);
 
-        MerlotParticipantMetaDto metaDataDto = null;
+        MerlotParticipantMetaDto metaDataDto;
         try {
             metaDataDto = organizationMetadataService.saveMerlotParticipantMeta(metaData);
+        } catch (ParticipantConflictException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Participant with this legal name already exists.");
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
         }
 
         credentialSubject.setId(id);
-        credentialSubject.setMerlotId(uuid);
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
 
-        ParticipantItem participantItem;
-
+        ParticipantItem participantItem = null;
         try {
             participantItem = gxfsCatalogService.addParticipant(credentialSubject);
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+
+        if (participantItem == null){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create participant");
         }
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
             metaDataDto);
+    }
+
+    private String generateDidWeb(MerlotOrganizationCredentialSubject credentialSubject) {
+        String uuid = UUID.nameUUIDFromBytes(credentialSubject.getLegalName().getBytes(StandardCharsets.UTF_8))
+                .toString(); // uuid v3 from md5
+        return "did:web:" + merlotDomain + "#" + uuid;
     }
 
     private Map<String, String> getContext() {
@@ -345,21 +355,21 @@ public class ParticipantService {
         return context;
     }
 
-    private void validateMandatoryFields(PDAcroForm pdAcroForm) {
+    private void validateMandatoryFields(RegistrationFormContent registrationFormContent) {
 
-        String orgaName = pdAcroForm.getField(DocumentField.ORGANIZATIONNAME.getValue()).getValueAsString();
-        String orgaLegalName = pdAcroForm.getField(DocumentField.ORGANIZATIONLEGALNAME.getValue()).getValueAsString();
-        String registrationNumber = pdAcroForm.getField(DocumentField.REGISTRATIONNUMBER.getValue()).getValueAsString();
-        String mailAddress = pdAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString();
-        String tncLink = pdAcroForm.getField(DocumentField.TNCLINK.getValue()).getValueAsString();
-        String tncHash = pdAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString();
-        String countryCode = pdAcroForm.getField(DocumentField.COUNTRYCODE.getValue()).getValueAsString();
-        String city = pdAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString();
-        String postalCode = pdAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString();
-        String street = pdAcroForm.getField(DocumentField.STREET.getValue()).getValueAsString();
+        String orgaName = registrationFormContent.getOrganizationName();
+        String orgaLegalName = registrationFormContent.getOrganizationLegalName();
+        String registrationNumber = registrationFormContent.getRegistrationNumberLocal();
+        String mailAddress = registrationFormContent.getMailAddress();
+        String tncLink = registrationFormContent.getProviderTncLink();
+        String tncHash = registrationFormContent.getProviderTncHash();
+        String countryCode = registrationFormContent.getCountryCode();
+        String city = registrationFormContent.getCity();
+        String postalCode = registrationFormContent.getPostalCode();
+        String street = registrationFormContent.getStreet();
 
         boolean anyFieldEmptyOrBlank =
-            orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
+                orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
                 || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank()
                 || city.isBlank() || postalCode.isBlank() || street.isBlank();
 

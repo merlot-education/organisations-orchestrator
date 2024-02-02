@@ -3,9 +3,9 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
@@ -59,29 +59,29 @@ public interface OrganizationMapper {
     void updateSelfDescriptionAsFedAdmin(MerlotOrganizationCredentialSubject source,
         @MappingTarget MerlotOrganizationCredentialSubject target);
 
-    @Mapping(target = "orgaName", expression = "java(pDAcroForm.getField(DocumentField.ORGANIZATIONNAME.getValue()).getValueAsString())")
-    @Mapping(target = "legalName", expression = "java(pDAcroForm.getField(DocumentField.ORGANIZATIONLEGALNAME.getValue()).getValueAsString())")
-    @Mapping(target = "registrationNumber.local", expression = "java(pDAcroForm.getField(DocumentField.REGISTRATIONNUMBER.getValue()).getValueAsString())")
+    @Mapping(target = "orgaName", source = "content.organizationName")
+    @Mapping(target = "legalName", source = "content.organizationLegalName")
+    @Mapping(target = "registrationNumber.local", source = "content.registrationNumberLocal")
     @Mapping(target = "registrationNumber.type", constant = "gax-trust-framework:RegistrationNumber")
-    @Mapping(target = "termsAndConditions.content", expression = "java(pDAcroForm.getField(DocumentField.TNCLINK.getValue()).getValueAsString())")
-    @Mapping(target = "termsAndConditions.hash", expression = "java(pDAcroForm.getField(DocumentField.TNCHASH.getValue()).getValueAsString())")
+    @Mapping(target = "termsAndConditions.content", source = "content.providerTncLink")
+    @Mapping(target = "termsAndConditions.hash", source = "content.providerTncHash")
     @Mapping(target = "termsAndConditions.type", constant = "gax-trust-framework:TermsAndConditions")
-    @Mapping(target = "legalAddress.countryName", expression = "java(pDAcroForm.getField(DocumentField.COUNTRYCODE.getValue()).getValueAsString())")
-    @Mapping(target = "legalAddress.locality", expression = "java(pDAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString())")
-    @Mapping(target = "legalAddress.postalCode", expression = "java(pDAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString())")
-    @Mapping(target = "legalAddress.streetAddress", expression = "java(pDAcroForm.getField(DocumentField.STREET.getValue()).getValueAsString())")
+    @Mapping(target = "legalAddress.countryName", source = "content.countryCode")
+    @Mapping(target = "legalAddress.locality", source = "content.city")
+    @Mapping(target = "legalAddress.postalCode", source = "content.postalCode")
+    @Mapping(target = "legalAddress.streetAddress", source = "content.street")
     @Mapping(target = "legalAddress.type", constant = "vcard:Address")
-    @Mapping(target = "headquarterAddress.countryName", expression = "java(pDAcroForm.getField(DocumentField.COUNTRYCODE.getValue()).getValueAsString())")
-    @Mapping(target = "headquarterAddress.locality", expression = "java(pDAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString())")
-    @Mapping(target = "headquarterAddress.postalCode", expression = "java(pDAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString())")
-    @Mapping(target = "headquarterAddress.streetAddress", expression = "java(pDAcroForm.getField(DocumentField.STREET.getValue()).getValueAsString())")
+    @Mapping(target = "headquarterAddress.countryName", source = "content.countryCode")
+    @Mapping(target = "headquarterAddress.locality", source = "content.city")
+    @Mapping(target = "headquarterAddress.postalCode", source = "content.postalCode")
+    @Mapping(target = "headquarterAddress.streetAddress", source = "content.street")
     @Mapping(target = "headquarterAddress.type", constant = "vcard:Address")
-    MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(PDAcroForm pDAcroForm);
+    MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
 
-    @Mapping(target = "mailAddress", expression = "java(pDAcroForm.getField(DocumentField.MAILADDRESS.getValue()).getValueAsString())")
+    @Mapping(target = "mailAddress", source = "content.mailAddress")
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
     @Mapping(target = "active", constant = "true")
-    MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(PDAcroForm pDAcroForm);
+    MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
 
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
 

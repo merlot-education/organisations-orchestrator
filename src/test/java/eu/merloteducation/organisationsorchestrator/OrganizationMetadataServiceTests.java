@@ -2,6 +2,7 @@ package eu.merloteducation.organisationsorchestrator;
 
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -32,6 +34,9 @@ class OrganizationMetadataServiceTests {
 
     @Autowired
     private OrganizationMapper metadataMapper;
+
+    @MockBean
+    private InitialDataLoader initialDataLoader;
 
     private static final String MERLOT_ID_NUMBER = "10";
 
@@ -59,8 +64,8 @@ class OrganizationMetadataServiceTests {
     @AfterEach
     void cleanUpData() {
 
-        metadataRepository.deleteByOrgaId(MERLOT_ID_NUMBER);
-        metadataRepository.deleteByOrgaId(MERLOT_ID_UUID);
+        metadataRepository.deleteById(MERLOT_ID_NUMBER);
+        metadataRepository.deleteById(MERLOT_ID_UUID);
     }
 
     @Transactional
@@ -118,7 +123,7 @@ class OrganizationMetadataServiceTests {
         assertEquals(expected.isActive(), actual.isActive());
 
         // clean-up
-        metadataRepository.deleteByOrgaId(id);
+        metadataRepository.deleteById(id);
     }
 
     @Transactional

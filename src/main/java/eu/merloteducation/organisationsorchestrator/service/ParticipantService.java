@@ -52,8 +52,6 @@ public class ParticipantService {
     @Autowired
     private OrganizationMetadataService organizationMetadataService;
 
-    private static final String PARTICIPANT = "Participant:";
-
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
      *
@@ -221,7 +219,6 @@ public class ParticipantService {
 
         metadataList.forEach(metadata -> {
             String orgaId = metadata.getOrgaId();
-            orgaId = orgaId.startsWith(PARTICIPANT) ? orgaId : PARTICIPANT + orgaId;
             metadataMap.put(orgaId, metadata);
         });
 
@@ -235,7 +232,6 @@ public class ParticipantService {
         selfDescriptionItems.forEach(sdItem -> {
             SelfDescription selfDescription = sdItem.getMeta().getContent();
             String orgaId = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
-            orgaId = orgaId.startsWith(PARTICIPANT) ? orgaId : PARTICIPANT + orgaId;
 
             sdMap.put(orgaId, selfDescription);
         });

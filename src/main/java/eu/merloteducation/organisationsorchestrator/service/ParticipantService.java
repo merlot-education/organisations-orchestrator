@@ -50,6 +50,9 @@ public class ParticipantService {
     @Autowired
     private OrganizationMetadataService organizationMetadataService;
 
+    @Autowired
+    private MessageQueueService messageQueueService;
+
     private static final String PARTICIPANT = "Participant:";
 
     /**
@@ -196,6 +199,8 @@ public class ParticipantService {
             (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
         MerlotParticipantMetaDto targetMetadata = participantDto.getMetadata();
 
+        boolean initialOrgaActiveValue = targetMetadata.isActive();
+
         MerlotOrganizationCredentialSubject editedCredentialSubject =
             (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription().getVerifiableCredential().getCredentialSubject();
         MerlotParticipantMetaDto editedMetadata = participantDtoWithEdits.getMetadata();
@@ -226,6 +231,10 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found in the catalog.");
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
+        }
+
+        if(!participantMetadata.isActive() && participantMetadata.isActive() != initialOrgaActiveValue) {
+            messageQueueService.sendOrganizationMembershipRevokedMessage(participantMetadata.getOrgaId());
         }
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),

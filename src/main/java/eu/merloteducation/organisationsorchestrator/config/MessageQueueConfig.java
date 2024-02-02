@@ -16,6 +16,7 @@ public class MessageQueueConfig {
     public static final String ORGANIZATIONCONNECTOR_REQUEST_KEY = "request.organizationconnector";
     public static final String ORGANIZATION_REQUEST_QUEUE = "organization.request.organization.queue";
     public static final String ORGANIZATIONCONNECTOR_REQUEST_QUEUE = "organizationconnector.request.organizationconnector.queue";
+    public static final String ORGANIZATION_REVOKED_KEY = "revoked.organization";
     @Bean
     DirectExchange orchestratorExchange() {
         return new DirectExchange(ORCHESTRATOR_EXCHANGE);

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import eu.merloteducation.organisationsorchestrator.service.OrganisationConnectorsService;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantConnectorsService;
 
 @RestController
 @RequestMapping("/organization/{orgaId}/connectors/")
@@ -18,7 +18,7 @@ import eu.merloteducation.organisationsorchestrator.service.OrganisationConnecto
 public class OrganisationConnectorsController {
 
     @Autowired
-    private OrganisationConnectorsService connectorsService;
+    private ParticipantConnectorsService connectorsService;
 
     /**
      * GET endpoint for retrieving all connectors to a given organization id.

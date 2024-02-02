@@ -6,7 +6,10 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatyp
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
+import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
+import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.IOException;
 
@@ -29,8 +33,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class OrganizationMapperTests {
+
+    @MockBean
+    private InitialDataLoader initialDataLoader;
     @Autowired
     OrganizationMapper organizationMapper;
+    @Autowired
+    PdfContentMapper pdfContentMapper;
     String mailAddress = "test@test.de";
     String organizationLegalName = "Organization Legal Name";
     String registrationNumber = "DE123456789";
@@ -49,7 +58,8 @@ class OrganizationMapperTests {
         MerlotOrganizationCredentialSubject expected = getExpectedCredentialSubject();
         PDAcroForm registrationForm = getTestRegistrationForm();
 
-        MerlotOrganizationCredentialSubject mapped = organizationMapper.getSelfDescriptionFromRegistrationForm(registrationForm);
+        RegistrationFormContent content = pdfContentMapper.getRegistrationFormContentFromRegistrationForm(registrationForm);
+        MerlotOrganizationCredentialSubject mapped = organizationMapper.getSelfDescriptionFromRegistrationForm(content);
         assertThat(mapped).usingRecursiveComparison().isEqualTo(expected);
     }
 

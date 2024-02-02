@@ -5,10 +5,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
+import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
+import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import jakarta.validation.Valid;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +35,8 @@ public class OrganizationQueryController {
     @Autowired
     private ParticipantService participantService;
 
-    private static final String PARTICIPANT = "Participant:";
+    @Autowired
+    private PdfContentMapper pdfContentMapper;
 
     /**
      * GET endpoint for retrieving all enrolled organizations.
@@ -61,7 +66,11 @@ public class OrganizationQueryController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files specified");
         }
         try (PDDocument pdDoc = Loader.loadPDF(files[0].getBytes())) {
-            return participantService.createParticipant(pdDoc);
+            PDDocumentCatalog pdCatalog = pdDoc.getDocumentCatalog();
+            PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
+            RegistrationFormContent content =
+                    pdfContentMapper.getRegistrationFormContentFromRegistrationForm(pdAcroForm);
+            return participantService.createParticipant(content);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }
@@ -73,18 +82,17 @@ public class OrganizationQueryController {
      * @return updated organization
      * @throws Exception exception during participant update
      */
-    @PutMapping("/organization/{orgaId}")
+    @PutMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
-    @PreAuthorize("#orgaId.replace('Participant:', '')"
-        + ".equals(#participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.merlotId) "
-        + "and #participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.id.replace('Participant:', '')"
-        + ".equals(#participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.merlotId) "
-        + "and (@authorityChecker.representsOrganization(authentication, #orgaId) or #activeRole.isFedAdmin())")
+    @PreAuthorize("(@authorityChecker.representsOrganization(authentication, " +
+            "#participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.id)" +
+            "and @authorityChecker.representsOrganization(authentication, #participantDtoWithEdits.id)) " +
+            "or #activeRole.isFedAdmin()")
     public MerlotParticipantDto updateOrganization(
         @Valid @RequestBody MerlotParticipantDto participantDtoWithEdits,
-        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole, @PathVariable(value = "orgaId") String orgaId)
+        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole)
         throws Exception {
-        return participantService.updateParticipant(participantDtoWithEdits, activeRole, orgaId.replace(PARTICIPANT, ""));
+        return participantService.updateParticipant(participantDtoWithEdits, activeRole);
     }
 
     /**
@@ -97,7 +105,7 @@ public class OrganizationQueryController {
     @JsonView(OrganisationViews.PublicView.class)
     public MerlotParticipantDto getOrganizationById(@PathVariable(value = "orgaId") String orgaId){
         try {
-            return participantService.getParticipantById(orgaId.replace(PARTICIPANT, ""));
+            return participantService.getParticipantById(orgaId);
         } catch (HttpClientErrorException.NotFound | JsonProcessingException e) {
             throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
         }

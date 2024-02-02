@@ -57,6 +57,7 @@ gxfscatalog:
   query-uri: "${gxfscatalog.base-uri}/query"
   private-key-path: "${user.home}/workspace/mpo/merlot-cert/prk.ss.pem"
   cert-path: "${user.home}/workspace/mpo/merlot-cert/cert.ss.pem"
+  verification-method: "did:web:merlot-education.eu"
 
 gxfswizardapi:
   base-uri: "http://localhost:8085"
@@ -88,6 +89,16 @@ keycloak:
   client-secret: "oV0GOkc0XWUoDwNV38qjqWfri6Uk7tTQ"
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"
+
+edc-tokens:
+  edc1: "somevalue"
+  edc2: "somevalue"
+
+init-data:
+  organisations: "${user.home}/workspace/mpo/initial-orgas.json"
+  connectors: "${user.home}/workspace/mpo/initial-orga-connectors.json"
+
+merlot-domain: "marketplace.dev.merlot-education.eu"
 
 cors:
   global:

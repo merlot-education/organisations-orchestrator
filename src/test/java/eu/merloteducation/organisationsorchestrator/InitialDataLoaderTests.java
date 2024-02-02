@@ -21,6 +21,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -42,15 +43,15 @@ class InitialDataLoaderTests {
     @MockBean
     private ParticipantConnectorsService participantConnectorsService;
 
-    @Value("classpath:initial-orgas.json")
-    Resource initialOrgasResource;
+    @Value("${init-data.organisations:#{null}}")
+    private File initialOrgasResource;
 
-    @Value("classpath:initial-orga-connectors.json")
-    private Resource initialOrgaConnectorsResource;
+    @Value("${init-data.connectors:#{null}}")
+    private File initialOrgaConnectorsResource;
 
 
     @Test
-    void noParticipantsExist() throws IOException, CredentialSignatureException, CredentialPresentationException {
+    void noParticipantsExist() throws IOException {
         when(participantService.getParticipants(any()))
                 .thenReturn(new PageImpl<>(Collections.emptyList(), Pageable.ofSize(1), 0));
         MerlotParticipantDto dto = new MerlotParticipantDto();
@@ -72,7 +73,7 @@ class InitialDataLoaderTests {
     }
 
     @Test
-    void participantsAlreadyExist() throws IOException, CredentialSignatureException, CredentialPresentationException {
+    void participantsAlreadyExist() throws IOException {
         MerlotParticipantDto dto = new MerlotParticipantDto();
         when(participantService.getParticipants(any()))
                 .thenReturn(new PageImpl<>(List.of(dto), Pageable.ofSize(1), 1));

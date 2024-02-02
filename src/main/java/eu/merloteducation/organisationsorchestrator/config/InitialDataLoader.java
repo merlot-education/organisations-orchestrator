@@ -18,6 +18,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +30,8 @@ public class InitialDataLoader implements CommandLineRunner {
     private final ParticipantService participantService;
     private final ParticipantConnectorsService participantConnectorsService;
     private final ObjectMapper objectMapper;
-    private final Resource initialOrgasResource;
-    private final Resource initialOrgaConnectorsResource;
+    private final File initialOrgasResource;
+    private final File initialOrgaConnectorsResource;
     private final String poolEdc1Token;
     private final String poolEdc2Token;
 
@@ -40,8 +41,8 @@ public class InitialDataLoader implements CommandLineRunner {
     public InitialDataLoader(@Autowired ParticipantService participantService,
                              @Autowired ParticipantConnectorsService participantConnectorsService,
                              @Autowired ObjectMapper objectMapper,
-                             @Value("classpath:initial-orgas.json") Resource initialOrgasResource,
-                             @Value("classpath:initial-orga-connectors.json") Resource initialOrgaConnectorsResource,
+                             @Value("${init-data.organisations:#{null}}") File initialOrgasResource,
+                             @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
                              @Value("${edc-tokens.edc1:#{null}}") String poolEdc1Token,
                              @Value("${edc-tokens.edc2:#{null}}") String poolEdc2Token) {
         this.participantService = participantService;
@@ -63,8 +64,8 @@ public class InitialDataLoader implements CommandLineRunner {
             }
             logger.info("Initializing database since no organisations were found.");
 
-            ArrayNode initialOrgas = (ArrayNode) objectMapper.readTree(initialOrgasResource.getFile()); // TODO replace this with the pdf reader
-            JsonNode initialOrgaConnectors = objectMapper.readTree(initialOrgaConnectorsResource.getFile());
+            ArrayNode initialOrgas = (ArrayNode) objectMapper.readTree(initialOrgasResource); // TODO replace this with the pdf reader
+            JsonNode initialOrgaConnectors = objectMapper.readTree(initialOrgaConnectorsResource);
 
             for (JsonNode orga : initialOrgas) {
                 RegistrationFormContent content = new RegistrationFormContent();

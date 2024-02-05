@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
@@ -18,6 +19,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,6 +37,7 @@ public class InitialDataLoader implements CommandLineRunner {
     private final File initialOrgaConnectorsResource;
     private final String poolEdc1Token;
     private final String poolEdc2Token;
+    private final String merlotDomain;
 
     private static final String LEGAL_ADDRESS = "legalAddress";
 
@@ -45,7 +48,8 @@ public class InitialDataLoader implements CommandLineRunner {
                              @Value("${init-data.organisations:#{null}}") File initialOrgasResource,
                              @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
                              @Value("${edc-tokens.edc1:#{null}}") String poolEdc1Token,
-                             @Value("${edc-tokens.edc2:#{null}}") String poolEdc2Token) {
+                             @Value("${edc-tokens.edc2:#{null}}") String poolEdc2Token,
+                             @Value("${merlot-domain}") String merlotDomain) {
         this.participantService = participantService;
         this.participantConnectorsService = participantConnectorsService;
         this.objectMapper = objectMapper;
@@ -53,14 +57,18 @@ public class InitialDataLoader implements CommandLineRunner {
         this.initialOrgaConnectorsResource = initialOrgaConnectorsResource;
         this.poolEdc1Token = poolEdc1Token;
         this.poolEdc2Token = poolEdc2Token;
+        this.merlotDomain = merlotDomain;
     }
 
 
     @Override
+    @Transactional
     public void run(String... args) {
         try {
+            // MERLOT federation
             OrganizationRoleGrantedAuthority internalRole
-                    = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:internal");
+                    = new OrganizationRoleGrantedAuthority(
+                            "FedAdmin_did:web:" + merlotDomain + "#df15587a-0760-32b5-9c42-bb7be66e8076");
             if (!participantService.getParticipants(Pageable.ofSize(1), internalRole).getContent().isEmpty()) {
                 logger.info("Database will not be reinitialised since organisations exist.");
                 return;
@@ -87,6 +95,10 @@ public class InitialDataLoader implements CommandLineRunner {
                 content.setProviderTncHash(orga.get("termsAndConditionsHash").textValue());
                 MerlotParticipantDto participant = participantService.createParticipant(content);
 
+                // set federator role for initial organisations
+                participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
+                participant = participantService.updateParticipant(participant, internalRole);
+
                 // check if we need to add connectors as well
                 List<OrganizationConnectorDto> existingConnectors =
                         participantConnectorsService.getAllConnectors(participant.getId());
@@ -102,7 +114,6 @@ public class InitialDataLoader implements CommandLineRunner {
                 if (!existingConnectors.isEmpty() || orgaBuckets.isEmpty()) {
                     continue;
                 }
-
 
                 // add pool edcs with the found buckets
                 PostOrganisationConnectorModel connector1 = new PostOrganisationConnectorModel();

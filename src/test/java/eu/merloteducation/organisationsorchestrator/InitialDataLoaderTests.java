@@ -65,7 +65,8 @@ class InitialDataLoaderTests {
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
                 "1234",
-                "5678");
+                "5678",
+                "example.com");
         dataLoader.run();
 
         verify(participantService, times(1)).createParticipant(any());
@@ -84,7 +85,8 @@ class InitialDataLoaderTests {
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
                 "1234",
-                "5678");
+                "5678",
+                "example.com");
         dataLoader.run();
         verify(participantService, never()).createParticipant(any());
         verify(participantConnectorsService, never()).postConnector(any(), any());

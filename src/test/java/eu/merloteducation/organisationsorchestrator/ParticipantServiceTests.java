@@ -26,6 +26,7 @@ import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
+import eu.merloteducation.organisationsorchestrator.service.OutgoingMessageService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -82,6 +83,9 @@ class ParticipantServiceTests {
 
     @MockBean
     private InitialDataLoader initialDataLoader;
+
+    @MockBean
+    private OutgoingMessageService outgoingMessageService;
 
     String mailAddress = "test@test.de";
 
@@ -186,6 +190,7 @@ class ParticipantServiceTests {
         ReflectionTestUtils.setField(participantService, "organizationMapper", organizationMapper);
         ReflectionTestUtils.setField(participantService, "gxfsCatalogService", gxfsCatalogService);
         ReflectionTestUtils.setField(participantService, "organizationMetadataService", organizationMetadataService);
+        ReflectionTestUtils.setField(participantService, "outgoingMessageService", outgoingMessageService);
 
         String mockParticipant = """
             {
@@ -308,20 +313,14 @@ class ParticipantServiceTests {
         lenient().when(gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(any(), any(), any(), anyLong(), anyLong()))
             .thenReturn(uriItems);
 
-        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
-        metaDto.setOrgaId("10");
-        metaDto.setMailAddress("mymail@example.com");
-        metaDto.setMembershipClass(MembershipClass.PARTICIPANT);
-        metaDto.setActive(false);
-
         lenient().when(organizationMetadataService.getInactiveParticipants()).thenReturn(List.of("10"));
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP.getRoleName() + "_anything");
-        participantService.getParticipants(PageRequest.of(0, 9), activeRole);
+        Page<MerlotParticipantDto> participants = participantService.getParticipants(PageRequest.of(0, 9), activeRole);
+        assertThat(participants).isEmpty();
 
         verify(organizationMetadataService, times(1)).getInactiveParticipants();
         verify(gxfsCatalogService, times(1)).getSortedParticipantUriPageWithExcludedUris(any(), any(), eq(List.of("10")), anyLong(), anyLong());
-        verify(gxfsCatalogService, times(1)).getSelfDescriptionsByIds(argThat(strings -> strings != null && strings.length == 0));
     }
 
     @Test
@@ -390,6 +389,7 @@ class ParticipantServiceTests {
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someorga.example.com");
 
+        participantDtoWithEdits.setId("did:web:someorga.example.com");
         MerlotParticipantDto updatedParticipantDto = participantService.updateParticipant(participantDtoWithEdits, activeRole);
 
         // following attributes of the organization credential subject should have been updated
@@ -429,6 +429,9 @@ class ParticipantServiceTests {
 
         // following metadata of the organization should not have been updated
         assertNotEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
+        assertNotEquals(updatedMetadata.isActive(), editedMetadata.isActive());
+
+        verify(outgoingMessageService, times(0)).sendOrganizationMembershipRevokedMessage(any());
     }
 
     @Test
@@ -483,6 +486,9 @@ class ParticipantServiceTests {
         MerlotParticipantMetaDto updatedMetadata = participantDto.getMetadata();
         assertEquals(updatedMetadata.getMailAddress(), editedMetadata.getMailAddress());
         assertEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
+        assertEquals(updatedMetadata.isActive(), editedMetadata.isActive());
+
+        verify(outgoingMessageService, times(1)).sendOrganizationMembershipRevokedMessage(participantDto.getId());
     }
 
     @Test
@@ -637,6 +643,7 @@ class ParticipantServiceTests {
         metaData.setOrgaId("did:web:someorga.example.com");
         metaData.setMailAddress("changedMailAddress");
         metaData.setMembershipClass(MembershipClass.FEDERATOR);
+        metaData.setActive(false);
 
         dtoWithEdits.setSelfDescription(selfDescription);
         dtoWithEdits.setId("did:web:someorga.example.com");

@@ -160,7 +160,7 @@ class OrganizationMetadataServiceTests {
     @Transactional
     @Test
     void getIdsOfInactiveParticipantsCorrectly() {
-        List<String> inactiveOrgas = metadataService.getInactiveParticipants();
+        List<String> inactiveOrgas = metadataService.getInactiveParticipantsIds();
 
         assertEquals(1, inactiveOrgas.size());
         assertEquals(MERLOT_ID_UUID, inactiveOrgas.get(0));
@@ -174,7 +174,7 @@ class OrganizationMetadataServiceTests {
 
 
         metadataService.updateMerlotParticipantMeta(metadata);
-        inactiveOrgas = metadataService.getInactiveParticipants();
+        inactiveOrgas = metadataService.getInactiveParticipantsIds();
         assertEquals(2, inactiveOrgas.size());
         assertTrue(inactiveOrgas.contains(MERLOT_ID_NUMBER));
         assertTrue(inactiveOrgas.contains(MERLOT_ID_UUID));

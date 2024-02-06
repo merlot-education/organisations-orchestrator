@@ -19,12 +19,24 @@ public class OrganizationMetadataService {
     @Autowired
     private OrganizationMapper mapper;
 
+    /**
+     * Given a participant's id, return its metadata.
+     *
+     * @param orgaId the id of the participant
+     * @return metadata of the participant
+     */
     public MerlotParticipantMetaDto getMerlotParticipantMetaDto(String orgaId) {
         OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
 
         return mapper.organizationMetadataToMerlotParticipantMetaDto(dbMeta);
     }
 
+    /**
+     * Given the metadata for a new participant, attempt to save the metadata in the database.
+     *
+     * @param metaDto dto with metadata of the new participant
+     * @return metadata of the new participant
+     */
     public MerlotParticipantMetaDto saveMerlotParticipantMeta(MerlotParticipantMetaDto metaDto) {
         OrganizationMetadata dbMeta = repository.findById(metaDto.getOrgaId()).orElse(null);
         if (dbMeta != null) {
@@ -34,6 +46,12 @@ public class OrganizationMetadataService {
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));
     }
 
+    /**
+     * Given the edited metadata of a participant, attempt to update the metadata in the database.
+     *
+     * @param metaDtoWithEdits dto with updated fields
+     * @return metadata of the participant
+     */
     public MerlotParticipantMetaDto updateMerlotParticipantMeta(MerlotParticipantMetaDto metaDtoWithEdits) {
         String orgaId = metaDtoWithEdits.getOrgaId();
 
@@ -48,6 +66,12 @@ public class OrganizationMetadataService {
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(dbMetadata));
     }
 
+    /**
+     * Given a membership class, return the participants with that membership class.
+     *
+     * @param membershipClass membership class
+     * @return list of participants
+     */
     public List<MerlotParticipantMetaDto> getParticipantsByMembershipClass(MembershipClass membershipClass) {
 
         List<OrganizationMetadata> orgaMetadataList = repository.findByMembershipClass(membershipClass);
@@ -55,7 +79,12 @@ public class OrganizationMetadataService {
             .map(orgaMetadata -> mapper.organizationMetadataToMerlotParticipantMetaDto(orgaMetadata)).toList();
     }
 
-    public List<String> getInactiveParticipants() {
+    /**
+     * Return the ids of all inactive participants.
+     *
+     * @return list of ids
+     */
+    public List<String> getInactiveParticipantsIds() {
 
         return repository.findByActive(false);
     }

@@ -147,7 +147,7 @@ public class ParticipantService {
     }
 
     private GXFSCatalogListResponse<GXFSQueryUriItem> getActiveParticipantsUris(Pageable pageable) throws JsonProcessingException {
-        List<String> inactiveOrgasIds = organizationMetadataService.getInactiveParticipants();
+        List<String> inactiveOrgasIds = organizationMetadataService.getInactiveParticipantsIds();
 
         // post a query to get a paginated and sorted list of active participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
@@ -185,7 +185,8 @@ public class ParticipantService {
     }
 
     /**
-     * Given a new credential subject, attempt to update the self-description in the GXFS catalog.
+     * Given a new credential subject and the edited metadata for a participant, attempt to update the self-description
+     * in the GXFS catalog and update the metadata in the database.
      *
      * @param participantDtoWithEdits dto with updated fields
      * @return update response from catalog

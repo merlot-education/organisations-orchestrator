@@ -13,7 +13,7 @@ public class OutgoingMessageService {
     @Autowired
     RabbitTemplate rabbitTemplate;
 
-    private final Logger logger = LoggerFactory.getLogger(MessageQueueService.class);
+    private final Logger logger = LoggerFactory.getLogger(OutgoingMessageService.class);
 
     /**
      * Send an organization membership revoked message to the message bus.

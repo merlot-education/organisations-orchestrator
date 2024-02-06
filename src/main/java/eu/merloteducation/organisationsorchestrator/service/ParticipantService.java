@@ -51,6 +51,8 @@ public class ParticipantService {
     private String merlotDomain;
     @Autowired
     private OrganizationMetadataService organizationMetadataService;
+    @Autowired
+    private OutgoingMessageService outgoingMessageService;
 
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.
@@ -92,19 +94,19 @@ public class ParticipantService {
      *
      * @return page of organizations
      */
-    public Page<MerlotParticipantDto> getParticipants(Pageable pageable) throws JsonProcessingException {
-        // post a query to get a paginated and sorted list of participants
+    public Page<MerlotParticipantDto> getParticipants(Pageable pageable, OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
-        try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(
-                    "MerlotOrganization", "orgaName",
-                    pageable.getOffset(), pageable.getPageSize());
-        } catch (WebClientResponseException e) {
-            handleCatalogError(e);
+
+        if (activeRole != null && activeRole.isFedAdmin()) {
+            uriResponse = getAllParticipantsUris(pageable);
+        } else {
+            uriResponse = getActiveParticipantsUris(pageable);
         }
+
         if (uriResponse == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch uris from catalog.");
         }
+
         String[] participantUris = uriResponse.getItems().stream().map(GXFSQueryUriItem::getUri).toArray(String[]::new);
 
         if (participantUris.length == 0) {
@@ -137,11 +139,39 @@ public class ParticipantService {
             }).sorted(
                 Comparator.comparing(
                     p -> ((MerlotOrganizationCredentialSubject)
-                            p.getSelfDescription().getVerifiableCredential().getCredentialSubject())
-                            .getOrgaName().toLowerCase())).toList();
+                        p.getSelfDescription().getVerifiableCredential().getCredentialSubject())
+                        .getOrgaName().toLowerCase())).toList();
 
         // wrap result into page
         return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());
+    }
+
+    private GXFSCatalogListResponse<GXFSQueryUriItem> getActiveParticipantsUris(Pageable pageable) throws JsonProcessingException {
+        List<String> inactiveOrgasIds = organizationMetadataService.getInactiveParticipantsIds();
+
+        // post a query to get a paginated and sorted list of active participants
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
+        try {
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(
+                "MerlotOrganization", "orgaName", inactiveOrgasIds,
+                pageable.getOffset(), pageable.getPageSize());
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+        return uriResponse;
+    }
+
+    private GXFSCatalogListResponse<GXFSQueryUriItem> getAllParticipantsUris(Pageable pageable) throws JsonProcessingException {
+        // post a query to get a paginated and sorted list of participants
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
+        try {
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(
+                    "MerlotOrganization", "orgaName",
+                    pageable.getOffset(), pageable.getPageSize());
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+       return uriResponse;
     }
 
     private void handleCatalogError(WebClientResponseException e)
@@ -155,7 +185,8 @@ public class ParticipantService {
     }
 
     /**
-     * Given a new credential subject, attempt to update the self-description in the GXFS catalog.
+     * Given a new credential subject and the edited metadata for a participant, attempt to update the self-description
+     * in the GXFS catalog and update the metadata in the database.
      *
      * @param participantDtoWithEdits dto with updated fields
      * @return update response from catalog
@@ -169,6 +200,8 @@ public class ParticipantService {
             (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription()
                     .getVerifiableCredential().getCredentialSubject();
         MerlotParticipantMetaDto targetMetadata = participantDto.getMetadata();
+
+        boolean initialOrgaActiveValue = targetMetadata.isActive();
 
         MerlotOrganizationCredentialSubject editedCredentialSubject =
             (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription()
@@ -201,6 +234,10 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found in the catalog.");
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
+        }
+
+        if(!participantMetadata.isActive() && participantMetadata.isActive() != initialOrgaActiveValue) {
+            outgoingMessageService.sendOrganizationMembershipRevokedMessage(participantMetadata.getOrgaId());
         }
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),

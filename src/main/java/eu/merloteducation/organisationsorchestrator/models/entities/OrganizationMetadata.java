@@ -23,14 +23,17 @@ public class OrganizationMetadata {
     @Enumerated(EnumType.STRING)
     private MembershipClass membershipClass;
 
+    private boolean active;
+
     public OrganizationMetadata() {
 
     }
 
-    public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass) {
+    public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass, boolean active) {
 
         this.orgaId = orgaId;
         this.mailAddress = mailAddress;
         this.membershipClass = membershipClass;
+        this.active = active;
     }
 }

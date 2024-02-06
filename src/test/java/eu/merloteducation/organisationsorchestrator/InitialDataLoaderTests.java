@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
+import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantConnectorsService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
@@ -52,11 +54,15 @@ class InitialDataLoaderTests {
 
     @Test
     void noParticipantsExist() throws IOException {
-        when(participantService.getParticipants(any()))
+        when(participantService.getParticipants(any(), any()))
                 .thenReturn(new PageImpl<>(Collections.emptyList(), Pageable.ofSize(1), 0));
         MerlotParticipantDto dto = new MerlotParticipantDto();
         dto.setId("did:web:example.com#someid");
+        dto.setMetadata(new MerlotParticipantMetaDto());
+        dto.getMetadata().setMembershipClass(MembershipClass.PARTICIPANT);
         when(participantService.createParticipant(any()))
+                .thenReturn(dto);
+        when(participantService.updateParticipant(any(), any()))
                 .thenReturn(dto);
         InitialDataLoader dataLoader = new InitialDataLoader(
                 participantService,
@@ -65,7 +71,8 @@ class InitialDataLoaderTests {
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
                 "1234",
-                "5678");
+                "5678",
+                "example.com");
         dataLoader.run();
 
         verify(participantService, times(1)).createParticipant(any());
@@ -75,7 +82,7 @@ class InitialDataLoaderTests {
     @Test
     void participantsAlreadyExist() throws IOException {
         MerlotParticipantDto dto = new MerlotParticipantDto();
-        when(participantService.getParticipants(any()))
+        when(participantService.getParticipants(any(), any()))
                 .thenReturn(new PageImpl<>(List.of(dto), Pageable.ofSize(1), 1));
         InitialDataLoader dataLoader = new InitialDataLoader(
                 participantService,
@@ -84,7 +91,8 @@ class InitialDataLoaderTests {
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
                 "1234",
-                "5678");
+                "5678",
+                "example.com");
         dataLoader.run();
         verify(participantService, never()).createParticipant(any());
         verify(participantConnectorsService, never()).postConnector(any(), any());

@@ -86,7 +86,7 @@ class OrganizationQueryControllerTests {
 
         Page<MerlotParticipantDto> participantsPage = new PageImpl<>(participants);
 
-        lenient().when(participantService.getParticipants(any()))
+        lenient().when(participantService.getParticipants(any(), any()))
                 .thenReturn(participantsPage);
         lenient().when(participantService.getParticipantById(eq("10")))
                 .thenReturn(participantDto);

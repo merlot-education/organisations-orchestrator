@@ -25,9 +25,24 @@ spring:
         format_sql: true
   security:
     oauth2:
+      #client:
+      #  registration:
+      #    demo-portal:
+       #     client-id: mpo
+       #     client-secret: demo-portal
+       #     redirect-uri: http://127.0.0.1:9000
+       #     scope:
+       #       - openid
+       ##       - profile
+       #       - email
+       #     provider: demo-portal
+       #     authorization-grant-type: authorization_code
+       # provider:
+       #   demo-portal:
+       #     issuer-uri: https://auth-service.dev.merlot-education.eu
       resourceserver:
         jwt:
-          issuer-uri: http://key-server:8080/realms/POC1
+          issuer-uri: https://auth-service.dev.merlot-education.eu
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   rabbitmq:
     host: localhost

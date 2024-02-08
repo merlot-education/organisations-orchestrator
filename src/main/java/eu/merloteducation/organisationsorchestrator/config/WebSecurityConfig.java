@@ -25,8 +25,9 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests().requestMatchers(new AntPathRequestMatcher("/health")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
             //.requestMatchers(new AntPathRequestMatcher("/federators")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/organization/*")).permitAll().anyRequest().authenticated();
-        http.oauth2ResourceServer().jwt();//.jwtAuthenticationConverter(jwtAuthConverter);
+            .requestMatchers(new AntPathRequestMatcher("/organization/*")).permitAll()
+                .anyRequest().authenticated();
+        http.oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthConverter);
         //http.oauth2Login();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.cors();

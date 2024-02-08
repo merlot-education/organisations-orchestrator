@@ -43,7 +43,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://auth-service.dev.merlot-education.eu
-          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+          jwk-set-uri: https://auth-service.dev.merlot-education.eu/oauth2/jwks
   rabbitmq:
     host: localhost
     port: 5672

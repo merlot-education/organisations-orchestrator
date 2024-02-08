@@ -18,12 +18,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -120,7 +123,7 @@ public class OrganizationQueryController {
      */
     @GetMapping("/federators")
     @JsonView(OrganisationViews.PublicView.class)
-    public List<MerlotParticipantDto> getAllFederators() {
+    public List<MerlotParticipantDto> getAllFederators(Principal principal) {
         return participantService.getFederators();
     }
 }

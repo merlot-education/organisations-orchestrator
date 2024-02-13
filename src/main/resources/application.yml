@@ -95,8 +95,8 @@ edc-tokens:
   edc2: "somevalue"
 
 init-data:
-  organisations: "classpath:initial-orgas.json"
-  connectors: "classpath:initial-orga-connectors.json"
+  organisations: "${user.home}/workspace/mpo/initial-orgas.json"
+  connectors: "${user.home}/workspace/mpo/initial-orga-connectors.json"
 
 merlot-domain: "marketplace.dev.merlot-education.eu"
 

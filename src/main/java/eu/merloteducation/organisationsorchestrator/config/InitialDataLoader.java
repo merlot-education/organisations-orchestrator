@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.service.GxfsSignerService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
@@ -75,8 +76,18 @@ public class InitialDataLoader implements CommandLineRunner {
             }
             logger.info("Initializing database since no organisations were found.");
 
-            ArrayNode initialOrgas = (ArrayNode) objectMapper.readTree(initialOrgasResource); // TODO replace this with the pdf reader
-            JsonNode initialOrgaConnectors = objectMapper.readTree(initialOrgaConnectorsResource);
+            ArrayNode initialOrgas;
+            JsonNode initialOrgaConnectors;
+            try {
+                initialOrgas = (ArrayNode) objectMapper.readTree(initialOrgasResource); // TODO replace this with the pdf reader
+                initialOrgaConnectors = objectMapper.readTree(initialOrgaConnectorsResource);
+            } catch (Exception e) {
+                logger.warn("Failed to load initial dataset, loading example dataset instead... {}", e.getMessage());
+                initialOrgas = (ArrayNode) objectMapper.readTree(
+                        InitialDataLoader.class.getClassLoader().getResourceAsStream("initial-orgas.json"));
+                initialOrgaConnectors = objectMapper.readTree(
+                        InitialDataLoader.class.getClassLoader().getResourceAsStream("initial-orga-connectors.json"));
+            }
 
             for (JsonNode orga : initialOrgas) {
                 RegistrationFormContent content = new RegistrationFormContent();

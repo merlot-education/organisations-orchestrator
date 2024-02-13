@@ -14,17 +14,17 @@
     }
   },
   {
-    "organizationName": "Capgemini",
-    "organizationLegalName": "Capgemini Deutschland GmbH",
+    "organizationName": "Dataport",
+    "organizationLegalName": "Dataport AöR",
     "registrationNumber": "-",
     "mailAddress": "mymail@example.com",
-    "termsAndConditionsLink": "https://www.capgemini.com/",
+    "termsAndConditionsLink": "https://www.dataport.de/",
     "termsAndConditionsHash": "hash1234",
     "legalAddress": {
-      "countryCode": "DE",
-      "postalCode": "12345",
-      "city": "Berlin",
-      "street": "Potsdamer Platz 5"
+      "countryCode": "D",
+      "postalCode": "24161",
+      "city": "Altenholz",
+      "street": "Altenholzer Straße 10–14"
     }
   },
   {

@@ -1,5 +1,5 @@
 {
-  "MERLOT Federation": ["demo"],
-  "Dataport AöR": ["demo"],
-  "Gaia-X European Association for Data and Cloud AISBL": ["demo"]
+  "MERLOT Federation": [],
+  "Dataport AöR": ["demo1"],
+  "Gaia-X European Association for Data and Cloud AISBL": ["demo2"]
 }

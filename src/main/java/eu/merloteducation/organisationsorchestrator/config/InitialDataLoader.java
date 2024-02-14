@@ -99,10 +99,7 @@ public class InitialDataLoader implements CommandLineRunner {
                 participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
                 participant = participantService.updateParticipant(participant, internalRoleFedAdmin);
 
-                OrganizationRoleGrantedAuthority internalRoleOrgLegRep
-                    = new OrganizationRoleGrantedAuthority(
-                    "OrgLegRep_did:web:" + merlotDomain + participant.getId());
-
+                // check if we need to add connectors as well
                 Set<OrganizationConnectorDto> existingConnectors = participant.getMetadata().getConnectors();
 
                 // collect buckets of this orga
@@ -117,14 +114,20 @@ public class InitialDataLoader implements CommandLineRunner {
                     continue;
                 }
 
+                OrganizationRoleGrantedAuthority internalRoleOrgLegRep
+                    = new OrganizationRoleGrantedAuthority(
+                    "OrgLegRep_" + participant.getId());
+
                 // add pool edcs with the found buckets
                 OrganizationConnectorDto connector1 = new OrganizationConnectorDto();
+                connector1.setOrgaId(participant.getId());
                 connector1.setConnectorId("edc1");
                 connector1.setConnectorEndpoint("http://edc-1.merlot.svc.cluster.local");
                 connector1.setConnectorAccessToken(poolEdc1Token);
                 connector1.setBucketNames(orgaBuckets);
 
                 OrganizationConnectorDto connector2 = new OrganizationConnectorDto();
+                connector2.setOrgaId(participant.getId());
                 connector2.setConnectorId("edc2");
                 connector2.setConnectorEndpoint("http://edc-2.merlot.svc.cluster.local");
                 connector2.setConnectorAccessToken(poolEdc2Token);

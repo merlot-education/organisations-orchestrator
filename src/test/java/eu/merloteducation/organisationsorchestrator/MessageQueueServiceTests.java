@@ -6,6 +6,7 @@ import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
+import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantConnectorsService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,23 +41,20 @@ class MessageQueueServiceTests {
     @Mock
     ParticipantService participantService;
 
+    @Mock
+    OrganizationMetadataService organizationMetadataService;
+
     @MockBean
     private InitialDataLoader initialDataLoader;
 
     @BeforeAll
     void beforeAll() throws Exception {
         ReflectionTestUtils.setField(messageQueueService, "participantService", participantService);
+        ReflectionTestUtils.setField(messageQueueService, "organizationMetadataService", organizationMetadataService);
         when(participantService.getParticipantById(any())).thenThrow(RuntimeException.class);
 
-        MerlotParticipantDto participantDto = new MerlotParticipantDto();
-        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
-        Set<OrganizationConnectorDto> set = new HashSet<>();
-        OrganizationConnectorDto connectorDto = new OrganizationConnectorDto();
-        connectorDto.setConnectorId("1234");
-        set.add(connectorDto);
-        metaDto.setConnectors(set);
-        participantDto.setMetadata(metaDto);
-        doReturn(participantDto).when(participantService).getParticipantById("10");
+        doReturn(new MerlotParticipantDto()).when(participantService).getParticipantById("10");
+        doReturn(new OrganizationConnectorDto()).when(organizationMetadataService).getConnectorForParticipant("10", "1234");
     }
 
 

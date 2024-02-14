@@ -1,7 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import org.slf4j.Logger;
@@ -16,6 +15,9 @@ public class MessageQueueService {
     @Autowired
     ParticipantService participantService;
 
+    @Autowired
+    OrganizationMetadataService organizationMetadataService;
+
     private final Logger logger = LoggerFactory.getLogger(MessageQueueService.class);
 
     /**
@@ -26,6 +28,7 @@ public class MessageQueueService {
      */
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATION_REQUEST_QUEUE)
     public MerlotParticipantDto organizationRequest(String orgaId) throws Exception {
+
         logger.info("Organization request message: {}", orgaId);
         try {
             return participantService.getParticipantById(orgaId);
@@ -43,18 +46,18 @@ public class MessageQueueService {
      */
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATIONCONNECTOR_REQUEST_QUEUE)
     public OrganizationConnectorDto organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
+
         logger.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
-        try {
-            MerlotParticipantMetaDto participantMetaDto = participantService.getParticipantById(connectorDetailsRequest.getOrgaId()).getMetadata();
-            OrganizationConnectorDto connectorDto = participantMetaDto.getConnectors().stream()
-                .filter(connector -> connector.getConnectorId().equals(connectorDetailsRequest.getConnectorId())).findFirst().orElse(null);
-            if (connectorDto == null) {
-                logger.error("Connector with this id could not be found");
-            }
-            return connectorDto;
-        } catch (Exception e) {
-            logger.error("Failed to find participant with this id, error: {}", e.getMessage());
-            return null;
+
+        OrganizationConnectorDto connectorDto = organizationMetadataService.getConnectorForParticipant(
+            connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());
+
+        if (connectorDto == null) {
+            logger.error("Connector for Participant with id {} could not be found",
+                connectorDetailsRequest.getOrgaId());
         }
+
+        return connectorDto;
     }
 }
+

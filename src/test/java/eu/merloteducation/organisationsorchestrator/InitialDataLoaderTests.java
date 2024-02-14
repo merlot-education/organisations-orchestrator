@@ -42,9 +42,6 @@ class InitialDataLoaderTests {
     @MockBean
     private ParticipantService participantService;
 
-    @MockBean
-    private ParticipantConnectorsService participantConnectorsService;
-
     @Value("${init-data.organisations:#{null}}")
     private File initialOrgasResource;
 

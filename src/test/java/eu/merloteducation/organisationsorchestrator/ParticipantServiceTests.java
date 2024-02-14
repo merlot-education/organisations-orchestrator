@@ -21,6 +21,7 @@ import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
@@ -276,7 +277,7 @@ class ParticipantServiceTests {
     }
 
     @Test
-    void getAllParticipants() throws Exception {
+    void getAllParticipantsAsFedAdmin() throws Exception {
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN.getRoleName() + "_anything");
 
         Page<MerlotParticipantDto> organizations = participantService.getParticipants(PageRequest.of(0, 9), activeRole);
@@ -293,6 +294,8 @@ class ParticipantServiceTests {
 
         MembershipClass membershipClass = organizations.getContent().get(0).getMetadata().getMembershipClass();
         assertEquals(MembershipClass.PARTICIPANT, membershipClass);
+
+        assertEquals(0,  organizations.getContent().get(0).getMetadata().getConnectors().size());
     }
 
     @Test
@@ -356,6 +359,8 @@ class ParticipantServiceTests {
 
         MembershipClass membershipClass = organization.getMetadata().getMembershipClass();
         assertEquals(MembershipClass.PARTICIPANT, membershipClass);
+
+        assertEquals(0,  organization.getMetadata().getConnectors().size());
     }
 
     @Test
@@ -425,6 +430,7 @@ class ParticipantServiceTests {
         // following metadata of the organization should have been updated
         MerlotParticipantMetaDto updatedMetadata = updatedParticipantDto.getMetadata();
         assertEquals(updatedMetadata.getMailAddress(), editedMetadata.getMailAddress());
+        assertEquals(updatedMetadata.getConnectors().size(), 1); // connector was added
 
         // following metadata of the organization should not have been updated
         assertNotEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
@@ -486,6 +492,9 @@ class ParticipantServiceTests {
         assertEquals(updatedMetadata.getMailAddress(), editedMetadata.getMailAddress());
         assertEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
         assertEquals(updatedMetadata.isActive(), editedMetadata.isActive());
+
+        // following metadata of the organization should not have been updated
+        assertEquals(updatedMetadata.getConnectors().size(), 0); // no connector was added
 
         verify(outgoingMessageService, times(1)).sendOrganizationMembershipRevokedMessage(participantDto.getId());
     }
@@ -558,6 +567,7 @@ class ParticipantServiceTests {
         assertEquals(metadataExpected.getOrgaId(), varArgs.getValue().getOrgaId());
         assertEquals(metadataExpected.getMailAddress(), varArgs.getValue().getMailAddress());
         assertEquals(metadataExpected.getMembershipClass(), varArgs.getValue().getMembershipClass());
+        assertEquals(0,  varArgs.getValue().getConnectors().size());
     }
 
     @Test
@@ -638,14 +648,28 @@ class ParticipantServiceTests {
         verifiableCredential.setCredentialSubject(editedCredentialSubject);
         selfDescription.setVerifiableCredential(verifiableCredential);
 
+        String someOrgaId = "did:web:example.com#someorga";
         MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();
-        metaData.setOrgaId("did:web:example.com#someorga");
+        metaData.setOrgaId(someOrgaId);
         metaData.setMailAddress("changedMailAddress");
         metaData.setMembershipClass(MembershipClass.FEDERATOR);
         metaData.setActive(false);
 
+        List<String> buckets = new ArrayList<String>();
+        buckets.add("bucket1");
+        buckets.add("bucket2");
+        buckets.add("bucket3");
+
+        OrganizationConnectorDto connector = new OrganizationConnectorDto();
+        connector.setOrgaId(someOrgaId);
+        connector.setConnectorId("edc1");
+        connector.setConnectorEndpoint("https://edc1.edchub.dev");
+        connector.setConnectorAccessToken("token$123?");
+        connector.setBucketNames(buckets);
+        metaData.setConnectors(Set.of(connector));
+
         dtoWithEdits.setSelfDescription(selfDescription);
-        dtoWithEdits.setId("did:web:example.com#someorga");
+        dtoWithEdits.setId(someOrgaId);
         dtoWithEdits.setMetadata(metaData);
         return dtoWithEdits;
     }

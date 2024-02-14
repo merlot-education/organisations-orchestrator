@@ -14,7 +14,9 @@ public class OrganisationConnectorExtension {
     @Setter(AccessLevel.NONE)
     private String id;
 
-    private String orgaId;
+    @ManyToOne
+    @JoinColumn(name = "orga_id")
+    private OrganizationMetadata orgaMetadata;
 
     private String connectorId;
 
@@ -26,5 +28,13 @@ public class OrganisationConnectorExtension {
 
     public OrganisationConnectorExtension() {
         this.id = "Connector:" + UUID.randomUUID();
+    }
+
+    public OrganisationConnectorExtension(String id) {
+        if (id == null || id.isBlank()) {
+            this.id = "Connector:" + UUID.randomUUID();
+        } else {
+            this.id = id;
+        }
     }
 }

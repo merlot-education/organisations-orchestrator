@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class InitialDataLoader implements CommandLineRunner {
@@ -31,7 +32,7 @@ public class InitialDataLoader implements CommandLineRunner {
     private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
 
     private final ParticipantService participantService;
-    private final ParticipantConnectorsService participantConnectorsService;
+//    private final ParticipantConnectorsService participantConnectorsService;
     private final ObjectMapper objectMapper;
     private final File initialOrgasResource;
     private final File initialOrgaConnectorsResource;
@@ -43,7 +44,6 @@ public class InitialDataLoader implements CommandLineRunner {
 
 
     public InitialDataLoader(@Autowired ParticipantService participantService,
-                             @Autowired ParticipantConnectorsService participantConnectorsService,
                              @Autowired ObjectMapper objectMapper,
                              @Value("${init-data.organisations:#{null}}") File initialOrgasResource,
                              @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
@@ -51,7 +51,6 @@ public class InitialDataLoader implements CommandLineRunner {
                              @Value("${edc-tokens.edc2:#{null}}") String poolEdc2Token,
                              @Value("${merlot-domain}") String merlotDomain) {
         this.participantService = participantService;
-        this.participantConnectorsService = participantConnectorsService;
         this.objectMapper = objectMapper;
         this.initialOrgasResource = initialOrgasResource;
         this.initialOrgaConnectorsResource = initialOrgaConnectorsResource;
@@ -66,10 +65,11 @@ public class InitialDataLoader implements CommandLineRunner {
     public void run(String... args) {
         try {
             // MERLOT federation
-            OrganizationRoleGrantedAuthority internalRole
+            OrganizationRoleGrantedAuthority internalRoleFedAdmin
                     = new OrganizationRoleGrantedAuthority(
                             "FedAdmin_did:web:" + merlotDomain + "#df15587a-0760-32b5-9c42-bb7be66e8076");
-            if (!participantService.getParticipants(Pageable.ofSize(1), internalRole).getContent().isEmpty()) {
+
+            if (!participantService.getParticipants(Pageable.ofSize(1), internalRoleFedAdmin).getContent().isEmpty()) {
                 logger.info("Database will not be reinitialised since organisations exist.");
                 return;
             }
@@ -97,11 +97,13 @@ public class InitialDataLoader implements CommandLineRunner {
 
                 // set federator role for initial organisations
                 participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
-                participant = participantService.updateParticipant(participant, internalRole);
+                participant = participantService.updateParticipant(participant, internalRoleFedAdmin);
 
-                // check if we need to add connectors as well
-                List<OrganizationConnectorDto> existingConnectors =
-                        participantConnectorsService.getAllConnectors(participant.getId());
+                OrganizationRoleGrantedAuthority internalRoleOrgLegRep
+                    = new OrganizationRoleGrantedAuthority(
+                    "OrgLegRep_did:web:" + merlotDomain + participant.getId());
+
+                Set<OrganizationConnectorDto> existingConnectors = participant.getMetadata().getConnectors();
 
                 // collect buckets of this orga
                 ArrayNode orgaBucketsNode = (ArrayNode) initialOrgaConnectors.get(content.getOrganizationLegalName());
@@ -116,21 +118,21 @@ public class InitialDataLoader implements CommandLineRunner {
                 }
 
                 // add pool edcs with the found buckets
-                PostOrganisationConnectorModel connector1 = new PostOrganisationConnectorModel();
+                OrganizationConnectorDto connector1 = new OrganizationConnectorDto();
                 connector1.setConnectorId("edc1");
                 connector1.setConnectorEndpoint("http://edc-1.merlot.svc.cluster.local");
                 connector1.setConnectorAccessToken(poolEdc1Token);
                 connector1.setBucketNames(orgaBuckets);
 
-                participantConnectorsService.postConnector(participant.getId(), connector1);
-
-                PostOrganisationConnectorModel connector2 = new PostOrganisationConnectorModel();
+                OrganizationConnectorDto connector2 = new OrganizationConnectorDto();
                 connector2.setConnectorId("edc2");
                 connector2.setConnectorEndpoint("http://edc-2.merlot.svc.cluster.local");
                 connector2.setConnectorAccessToken(poolEdc2Token);
                 connector2.setBucketNames(orgaBuckets);
 
-                participantConnectorsService.postConnector(participant.getId(), connector2);
+                participant.getMetadata().getConnectors().add(connector1);
+                participant.getMetadata().getConnectors().add(connector2);
+                participantService.updateParticipant(participant, internalRoleOrgLegRep);
             }
 
         } catch (Exception e) {

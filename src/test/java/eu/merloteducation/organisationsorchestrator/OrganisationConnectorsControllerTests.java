@@ -38,8 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc()
 class OrganisationConnectorsControllerTests {
 
-    @MockBean
-    private ParticipantConnectorsService participantConnectorsService;
+//    @MockBean
+//    private ParticipantConnectorsService participantConnectorsService;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;
@@ -61,16 +61,16 @@ class OrganisationConnectorsControllerTests {
     public void beforeEach() {
         List<OrganizationConnectorDto> connectors = List.of(new OrganizationConnectorDto());
 
-        lenient().when(participantConnectorsService.getAllConnectors(any()))
-                .thenReturn(connectors);
-        lenient().when(participantConnectorsService.getConnector(any(), any()))
-                .thenReturn(null);
-        lenient().when(participantConnectorsService.getConnector(eq("10"), eq("1234")))
-                .thenReturn(new OrganizationConnectorDto());
-        lenient().when(participantConnectorsService.postConnector(any(), any()))
-                .thenReturn(new OrganizationConnectorDto());
-        lenient().when(participantConnectorsService.patchConnector(any(), any(), any()))
-                .thenReturn(new OrganizationConnectorDto());
+//        lenient().when(participantConnectorsService.getAllConnectors(any()))
+//                .thenReturn(connectors);
+//        lenient().when(participantConnectorsService.getConnector(any(), any()))
+//                .thenReturn(null);
+//        lenient().when(participantConnectorsService.getConnector(eq("10"), eq("1234")))
+//                .thenReturn(new OrganizationConnectorDto());
+//        lenient().when(participantConnectorsService.postConnector(any(), any()))
+//                .thenReturn(new OrganizationConnectorDto());
+//        lenient().when(participantConnectorsService.patchConnector(any(), any(), any()))
+//                .thenReturn(new OrganizationConnectorDto());
     }
 
     @Test

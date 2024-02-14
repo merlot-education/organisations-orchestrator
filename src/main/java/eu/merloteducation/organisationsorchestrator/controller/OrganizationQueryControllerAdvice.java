@@ -41,6 +41,11 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                     !authorityChecker.representsOrganization(authentication, participantDto.getId())) {
                 participantDto.setMetadata(null); // for single objects hide metadata if we are not representing
             }
+
+            if (participantDto.getMetadata() != null && !authorityChecker.representsOrganization(authentication, participantDto.getId())) {
+                // hide connector data if we are allowed to see the metadata but are not representing
+                participantDto.getMetadata().setConnectors(null);
+            }
             return;
         }
 
@@ -51,6 +56,11 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                         !authorityChecker.representsOrganization(authentication, p.getId()) &&
                         !p.getMetadata().getMembershipClass().equals(MembershipClass.FEDERATOR)) {
                     p.setMetadata(null); // for lists hide metadata if we are not representing, or it's a federator
+                }
+
+                if (p.getMetadata() != null && !authorityChecker.representsOrganization(authentication, p.getId())) {
+                    // hide connector data if we are allowed to see the metadata but are not representing
+                    p.getMetadata().setConnectors(null);
                 }
             }
         } catch (ClassCastException ignored) {

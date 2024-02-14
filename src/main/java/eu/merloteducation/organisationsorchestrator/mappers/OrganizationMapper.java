@@ -3,10 +3,15 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import org.mapstruct.*;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface OrganizationMapper {
@@ -83,20 +88,31 @@ public interface OrganizationMapper {
     @Mapping(target = "active", constant = "true")
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
 
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "orgaId", source = "orgaId")
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    @Mapping(target = "active", source = "active")
+    @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsDto")
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
 
     default OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto) {
-        return new OrganizationMetadata(metadataDto.getOrgaId(), metadataDto.getMailAddress(), metadataDto.getMembershipClass(), metadataDto.isActive());
+        OrganizationMetadata metadata = new OrganizationMetadata(metadataDto.getOrgaId(), metadataDto.getMailAddress(), metadataDto.getMembershipClass(), metadataDto.isActive());
+        metadata.setConnectors(connectorsEntityMapper(metadataDto.getConnectors(), metadata));
+
+        return metadata;
     }
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "membershipClass", source = "membershipClass")
     @Mapping(target = "active", source = "active")
+    @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(source.getConnectors(), target))")
     void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source, @MappingTarget OrganizationMetadata target);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "connectors", source = "connectors")
     void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source, @MappingTarget MerlotParticipantMetaDto target);
 
     @BeanMapping(ignoreByDefault = true)
@@ -105,4 +121,33 @@ public interface OrganizationMapper {
     @Mapping(target = "active", source = "active")
     void updateMerlotParticipantMetaDtoAsFedAdmin(MerlotParticipantMetaDto source, @MappingTarget MerlotParticipantMetaDto target);
 
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "orgaId", source = "orgaMetadata.orgaId")
+    @Mapping(target = "connectorId", source = "connectorId")
+    @Mapping(target = "connectorEndpoint", source = "connectorEndpoint")
+    @Mapping(target = "connectorAccessToken", source = "connectorAccessToken")
+    @Mapping(target = "bucketNames", source = "bucketNames")
+    OrganizationConnectorDto connectorExtensionToOrganizationConnectorDto(OrganisationConnectorExtension extension);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "orgaMetadata", source = "metadata")
+    @Mapping(target = "connectorId", source = "connectorId")
+    @Mapping(target = "connectorEndpoint", source = "connectorEndpoint")
+    @Mapping(target = "connectorAccessToken", source = "connectorAccessToken")
+    @Mapping(target = "bucketNames", source = "bucketNames")
+    default OrganisationConnectorExtension organizationConnectorDtoToConnectorExtension(OrganizationConnectorDto dto,
+        OrganizationMetadata metadata) {
+
+        return new OrganisationConnectorExtension(dto.getId());
+    }
+
+    @Named("connectorsDto")
+    default Set<OrganizationConnectorDto> connectorsDtoMapper(Set<OrganisationConnectorExtension> connectorList) {
+        return connectorList.stream().map(this::connectorExtensionToOrganizationConnectorDto).collect(Collectors.toSet());
+    }
+
+    default Set<OrganisationConnectorExtension> connectorsEntityMapper(Set<OrganizationConnectorDto> connectorList, OrganizationMetadata metadata) {
+        return connectorList.stream().map(connectorDto -> organizationConnectorDtoToConnectorExtension(connectorDto, metadata)).collect(Collectors.toSet());
+    }
 }

@@ -66,7 +66,6 @@ class InitialDataLoaderTests {
                 .thenReturn(dto);
         InitialDataLoader dataLoader = new InitialDataLoader(
                 participantService,
-                participantConnectorsService,
                 new ObjectMapper(),
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
@@ -76,7 +75,7 @@ class InitialDataLoaderTests {
         dataLoader.run();
 
         verify(participantService, times(1)).createParticipant(any());
-        verify(participantConnectorsService, times(2)).postConnector(any(), any());
+        verify(participantService, times(2)).updateParticipant(any(), any());
     }
 
     @Test
@@ -86,7 +85,6 @@ class InitialDataLoaderTests {
                 .thenReturn(new PageImpl<>(List.of(dto), Pageable.ofSize(1), 1));
         InitialDataLoader dataLoader = new InitialDataLoader(
                 participantService,
-                participantConnectorsService,
                 new ObjectMapper(),
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
@@ -95,7 +93,7 @@ class InitialDataLoaderTests {
                 "example.com");
         dataLoader.run();
         verify(participantService, never()).createParticipant(any());
-        verify(participantConnectorsService, never()).postConnector(any(), any());
+        verify(participantService, never()).updateParticipant(any(), any());
     }
 
 }

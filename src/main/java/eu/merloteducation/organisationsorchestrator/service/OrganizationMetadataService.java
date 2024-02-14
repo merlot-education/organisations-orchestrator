@@ -5,6 +5,7 @@ import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
+import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,9 @@ import java.util.List;
 public class OrganizationMetadataService {
     @Autowired
     private OrganizationMetadataRepository repository;
+
+    @Autowired
+    private OrganisationConnectorsExtensionRepository connectorRepository;
 
     @Autowired
     private OrganizationMapper mapper;
@@ -62,6 +66,8 @@ public class OrganizationMetadataService {
         }
 
         mapper.updateOrganizationMetadataWithMerlotParticipantMetaDto(metaDtoWithEdits, dbMetadata);
+
+        dbMetadata.getConnectors().forEach(connector -> connectorRepository.save(connector));
 
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(dbMetadata));
     }

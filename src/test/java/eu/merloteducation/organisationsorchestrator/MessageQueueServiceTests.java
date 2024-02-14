@@ -1,6 +1,7 @@
 package eu.merloteducation.organisationsorchestrator;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
@@ -19,6 +20,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,19 +40,23 @@ class MessageQueueServiceTests {
     @Mock
     ParticipantService participantService;
 
-    @Mock
-    ParticipantConnectorsService participantConnectorsService;
-
     @MockBean
     private InitialDataLoader initialDataLoader;
 
     @BeforeAll
     void beforeAll() throws Exception {
         ReflectionTestUtils.setField(messageQueueService, "participantService", participantService);
-        ReflectionTestUtils.setField(messageQueueService, "participantConnectorsService", participantConnectorsService);
         when(participantService.getParticipantById(any())).thenThrow(RuntimeException.class);
-        doReturn(new MerlotParticipantDto()).when(participantService).getParticipantById("10");
-        doReturn(new OrganizationConnectorDto()).when(participantConnectorsService).getConnector("10", "1234");
+
+        MerlotParticipantDto participantDto = new MerlotParticipantDto();
+        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
+        Set<OrganizationConnectorDto> set = new HashSet<>();
+        OrganizationConnectorDto connectorDto = new OrganizationConnectorDto();
+        connectorDto.setConnectorId("1234");
+        set.add(connectorDto);
+        metaDto.setConnectors(set);
+        participantDto.setMetadata(metaDto);
+        doReturn(participantDto).when(participantService).getParticipantById("10");
     }
 
 

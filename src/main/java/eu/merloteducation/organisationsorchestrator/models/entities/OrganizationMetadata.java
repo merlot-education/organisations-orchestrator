@@ -1,14 +1,13 @@
 package eu.merloteducation.organisationsorchestrator.models.entities;
 
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -24,6 +23,9 @@ public class OrganizationMetadata {
     private MembershipClass membershipClass;
 
     private boolean active;
+
+    @OneToMany(mappedBy = "orgaMetadata", cascade = CascadeType.ALL,fetch = FetchType.EAGER, orphanRemoval = true)
+    private Set<OrganisationConnectorExtension> connectors = new HashSet<>();;
 
     public OrganizationMetadata() {
 

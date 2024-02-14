@@ -1,6 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import org.slf4j.Logger;
@@ -14,9 +15,6 @@ import eu.merloteducation.organisationsorchestrator.config.MessageQueueConfig;
 public class MessageQueueService {
     @Autowired
     ParticipantService participantService;
-
-    @Autowired
-    ParticipantConnectorsService participantConnectorsService;
 
     private final Logger logger = LoggerFactory.getLogger(MessageQueueService.class);
 
@@ -47,7 +45,13 @@ public class MessageQueueService {
     public OrganizationConnectorDto organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
         logger.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
         try {
-            return participantConnectorsService.getConnector(connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());
+            MerlotParticipantMetaDto participantMetaDto = participantService.getParticipantById(connectorDetailsRequest.getOrgaId()).getMetadata();
+            OrganizationConnectorDto connectorDto = participantMetaDto.getConnectors().stream()
+                .filter(connector -> connector.getConnectorId().equals(connectorDetailsRequest.getConnectorId())).findFirst().orElse(null);
+            if (connectorDto == null) {
+                logger.error("Connector with this id could not be found");
+            }
+            return connectorDto;
         } catch (Exception e) {
             logger.error("Failed to find participant with this id, error: {}", e.getMessage());
             return null;

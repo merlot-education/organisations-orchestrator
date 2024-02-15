@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.config;
 
 import eu.merloteducation.authorizationlibrary.config.MerlotSecurityConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -11,12 +11,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
+@RequiredArgsConstructor
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
-
-    @Autowired
-    private MerlotSecurityConfig merlotSecurityConfig;
+    private final MerlotSecurityConfig merlotSecurityConfig;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

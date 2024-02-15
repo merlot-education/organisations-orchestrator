@@ -1,10 +1,8 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import eu.merloteducation.authorizationlibrary.authorization.ActiveRoleHeaderHandlerInterceptor;
-import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
-import eu.merloteducation.authorizationlibrary.authorization.JwtAuthConverter;
-import eu.merloteducation.authorizationlibrary.authorization.JwtAuthConverterProperties;
+import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
+import eu.merloteducation.authorizationlibrary.config.MerlotSecurityConfig;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsWizardApiService;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.ParticipantShapeController;
@@ -19,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -28,12 +27,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest({ParticipantShapeController.class, WebSecurityConfig.class})
-@Import({JwtAuthConverter.class, ActiveRoleHeaderHandlerInterceptor.class, InterceptorConfig.class, AuthorityChecker.class})
+@Import({JwtAuthConverter.class, ActiveRoleHeaderHandlerInterceptor.class, InterceptorConfig.class,
+        AuthorityChecker.class, MerlotSecurityConfig.class})
 @AutoConfigureMockMvc()
 class ParticipantShapeControllerTests {
 
     @MockBean
     private GxfsWizardApiService gxfsWizardApiService;
+
+    @MockBean
+    private UserInfoOpaqueTokenIntrospector userInfoOpaqueTokenIntrospector;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;

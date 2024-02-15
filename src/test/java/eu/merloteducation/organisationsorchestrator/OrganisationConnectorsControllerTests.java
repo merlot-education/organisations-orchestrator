@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
+import eu.merloteducation.authorizationlibrary.config.MerlotSecurityConfig;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.api.organization.PatchOrganisationConnectorModel;
 import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
@@ -34,12 +35,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest({OrganisationConnectorsController.class, WebSecurityConfig.class})
-@Import({JwtAuthConverter.class, AuthorityChecker.class, InterceptorConfig.class, ActiveRoleHeaderHandlerInterceptor.class, AuthorityChecker.class})
+@Import({JwtAuthConverter.class, AuthorityChecker.class, InterceptorConfig.class, ActiveRoleHeaderHandlerInterceptor.class,
+        AuthorityChecker.class, MerlotSecurityConfig.class})
 @AutoConfigureMockMvc()
 class OrganisationConnectorsControllerTests {
 
     @MockBean
     private ParticipantConnectorsService participantConnectorsService;
+
+    @MockBean
+    private UserInfoOpaqueTokenIntrospector userInfoOpaqueTokenIntrospector;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;

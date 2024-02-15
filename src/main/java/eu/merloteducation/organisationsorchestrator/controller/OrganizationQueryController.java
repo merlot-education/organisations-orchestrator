@@ -123,7 +123,7 @@ public class OrganizationQueryController {
      */
     @GetMapping("/federators")
     @JsonView(OrganisationViews.PublicView.class)
-    public List<MerlotParticipantDto> getAllFederators(Principal principal) {
+    public List<MerlotParticipantDto> getAllFederators() {
         return participantService.getFederators();
     }
 }

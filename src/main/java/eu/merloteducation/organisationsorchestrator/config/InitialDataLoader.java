@@ -4,20 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
-import eu.merloteducation.gxfscataloglibrary.service.GxfsSignerService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
-import eu.merloteducation.modelslib.api.organization.PostOrganisationConnectorModel;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import eu.merloteducation.organisationsorchestrator.service.ParticipantConnectorsService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +29,6 @@ public class InitialDataLoader implements CommandLineRunner {
     private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
 
     private final ParticipantService participantService;
-//    private final ParticipantConnectorsService participantConnectorsService;
     private final ObjectMapper objectMapper;
     private final File initialOrgasResource;
     private final File initialOrgaConnectorsResource;

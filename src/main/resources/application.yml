@@ -23,27 +23,6 @@ spring:
         show_sql: false
         use_sql_comments: true
         format_sql: true
-  security:
-    oauth2:
-      #client:
-      #  registration:
-      #    demo-portal:
-       #     client-id: mpo
-       #     client-secret: demo-portal
-       #     redirect-uri: http://127.0.0.1:9000
-       #     scope:
-       #       - openid
-       ##       - profile
-       #       - email
-       #     provider: demo-portal
-       #     authorization-grant-type: authorization_code
-       # provider:
-       #   demo-portal:
-       #     issuer-uri: https://auth-service.dev.merlot-education.eu
-      resourceserver:
-        jwt:
-          issuer-uri: https://auth-service.dev.merlot-education.eu
-          jwk-set-uri: https://auth-service.dev.merlot-education.eu/oauth2/jwks
   rabbitmq:
     host: localhost
     port: 5672
@@ -77,12 +56,6 @@ gxfscatalog:
 gxfswizardapi:
   base-uri: "http://localhost:8085"
 
-jwt:
-  auth:
-    converter:
-      resource-id: MARKETPLACE
-      principal-attribute: preferred_username
-
 management:
   endpoints:
     enabled-by-default: false
@@ -97,10 +70,8 @@ keycloak:
   authorization-grant-type: "password"
   base-uri: "http://key-server:8080"
   oidc-base-uri: "${keycloak.base-uri}/realms/gxfscatalog/protocol/openid-connect"
-  authorization-uri: "${keycloak.oidc-base-uri}/auth"
   token-uri: "${keycloak.oidc-base-uri}/token"
   logout-uri: "${keycloak.oidc-base-uri}/logout"
-  jwk-set-uri: "${keycloak.oidc-base-uri}/certs"
   client-secret: "oV0GOkc0XWUoDwNV38qjqWfri6Uk7tTQ"
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"
@@ -114,9 +85,3 @@ init-data:
   connectors: "${user.home}/workspace/mpo/initial-orga-connectors.json"
 
 merlot-domain: "marketplace.dev.merlot-education.eu"
-
-cors:
-  global:
-    origins:
-    patterns: >
-      http://localhost:[*]

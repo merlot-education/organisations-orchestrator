@@ -1,0 +1,44 @@
+[
+  {
+    "organizationName": "MERLOT Federation",
+    "organizationLegalName": "MERLOT Federation",
+    "registrationNumber": "-",
+    "mailAddress": "mymail@example.com",
+    "termsAndConditionsLink": "https://www.merlot-education.eu/",
+    "termsAndConditionsHash": "hash1234",
+    "legalAddress": {
+      "countryCode": "-",
+      "postalCode": "-",
+      "city": "-",
+      "street": "-"
+    }
+  },
+  {
+    "organizationName": "Dataport",
+    "organizationLegalName": "Dataport AöR",
+    "registrationNumber": "-",
+    "mailAddress": "mymail@example.com",
+    "termsAndConditionsLink": "https://www.dataport.de/",
+    "termsAndConditionsHash": "hash1234",
+    "legalAddress": {
+      "countryCode": "D",
+      "postalCode": "24161",
+      "city": "Altenholz",
+      "street": "Altenholzer Straße 10–14"
+    }
+  },
+  {
+    "organizationName": "Gaia-X AISBL",
+    "organizationLegalName": "Gaia-X European Association for Data and Cloud AISBL",
+    "registrationNumber": "0762747721",
+    "mailAddress": "mymail@example.com",
+    "termsAndConditionsLink": "http://example.com",
+    "termsAndConditionsHash": "hash1234",
+    "legalAddress": {
+      "countryCode": "BE",
+      "postalCode": "1210",
+      "city": "Brüssel",
+      "street": "Avenue des Arts 6-9"
+    }
+  }
+]

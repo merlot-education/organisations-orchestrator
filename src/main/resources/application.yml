@@ -72,7 +72,7 @@ keycloak:
   oidc-base-uri: "${keycloak.base-uri}/realms/gxfscatalog/protocol/openid-connect"
   token-uri: "${keycloak.oidc-base-uri}/token"
   logout-uri: "${keycloak.oidc-base-uri}/logout"
-  client-secret: "oV0GOkc0XWUoDwNV38qjqWfri6Uk7tTQ"
+  client-secret: "CScowEqRGIb6d7SLCZHVjKHIewp0ZmnO"
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"
 

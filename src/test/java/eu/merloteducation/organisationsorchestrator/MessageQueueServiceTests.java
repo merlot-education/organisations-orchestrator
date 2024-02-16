@@ -2,6 +2,7 @@ package eu.merloteducation.organisationsorchestrator;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.service.MessageQueueService;
@@ -49,7 +50,7 @@ class MessageQueueServiceTests {
         when(participantService.getParticipantById(any())).thenThrow(RuntimeException.class);
 
         doReturn(new MerlotParticipantDto()).when(participantService).getParticipantById("10");
-        doReturn(new OrganizationConnectorDto()).when(organizationMetadataService).getConnectorForParticipant("10", "1234");
+        doReturn(new OrganizationConnectorTransferDto()).when(organizationMetadataService).getConnectorForParticipant("10", "1234");
     }
 
 
@@ -68,14 +69,14 @@ class MessageQueueServiceTests {
     @Test
     void requestOrganizationConnectorExistent() {
         ConnectorDetailsRequest connectorDetailsRequest = new ConnectorDetailsRequest("1234", "10");
-        OrganizationConnectorDto model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
+        OrganizationConnectorTransferDto model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
         assertNotNull(model);
     }
 
     @Test
     void requestOrganizationConnectorNonExistent()  {
         ConnectorDetailsRequest connectorDetailsRequest = new ConnectorDetailsRequest("garbage", "10");
-        OrganizationConnectorDto model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
+        OrganizationConnectorTransferDto model = messageQueueService.organizationConnectorRequest(connectorDetailsRequest);
         assertNull(model);
     }
 }

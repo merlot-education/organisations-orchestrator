@@ -2,6 +2,7 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,11 +46,11 @@ public class MessageQueueService {
      * @return connector details
      */
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATIONCONNECTOR_REQUEST_QUEUE)
-    public OrganizationConnectorDto organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
+    public OrganizationConnectorTransferDto organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
 
         logger.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
 
-        OrganizationConnectorDto connectorDto = organizationMetadataService.getConnectorForParticipant(
+        OrganizationConnectorTransferDto connectorDto = organizationMetadataService.getConnectorForParticipant(
             connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());
 
         if (connectorDto == null) {

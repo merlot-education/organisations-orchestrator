@@ -3,6 +3,7 @@ package eu.merloteducation.organisationsorchestrator;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
@@ -234,9 +235,11 @@ class OrganizationMetadataServiceTests {
     @Transactional
     @Test
     void updateMerlotParticipantMetaCorrectlyUpdatePreexistingConnector() {
-
-        OrganizationConnectorDto connectorDtoBeforeUpdate = metadataService.getConnectorForParticipant(someOrgaId,
-            "edc1");
+        // preexisting connector of participant
+        Set<OrganizationConnectorDto> connectors = metadataService.getMerlotParticipantMetaDto(someOrgaId).getConnectors();
+        assertEquals(1, connectors.size());
+        OrganizationConnectorDto connectorDtoBeforeUpdate = connectors.stream().findFirst().orElse(null);
+        assertNotNull(connectorDtoBeforeUpdate);
 
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         metaDto.setOrgaId(someOrgaId);
@@ -422,7 +425,7 @@ class OrganizationMetadataServiceTests {
         expected.setConnectorAccessToken("token$123?");
         expected.setBucketNames(buckets);
 
-        OrganizationConnectorDto actual = metadataService.getConnectorForParticipant(someOrgaId, "edc1");
+        OrganizationConnectorTransferDto actual = metadataService.getConnectorForParticipant(someOrgaId, "edc1");
 
         assertNotNull(actual);
         assertEquals(expected.getConnectorId(), actual.getConnectorId());

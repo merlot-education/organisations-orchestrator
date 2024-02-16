@@ -3,6 +3,7 @@ package eu.merloteducation.organisationsorchestrator.service;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
@@ -106,7 +107,7 @@ public class OrganizationMetadataService {
      * @param connectorId the connector id
      * @return connector
      */
-    public OrganizationConnectorDto getConnectorForParticipant(String orgaId, String connectorId) {
+    public OrganizationConnectorTransferDto getConnectorForParticipant(String orgaId, String connectorId) {
 
         OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
         OrganisationConnectorExtension connector = null;
@@ -117,7 +118,7 @@ public class OrganizationMetadataService {
                 .findFirst().orElse(null);
         }
 
-        return connector != null ? mapper.connectorExtensionToOrganizationConnectorDto(connector) : null;
+        return connector != null ? mapper.connectorExtensionToOrganizationConnectorTransferDto(connector) : null;
     }
 
 }

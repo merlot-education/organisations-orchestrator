@@ -114,7 +114,6 @@ class OrganizationMetadataServiceTests {
         buckets.add("bucket3");
 
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
-        connector.setOrgaId(someOrgaId);
         connector.setConnectorId("edc1");
         connector.setConnectorEndpoint("https://edc1.edchub.dev");
         connector.setConnectorAccessToken("token$123?");
@@ -130,7 +129,6 @@ class OrganizationMetadataServiceTests {
 
         OrganizationConnectorDto actualDto = actual1.getConnectors().stream().findFirst().orElse(null);
         assertNotNull(actualDto);
-        assertEquals(someOrgaId, actualDto.getOrgaId());
         assertEquals("edc1", actualDto.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualDto.getConnectorEndpoint());
         assertEquals("token$123?", actualDto.getConnectorAccessToken());
@@ -211,7 +209,6 @@ class OrganizationMetadataServiceTests {
         buckets.add("bucket2");
 
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
-        connector.setOrgaId("garbage");
         connector.setConnectorId("edctest");
         connector.setConnectorEndpoint("https://edc1.edchub.dev");
         connector.setConnectorAccessToken("token$123?");
@@ -228,7 +225,6 @@ class OrganizationMetadataServiceTests {
 
         OrganizationConnectorDto actualDto = actual.getConnectors().stream().findFirst().orElse(null);
         assertNotNull(actualDto);
-        assertEquals(otherOrgaId, actualDto.getOrgaId());
         assertEquals("edctest", actualDto.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualDto.getConnectorEndpoint());
         assertEquals("token$123?", actualDto.getConnectorAccessToken());
@@ -237,7 +233,10 @@ class OrganizationMetadataServiceTests {
 
     @Transactional
     @Test
-    void updateMerlotParticipantMetaCorrectlyPreexistingConnectors() {
+    void updateMerlotParticipantMetaCorrectlyUpdatePreexistingConnector() {
+
+        OrganizationConnectorDto connectorDtoBeforeUpdate = metadataService.getConnectorForParticipant(someOrgaId,
+            "edc1");
 
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         metaDto.setOrgaId(someOrgaId);
@@ -250,10 +249,9 @@ class OrganizationMetadataServiceTests {
         buckets.add("bucket2");
 
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
-        connector.setOrgaId("garbage");
-        connector.setConnectorId("edctest");
-        connector.setConnectorEndpoint("https://edc1.edchub.dev");
-        connector.setConnectorAccessToken("token$123?");
+        connector.setConnectorId("edc1");
+        connector.setConnectorEndpoint("https://edc1.edchub.dev#updated");
+        connector.setConnectorAccessToken("token$123?567");
         connector.setBucketNames(buckets);
 
         metaDto.setConnectors(Set.of(connector));
@@ -267,16 +265,22 @@ class OrganizationMetadataServiceTests {
 
         OrganizationConnectorDto actualDto = actual.getConnectors().stream().findFirst().orElse(null);
         assertNotNull(actualDto);
-        assertEquals(someOrgaId, actualDto.getOrgaId());
-        assertEquals("edctest", actualDto.getConnectorId());
-        assertEquals("https://edc1.edchub.dev", actualDto.getConnectorEndpoint());
-        assertEquals("token$123?", actualDto.getConnectorAccessToken());
+        assertEquals("edc1", actualDto.getConnectorId());
+        assertEquals("https://edc1.edchub.dev#updated", actualDto.getConnectorEndpoint());
+        assertEquals("token$123?567", actualDto.getConnectorAccessToken());
         assertEquals(buckets, actualDto.getBucketNames());
+
+        // compare with connector before update
+        assertEquals(connectorDtoBeforeUpdate.getConnectorId(), actualDto.getConnectorId());
+        assertNotEquals(connectorDtoBeforeUpdate.getConnectorEndpoint(), actualDto.getConnectorEndpoint());
+        assertNotEquals(connectorDtoBeforeUpdate.getConnectorAccessToken(), actualDto.getConnectorAccessToken());
+        assertNotEquals(connectorDtoBeforeUpdate.getBucketNames(), actualDto.getBucketNames());
+
     }
 
     @Transactional
     @Test
-    void updateMerlotParticipantMetaCorrectlyUpdatePreexistingConnectors() {
+    void updateMerlotParticipantMetaCorrectlyUpdatePreexistingConnectorAndAddAnotherConnector() {
 
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         metaDto.setOrgaId(someOrgaId);
@@ -296,14 +300,12 @@ class OrganizationMetadataServiceTests {
         buckets2.add("bucket5");
 
         OrganizationConnectorDto connector1 = new OrganizationConnectorDto();
-        connector1.setOrgaId(someOrgaId);
         connector1.setConnectorId("edctest");
         connector1.setConnectorEndpoint("https://edc1.edchub.dev");
         connector1.setConnectorAccessToken("token$123?");
         connector1.setBucketNames(buckets1);
 
         OrganizationConnectorDto connector2 = new OrganizationConnectorDto();
-        connector2.setOrgaId("garbage");
         connector2.setConnectorId("edc1");
         connector2.setConnectorEndpoint("https://edc1.edchub.dev#new");
         connector2.setConnectorAccessToken("token$123?");
@@ -321,7 +323,6 @@ class OrganizationMetadataServiceTests {
         OrganizationConnectorDto actualConnectorDto1 = actual.getConnectors().stream()
             .filter(con -> con.getConnectorId().equals("edctest")).findFirst().orElse(null);
         assertNotNull(actualConnectorDto1);
-        assertEquals(someOrgaId, actualConnectorDto1.getOrgaId());
         assertEquals("edctest", actualConnectorDto1.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualConnectorDto1.getConnectorEndpoint());
         assertEquals("token$123?", actualConnectorDto1.getConnectorAccessToken());
@@ -330,7 +331,6 @@ class OrganizationMetadataServiceTests {
         OrganizationConnectorDto actualConnectorDto2 = actual.getConnectors().stream()
             .filter(con -> con.getConnectorId().equals("edc1")).findFirst().orElse(null);
         assertNotNull(actualConnectorDto2);
-        assertEquals(someOrgaId, actualConnectorDto2.getOrgaId());
         assertEquals("edc1", actualConnectorDto2.getConnectorId());
         assertEquals("https://edc1.edchub.dev#new", actualConnectorDto2.getConnectorEndpoint());
         assertEquals("token$123?", actualConnectorDto2.getConnectorAccessToken());
@@ -352,7 +352,6 @@ class OrganizationMetadataServiceTests {
         buckets1.add("bucket2");
 
         OrganizationConnectorDto connector1 = new OrganizationConnectorDto();
-        connector1.setOrgaId(someOrgaId);
         connector1.setConnectorId("edctest");
         connector1.setConnectorEndpoint("https://edc1.edchub.dev");
         connector1.setConnectorAccessToken("token$123?");
@@ -370,7 +369,6 @@ class OrganizationMetadataServiceTests {
         OrganizationConnectorDto actualDto1 = actual.getConnectors().stream()
             .filter(con -> con.getConnectorId().equals("edctest")).findFirst().orElse(null);
         assertNotNull(actualDto1);
-        assertEquals(someOrgaId, actualDto1.getOrgaId());
         assertEquals("edctest", actualDto1.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualDto1.getConnectorEndpoint());
         assertEquals("token$123?", actualDto1.getConnectorAccessToken());
@@ -419,16 +417,14 @@ class OrganizationMetadataServiceTests {
         buckets.add("bucket3");
 
         OrganizationConnectorDto expected = new OrganizationConnectorDto();
-        expected.setOrgaId(someOrgaId);
         expected.setConnectorId("edc1");
         expected.setConnectorEndpoint("https://edc1.edchub.dev");
         expected.setConnectorAccessToken("token$123?");
         expected.setBucketNames(buckets);
 
-        OrganizationConnectorDto actual= metadataService.getConnectorForParticipant(someOrgaId, "edc1");
+        OrganizationConnectorDto actual = metadataService.getConnectorForParticipant(someOrgaId, "edc1");
 
         assertNotNull(actual);
-        assertEquals(expected.getOrgaId(), actual.getOrgaId());
         assertEquals(expected.getConnectorId(), actual.getConnectorId());
         assertEquals(expected.getConnectorEndpoint(), actual.getConnectorEndpoint());
         assertEquals(expected.getConnectorAccessToken(), actual.getConnectorAccessToken());

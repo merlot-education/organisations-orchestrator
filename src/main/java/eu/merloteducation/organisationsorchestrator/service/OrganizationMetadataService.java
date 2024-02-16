@@ -52,11 +52,6 @@ public class OrganizationMetadataService {
         }
         OrganizationMetadata metadata = mapper.merlotParticipantMetaDtoToOrganizationMetadata(metaDto);
 
-        metadata.getConnectors().forEach(connector -> {
-            connector.setOrgaId(metadata.getOrgaId());
-            connectorRepository.save(connector);
-        });
-
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));
     }
 
@@ -77,8 +72,6 @@ public class OrganizationMetadataService {
         }
 
         mapper.updateOrganizationMetadataWithMerlotParticipantMetaDto(metaDtoWithEdits, dbMetadata);
-
-        dbMetadata.getConnectors().forEach(connector -> connectorRepository.save(connector));
 
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(dbMetadata));
     }

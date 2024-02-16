@@ -102,7 +102,7 @@ public interface OrganizationMapper {
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "membershipClass", source = "membershipClass")
     @Mapping(target = "active", source = "active")
-    @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsForEntity")
+    @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(metadataDto.getConnectors(), metadataDto.getOrgaId()))")
     OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
 
     default void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source,
@@ -112,9 +112,8 @@ public interface OrganizationMapper {
         target.setMembershipClass(source.getMembershipClass());
         target.setActive(source.isActive());
 
-        Set<OrganisationConnectorExtension> updatedConnectors = connectorsEntityMapper(source.getConnectors());
-        // rectify if for some reason there was an inconsistency
-        updatedConnectors.forEach(con -> con.setOrgaId(target.getOrgaId()));
+        Set<OrganisationConnectorExtension> updatedConnectors = connectorsEntityMapper(source.getConnectors(),
+            target.getOrgaId());
 
         target.getConnectors().clear();
         target.getConnectors().addAll(updatedConnectors);
@@ -135,7 +134,18 @@ public interface OrganizationMapper {
 
     OrganizationConnectorDto connectorExtensionToOrganizationConnectorDto(OrganisationConnectorExtension extension);
 
-    OrganisationConnectorExtension organizationConnectorDtoToConnectorExtension(OrganizationConnectorDto dto);
+    default OrganisationConnectorExtension organizationConnectorDtoToConnectorExtension(OrganizationConnectorDto dto,
+        String orgaId) {
+
+        OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
+        connector.setOrgaId(orgaId);
+        connector.setConnectorId(dto.getConnectorId());
+        connector.setConnectorEndpoint(dto.getConnectorEndpoint());
+        connector.setConnectorAccessToken(dto.getConnectorAccessToken());
+        connector.setBucketNames(dto.getBucketNames());
+
+        return connector;
+    }
 
     @Named("connectorsForDto")
     default Set<OrganizationConnectorDto> connectorsDtoMapper(Set<OrganisationConnectorExtension> connectors) {
@@ -143,9 +153,11 @@ public interface OrganizationMapper {
         return connectors.stream().map(this::connectorExtensionToOrganizationConnectorDto).collect(Collectors.toSet());
     }
 
-    @Named("connectorsForEntity")
-    default Set<OrganisationConnectorExtension> connectorsEntityMapper(Set<OrganizationConnectorDto> connectors) {
+    default Set<OrganisationConnectorExtension> connectorsEntityMapper(Set<OrganizationConnectorDto> connectorDtos,
+        String orgaId) {
 
-        return connectors.stream().map(this::organizationConnectorDtoToConnectorExtension).collect(Collectors.toSet());
+        return connectorDtos.stream()
+            .map(connectorDto -> organizationConnectorDtoToConnectorExtension(connectorDto, orgaId))
+            .collect(Collectors.toSet());
     }
 }

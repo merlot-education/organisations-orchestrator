@@ -661,7 +661,6 @@ class ParticipantServiceTests {
         buckets.add("bucket3");
 
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
-        connector.setOrgaId(someOrgaId);
         connector.setConnectorId("edc1");
         connector.setConnectorEndpoint("https://edc1.edchub.dev");
         connector.setConnectorAccessToken("token$123?");

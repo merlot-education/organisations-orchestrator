@@ -41,9 +41,6 @@ class OrganizationMetadataServiceTests {
     private OrganizationMetadataRepository metadataRepository;
 
     @Autowired
-    private OrganisationConnectorsExtensionRepository connectorRepository;
-
-    @Autowired
     private OrganizationMapper metadataMapper;
 
     @MockBean
@@ -61,7 +58,6 @@ class OrganizationMetadataServiceTests {
 
         ReflectionTestUtils.setField(metadataService, "repository", metadataRepository);
         ReflectionTestUtils.setField(metadataService, "mapper", metadataMapper);
-        ReflectionTestUtils.setField(metadataService, "connectorRepository", connectorRepository);
 
         someOrgaId = "did:web:" + merlotDomain + "#" + "someorga";
         otherOrgaId = "did:web:" + merlotDomain + "#" + "otherorga";

@@ -430,7 +430,7 @@ class ParticipantServiceTests {
         // following metadata of the organization should have been updated
         MerlotParticipantMetaDto updatedMetadata = updatedParticipantDto.getMetadata();
         assertEquals(updatedMetadata.getMailAddress(), editedMetadata.getMailAddress());
-        assertEquals(updatedMetadata.getConnectors().size(), 1); // connector was added
+        assertEquals(1, updatedMetadata.getConnectors().size()); // connector was added
 
         // following metadata of the organization should not have been updated
         assertNotEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
@@ -494,7 +494,7 @@ class ParticipantServiceTests {
         assertEquals(updatedMetadata.isActive(), editedMetadata.isActive());
 
         // following metadata of the organization should not have been updated
-        assertEquals(updatedMetadata.getConnectors().size(), 0); // no connector was added
+        assertEquals(0, updatedMetadata.getConnectors().size()); // no connector was added
 
         verify(outgoingMessageService, times(1)).sendOrganizationMembershipRevokedMessage(participantDto.getId());
     }

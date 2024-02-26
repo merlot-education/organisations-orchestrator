@@ -26,7 +26,7 @@ public class OrganizationMetadata {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "orgaId", referencedColumnName = "orgaId", updatable = false)
-    private Set<OrganisationConnectorExtension> connectors = new HashSet<>();;
+    private Set<OrganisationConnectorExtension> connectors = new HashSet<>();
 
     public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass, boolean active) {
 

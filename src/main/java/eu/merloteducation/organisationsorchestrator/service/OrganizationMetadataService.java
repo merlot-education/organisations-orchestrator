@@ -21,9 +21,6 @@ public class OrganizationMetadataService {
     private OrganizationMetadataRepository repository;
 
     @Autowired
-    private OrganisationConnectorsExtensionRepository connectorRepository;
-
-    @Autowired
     private OrganizationMapper mapper;
 
     /**

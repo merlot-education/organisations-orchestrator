@@ -429,4 +429,62 @@ class OrganizationMetadataServiceTests {
         assertEquals(buckets, actual.getBucketNames());
 
     }
+
+    @Transactional
+    @Test
+    void getParticipantsByMembershipClassCorrectly() {
+
+        MerlotParticipantMetaDto expected1 = new MerlotParticipantMetaDto();
+        expected1.setOrgaId(someOrgaId);
+        expected1.setMailAddress("abd@de.fg");
+        expected1.setMembershipClass(MembershipClass.FEDERATOR);
+        expected1.setActive(true);
+
+        List<String> buckets = new ArrayList<String>();
+        buckets.add("bucket1");
+        buckets.add("bucket2");
+        buckets.add("bucket3");
+
+        OrganizationConnectorDto connector = new OrganizationConnectorDto();
+        connector.setConnectorId("edc1");
+        connector.setConnectorEndpoint("https://edc1.edchub.dev");
+        connector.setConnectorAccessToken("token$123?");
+        connector.setBucketNames(buckets);
+        expected1.setConnectors(Set.of(connector));
+
+        List<MerlotParticipantMetaDto> federatorList = metadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
+        assertEquals(1, federatorList.size());
+        MerlotParticipantMetaDto actual1 = federatorList.stream().findFirst().orElse(null);
+        assertNotNull(actual1);
+        assertEquals(expected1.getOrgaId(), actual1.getOrgaId());
+        assertEquals(expected1.getMembershipClass(), actual1.getMembershipClass());
+        assertEquals(expected1.getMailAddress(), actual1.getMailAddress());
+        assertEquals(expected1.isActive(), actual1.isActive());
+        assertEquals(1, actual1.getConnectors().size());
+
+        OrganizationConnectorDto actualDto = actual1.getConnectors().stream().findFirst().orElse(null);
+        assertNotNull(actualDto);
+        assertEquals("edc1", actualDto.getConnectorId());
+        assertEquals("https://edc1.edchub.dev", actualDto.getConnectorEndpoint());
+        assertEquals("token$123?", actualDto.getConnectorAccessToken());
+        assertEquals(buckets, actualDto.getBucketNames());
+
+        MerlotParticipantMetaDto expected2 = new MerlotParticipantMetaDto();
+        expected2.setOrgaId(otherOrgaId);
+        expected2.setMailAddress("hij@kl.mn");
+        expected2.setMembershipClass(MembershipClass.PARTICIPANT);
+        expected2.setActive(false);
+        expected2.setConnectors(new HashSet<>());
+
+        List<MerlotParticipantMetaDto> participantList = metadataService.getParticipantsByMembershipClass(MembershipClass.PARTICIPANT);
+        assertEquals(1, participantList.size());
+        MerlotParticipantMetaDto actual2 = participantList.stream().findFirst().orElse(null);
+        assertNotNull(actual2);
+        assertEquals(expected2.getOrgaId(), actual2.getOrgaId());
+        assertEquals(expected2.getMembershipClass(), actual2.getMembershipClass());
+        assertEquals(expected2.getMailAddress(), actual2.getMailAddress());
+        assertEquals(expected2.isActive(), actual2.isActive());
+        assertEquals(new HashSet<>(), actual2.getConnectors());
+
+    }
 }

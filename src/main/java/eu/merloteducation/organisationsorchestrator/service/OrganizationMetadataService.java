@@ -2,13 +2,11 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
-import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
-import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

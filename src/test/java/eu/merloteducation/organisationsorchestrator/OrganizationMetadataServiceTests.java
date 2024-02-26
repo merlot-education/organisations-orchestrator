@@ -8,7 +8,6 @@ import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
-import eu.merloteducation.organisationsorchestrator.repositories.OrganisationConnectorsExtensionRepository;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
 import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
 import jakarta.transaction.Transactional;

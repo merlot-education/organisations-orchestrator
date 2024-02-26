@@ -4,6 +4,7 @@ import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
@@ -42,7 +43,7 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                 participantDto.setMetadata(null); // for single objects hide metadata if we are not representing
             }
 
-            if (participantDto.getMetadata() != null && !representsOrganization) {
+            if (shouldHideConnectorInformation(participantDto.getMetadata(), representsOrganization)) {
                 // hide connector data if we are allowed to see the metadata but are not representing
                 participantDto.getMetadata().setConnectors(null);
             }
@@ -58,7 +59,7 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                     p.setMetadata(null); // for lists hide metadata if we are not representing, or it's a federator
                 }
 
-                if (p.getMetadata() != null && !representsOrganization) {
+                if (shouldHideConnectorInformation(p.getMetadata(), representsOrganization)) {
                     // hide connector data if we are allowed to see the metadata but are not representing
                     p.getMetadata().setConnectors(null);
                 }
@@ -66,5 +67,9 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
         } catch (ClassCastException ignored) {
             // if it's the wrong class, we don't want to modify it anyway
         }
+    }
+
+    private boolean shouldHideConnectorInformation(MerlotParticipantMetaDto metadata, boolean representsOrganization){
+        return metadata != null && !representsOrganization;
     }
 }

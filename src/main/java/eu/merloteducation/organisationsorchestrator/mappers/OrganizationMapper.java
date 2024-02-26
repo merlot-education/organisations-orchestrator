@@ -3,10 +3,16 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import org.mapstruct.*;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface OrganizationMapper {
@@ -14,7 +20,8 @@ public interface OrganizationMapper {
     @Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
     @Mapping(target = "metadata", source = "metaData")
     @Mapping(target = "selfDescription", source = "selfDescription")
-    MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(SelfDescription selfDescription, MerlotParticipantMetaDto metaData);
+    MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(SelfDescription selfDescription,
+        MerlotParticipantMetaDto metaData);
 
     @BeanMapping(ignoreByDefault = true)
     // allow to edit tnc
@@ -31,7 +38,7 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.postalCode", source = "legalAddress.postalCode")
     @Mapping(target = "headquarterAddress.streetAddress", source = "legalAddress.streetAddress")
     void updateSelfDescriptionAsParticipant(MerlotOrganizationCredentialSubject source,
-                                            @MappingTarget MerlotOrganizationCredentialSubject target);
+        @MappingTarget MerlotOrganizationCredentialSubject target);
 
     @BeanMapping(ignoreByDefault = true)
     // allow to edit name (orga and legal)
@@ -83,26 +90,77 @@ public interface OrganizationMapper {
     @Mapping(target = "active", constant = "true")
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
 
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "orgaId", source = "orgaId")
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    @Mapping(target = "active", source = "active")
+    @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsForDto")
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
 
-    default OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto) {
-        return new OrganizationMetadata(metadataDto.getOrgaId(), metadataDto.getMailAddress(), metadataDto.getMembershipClass(), metadataDto.isActive());
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "orgaId", source = "orgaId")
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    @Mapping(target = "active", source = "active")
+    @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(metadataDto.getConnectors(), metadataDto.getOrgaId()))")
+    OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
+
+    default void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source,
+        @MappingTarget OrganizationMetadata target) {
+
+        target.setMailAddress(source.getMailAddress());
+        target.setMembershipClass(source.getMembershipClass());
+        target.setActive(source.isActive());
+
+        Set<OrganisationConnectorExtension> updatedConnectors = connectorsEntityMapper(source.getConnectors(),
+            target.getOrgaId());
+
+        target.getConnectors().clear();
+        target.getConnectors().addAll(updatedConnectors);
     }
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
-    @Mapping(target = "membershipClass", source = "membershipClass")
-    @Mapping(target = "active", source = "active")
-    void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source, @MappingTarget OrganizationMetadata target);
-
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "mailAddress", source = "mailAddress")
-    void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source, @MappingTarget MerlotParticipantMetaDto target);
+    @Mapping(target = "connectors", source = "connectors")
+    void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source,
+        @MappingTarget MerlotParticipantMetaDto target);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "membershipClass", source = "membershipClass")
     @Mapping(target = "active", source = "active")
-    void updateMerlotParticipantMetaDtoAsFedAdmin(MerlotParticipantMetaDto source, @MappingTarget MerlotParticipantMetaDto target);
+    void updateMerlotParticipantMetaDtoAsFedAdmin(MerlotParticipantMetaDto source,
+        @MappingTarget MerlotParticipantMetaDto target);
 
+    OrganizationConnectorDto connectorExtensionToOrganizationConnectorDto(OrganisationConnectorExtension extension);
+
+    OrganizationConnectorTransferDto connectorExtensionToOrganizationConnectorTransferDto(OrganisationConnectorExtension extension);
+
+    default OrganisationConnectorExtension organizationConnectorDtoToConnectorExtension(OrganizationConnectorDto dto,
+        String orgaId) {
+
+        OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
+        connector.setOrgaId(orgaId);
+        connector.setConnectorId(dto.getConnectorId());
+        connector.setConnectorEndpoint(dto.getConnectorEndpoint());
+        connector.setConnectorAccessToken(dto.getConnectorAccessToken());
+        connector.setBucketNames(dto.getBucketNames());
+
+        return connector;
+    }
+
+    @Named("connectorsForDto")
+    default Set<OrganizationConnectorDto> connectorsDtoMapper(Set<OrganisationConnectorExtension> connectors) {
+
+        return connectors.stream().map(this::connectorExtensionToOrganizationConnectorDto).collect(Collectors.toSet());
+    }
+
+    default Set<OrganisationConnectorExtension> connectorsEntityMapper(Set<OrganizationConnectorDto> connectorDtos,
+        String orgaId) {
+
+        return connectorDtos.stream()
+            .map(connectorDto -> organizationConnectorDtoToConnectorExtension(connectorDto, orgaId))
+            .collect(Collectors.toSet());
+    }
 }

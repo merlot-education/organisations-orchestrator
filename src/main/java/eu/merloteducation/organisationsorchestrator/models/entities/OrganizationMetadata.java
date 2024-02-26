@@ -1,21 +1,20 @@
 package eu.merloteducation.organisationsorchestrator.models.entities;
 
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import lombok.AccessLevel;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class OrganizationMetadata {
     @Id
-    @Setter(AccessLevel.NONE)
     private String orgaId;
 
     private String mailAddress;
@@ -25,9 +24,9 @@ public class OrganizationMetadata {
 
     private boolean active;
 
-    public OrganizationMetadata() {
-
-    }
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @JoinColumn(name = "orgaId", referencedColumnName = "orgaId", updatable = false)
+    private Set<OrganisationConnectorExtension> connectors = new HashSet<>();
 
     public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass, boolean active) {
 

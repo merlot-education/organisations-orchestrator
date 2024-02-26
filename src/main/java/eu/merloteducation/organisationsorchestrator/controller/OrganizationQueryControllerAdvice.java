@@ -4,6 +4,7 @@ import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
@@ -37,9 +38,14 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                 && new OrganizationRoleGrantedAuthority(activeRoleString).isFedAdmin();
 
         if (bodyContainer.getValue() instanceof MerlotParticipantDto participantDto) {
-            if (!isFedAdmin &&
-                    !authorityChecker.representsOrganization(authentication, participantDto.getId())) {
+            boolean representsOrganization = authorityChecker.representsOrganization(authentication, participantDto.getId());
+            if (!isFedAdmin && !representsOrganization) {
                 participantDto.setMetadata(null); // for single objects hide metadata if we are not representing
+            }
+
+            if (shouldHideConnectorInformation(participantDto.getMetadata(), representsOrganization)) {
+                // hide connector data if we are allowed to see the metadata but are not representing
+                participantDto.getMetadata().setConnectors(null);
             }
             return;
         }
@@ -47,14 +53,23 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
         try {
             Page<MerlotParticipantDto> participantDtos = (Page<MerlotParticipantDto>) bodyContainer.getValue();
             for (MerlotParticipantDto p : participantDtos) {
-                if (!isFedAdmin &&
-                        !authorityChecker.representsOrganization(authentication, p.getId()) &&
+                boolean representsOrganization = authorityChecker.representsOrganization(authentication, p.getId());
+                if (!isFedAdmin && !representsOrganization &&
                         !p.getMetadata().getMembershipClass().equals(MembershipClass.FEDERATOR)) {
                     p.setMetadata(null); // for lists hide metadata if we are not representing, or it's a federator
+                }
+
+                if (shouldHideConnectorInformation(p.getMetadata(), representsOrganization)) {
+                    // hide connector data if we are allowed to see the metadata but are not representing
+                    p.getMetadata().setConnectors(null);
                 }
             }
         } catch (ClassCastException ignored) {
             // if it's the wrong class, we don't want to modify it anyway
         }
+    }
+
+    private boolean shouldHideConnectorInformation(MerlotParticipantMetaDto metadata, boolean representsOrganization){
+        return metadata != null && !representsOrganization;
     }
 }

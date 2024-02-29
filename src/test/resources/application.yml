@@ -53,7 +53,7 @@ gxfswizardapi:
 merlot-domain: "example.com"
 
 init-data:
-  organisations: "classpath:initial-orgas.json"
+  organisations: "classpath:organisations/"
   connectors: "classpath:initial-orga-connectors.json"
 
 jwt:

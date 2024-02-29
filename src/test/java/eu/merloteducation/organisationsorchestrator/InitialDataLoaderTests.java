@@ -1,11 +1,14 @@
 package eu.merloteducation.organisationsorchestrator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
-import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
+import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,7 +20,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +35,7 @@ class InitialDataLoaderTests {
     private InitialDataLoader initialDataLoader;  // mock the spring-created data loader as we create it manually
 
     @MockBean
-    private ParticipantService participantService;
+    private OrganizationQueryController organizationQueryController;
 
     @Value("${init-data.organisations:#{null}}")
     private File initialOrgasResource;
@@ -43,47 +45,48 @@ class InitialDataLoaderTests {
 
 
     @Test
-    void noParticipantsExist() throws IOException {
-        when(participantService.getParticipants(any(), any()))
+    void noParticipantsExist() throws Exception {
+        when(organizationQueryController.getAllOrganizations(anyInt(), anyInt(), any()))
                 .thenReturn(new PageImpl<>(Collections.emptyList(), Pageable.ofSize(1), 0));
         MerlotParticipantDto dto = new MerlotParticipantDto();
+        dto.setSelfDescription(new SelfDescription());
+        dto.getSelfDescription().setVerifiableCredential(new SelfDescriptionVerifiableCredential());
+        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
+        credentialSubject.setLegalName("MERLOT Federation");
+        dto.getSelfDescription().getVerifiableCredential().setCredentialSubject(credentialSubject);
         dto.setId("did:web:example.com#someid");
         dto.setMetadata(new MerlotParticipantMetaDto());
         dto.getMetadata().setMembershipClass(MembershipClass.PARTICIPANT);
-        when(participantService.createParticipant(any()))
+        when(organizationQueryController.createOrganization(any(), any()))
                 .thenReturn(dto);
-        when(participantService.updateParticipant(any(), any()))
+        when(organizationQueryController.updateOrganization(any(), any()))
                 .thenReturn(dto);
         InitialDataLoader dataLoader = new InitialDataLoader(
-                participantService,
+                organizationQueryController,
                 new ObjectMapper(),
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
-                "1234",
-                "5678",
                 "example.com");
         dataLoader.run();
 
-        verify(participantService, times(1)).createParticipant(any());
-        verify(participantService, times(2)).updateParticipant(any(), any());
+        verify(organizationQueryController, times(1)).createOrganization(any(), any());
+        verify(organizationQueryController, times(2)).updateOrganization(any(), any());
     }
 
     @Test
-    void participantsAlreadyExist() throws IOException {
+    void participantsAlreadyExist() throws Exception {
         MerlotParticipantDto dto = new MerlotParticipantDto();
-        when(participantService.getParticipants(any(), any()))
+        when(organizationQueryController.getAllOrganizations(anyInt(), anyInt(), any()))
                 .thenReturn(new PageImpl<>(List.of(dto), Pageable.ofSize(1), 1));
         InitialDataLoader dataLoader = new InitialDataLoader(
-                participantService,
+                organizationQueryController,
                 new ObjectMapper(),
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
-                "1234",
-                "5678",
                 "example.com");
         dataLoader.run();
-        verify(participantService, never()).createParticipant(any());
-        verify(participantService, never()).updateParticipant(any(), any());
+        verify(organizationQueryController, never()).createOrganization(any(), any());
+        verify(organizationQueryController, never()).updateOrganization(any(), any());
     }
 
 }

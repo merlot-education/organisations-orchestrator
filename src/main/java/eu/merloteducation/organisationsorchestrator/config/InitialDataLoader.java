@@ -8,6 +8,7 @@ import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
+import eu.merloteducation.organisationsorchestrator.models.exceptions.NoInitDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,7 @@ public class InitialDataLoader implements CommandLineRunner {
             }
 
             if (orgaPdfs.isEmpty()) {
-                throw new Exception(("Failed to find any valid PDF files in " + initialOrgasFolder.getPath()));
+                throw new NoInitDataException(("Failed to find any valid PDF files in " + initialOrgasFolder.getPath()));
             }
 
             Map<String, Set<OrganizationConnectorDto>> initialOrgaConnectors =

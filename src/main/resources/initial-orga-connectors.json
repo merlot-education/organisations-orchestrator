@@ -1,10 +1,213 @@
 {
-  "Gaia-X European Association for Data and Cloud AISBL":  [
+  "MERLOT Federation": [],
+  "Capgemini Deutschland GmbH": [
     {
-      "connectorId": "edc-example",
-      "connectorEndpoint": "http://edc-example.local",
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["some-bucket"]
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Gaia-X European Association for Data and Cloud AISBL": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Dataport AöR": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Hochschule Karlsruhe": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "imc information multimedia communication AG": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Schülerkarriere GmbH": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "ChemPoint AG": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Testorg AG": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "August-Wilhelm Scheer Institut für digitale Produkte und Prozesse gGmbH": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Hasso-Plattner-Institut für Digital Engineering gGmbH": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "M.I.T e-Solutions GmbH": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Schule (School MS)": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Schule (LMS)": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "HeadAI Oy": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    }
+  ],
+  "Lightcast": [
+    {
+      "connectorId": "edc1",
+      "connectorEndpoint": "http://localhost:8123/edc1",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+    },
+    {
+      "connectorId": "edc2",
+      "connectorEndpoint": "http://localhost:8123/edc2",
+      "connectorAccessToken": "5678",
+      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
     }
   ]
 }

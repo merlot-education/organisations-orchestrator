@@ -1,3 +1,10 @@
 {
-  "MERLOT Federation": ["some-bucket"]
+  "MERLOT Federation":  [
+    {
+      "connectorId": "edc-example",
+      "connectorEndpoint": "http://edc-example.local",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["some-bucket"]
+    }
+  ]
 }

@@ -1,5 +1,10 @@
 {
-  "MERLOT Federation": [],
-  "Dataport AöR": ["demo1"],
-  "Gaia-X European Association for Data and Cloud AISBL": ["demo2"]
+  "Gaia-X European Association for Data and Cloud AISBL":  [
+    {
+      "connectorId": "edc-example",
+      "connectorEndpoint": "http://edc-example.local",
+      "connectorAccessToken": "1234",
+      "bucketNames": ["some-bucket"]
+    }
+  ]
 }

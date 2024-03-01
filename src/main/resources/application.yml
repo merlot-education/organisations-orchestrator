@@ -90,13 +90,9 @@ keycloak:
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"
 
-edc-tokens:
-  edc1: "somevalue"
-  edc2: "somevalue"
-
 init-data:
-  organisations: "${user.home}/workspace/mpo/initial-orgas.json"
-  connectors: "${user.home}/workspace/mpo/initial-orga-connectors.json"
+  organisations: "classpath:organisations/"
+  connectors: "classpath:initial-orga-connectors.json"
 
 merlot-domain: "marketplace.dev.merlot-education.eu"
 

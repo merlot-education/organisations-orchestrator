@@ -1,57 +1,51 @@
 package eu.merloteducation.organisationsorchestrator.config;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.participants.GaxTrustLegalPersonCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
-import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
+import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
+import eu.merloteducation.organisationsorchestrator.models.exceptions.NoInitDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Component
 public class InitialDataLoader implements CommandLineRunner {
 
     private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
-
-    private final ParticipantService participantService;
+    private final OrganizationQueryController organizationQueryController;
     private final ObjectMapper objectMapper;
-    private final File initialOrgasResource;
+    private final File initialOrgasFolder;
     private final File initialOrgaConnectorsResource;
-    private final String poolEdc1Token;
-    private final String poolEdc2Token;
     private final String merlotDomain;
 
-    private static final String LEGAL_ADDRESS = "legalAddress";
 
-
-    public InitialDataLoader(@Autowired ParticipantService participantService,
+    public InitialDataLoader(@Autowired OrganizationQueryController organizationQueryController,
                              @Autowired ObjectMapper objectMapper,
-                             @Value("${init-data.organisations:#{null}}") File initialOrgasResource,
+                             @Value("${init-data.organisations:#{null}}") File initialOrgasFolder,
                              @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
-                             @Value("${edc-tokens.edc1:#{null}}") String poolEdc1Token,
-                             @Value("${edc-tokens.edc2:#{null}}") String poolEdc2Token,
                              @Value("${merlot-domain}") String merlotDomain) {
-        this.participantService = participantService;
+        this.organizationQueryController = organizationQueryController;
         this.objectMapper = objectMapper;
-        this.initialOrgasResource = initialOrgasResource;
+        this.initialOrgasFolder = initialOrgasFolder;
         this.initialOrgaConnectorsResource = initialOrgaConnectorsResource;
-        this.poolEdc1Token = poolEdc1Token;
-        this.poolEdc2Token = poolEdc2Token;
         this.merlotDomain = merlotDomain;
     }
 
@@ -65,81 +59,44 @@ public class InitialDataLoader implements CommandLineRunner {
                     = new OrganizationRoleGrantedAuthority(
                             "FedAdmin_did:web:" + merlotDomain + "#df15587a-0760-32b5-9c42-bb7be66e8076");
 
-            if (!participantService.getParticipants(Pageable.ofSize(1), internalRoleFedAdmin).getContent().isEmpty()) {
+            if (!organizationQueryController.getAllOrganizations(0, 1, internalRoleFedAdmin).getContent().isEmpty()) {
                 logger.info("Database will not be reinitialised since organisations exist.");
                 return;
             }
             logger.info("Initializing database since no organisations were found.");
 
-            ArrayNode initialOrgas;
-            JsonNode initialOrgaConnectors;
-            try {
-                initialOrgas = (ArrayNode) objectMapper.readTree(initialOrgasResource); // TODO replace this with the pdf reader
-                initialOrgaConnectors = objectMapper.readTree(initialOrgaConnectorsResource);
-            } catch (Exception e) {
-                logger.warn("Failed to load initial dataset, loading example dataset instead... {}", e.getMessage());
-                initialOrgas = (ArrayNode) objectMapper.readTree(
-                        InitialDataLoader.class.getClassLoader().getResourceAsStream("initial-orgas.json"));
-                initialOrgaConnectors = objectMapper.readTree(
-                        InitialDataLoader.class.getClassLoader().getResourceAsStream("initial-orga-connectors.json"));
+            List<MultipartFile> orgaPdfs = new ArrayList<>();
+            for (File orgaPdf : initialOrgasFolder.listFiles()) {
+                try (FileInputStream input = new FileInputStream(orgaPdf)) {
+                    orgaPdfs.add(new MockMultipartFile("formular", input.readAllBytes()));
+                }
             }
 
-            for (JsonNode orga : initialOrgas) {
-                RegistrationFormContent content = new RegistrationFormContent();
+            if (orgaPdfs.isEmpty()) {
+                throw new NoInitDataException(("Failed to find any valid PDF files in " + initialOrgasFolder.getPath()));
+            }
 
-                content.setOrganizationName(orga.get("organizationName").textValue());
-                content.setOrganizationLegalName(orga.get("organizationLegalName").textValue());
-                content.setRegistrationNumberLocal(orga.get("registrationNumber").textValue());
-                content.setMailAddress(orga.get("mailAddress").textValue());
+            Map<String, Set<OrganizationConnectorDto>> initialOrgaConnectors =
+                    objectMapper.readValue(initialOrgaConnectorsResource, new TypeReference<>(){});
 
-                content.setStreet(orga.get(LEGAL_ADDRESS).get("street").textValue());
-                content.setCity(orga.get(LEGAL_ADDRESS).get("city").textValue());
-                content.setPostalCode(orga.get(LEGAL_ADDRESS).get("postalCode").textValue());
-                content.setCountryCode(orga.get(LEGAL_ADDRESS).get("countryCode").textValue());
-
-                content.setProviderTncLink(orga.get("termsAndConditionsLink").textValue());
-                content.setProviderTncHash(orga.get("termsAndConditionsHash").textValue());
-                MerlotParticipantDto participant = participantService.createParticipant(content);
+            for (MultipartFile orgaPdf : orgaPdfs) {
+                MerlotParticipantDto participant = organizationQueryController
+                        .createOrganization(new MultipartFile[]{orgaPdf}, internalRoleFedAdmin);
 
                 // set federator role for initial organisations
                 participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
-                participant = participantService.updateParticipant(participant, internalRoleFedAdmin);
+                organizationQueryController.updateOrganization(participant, internalRoleFedAdmin);
 
-                // check if we need to add connectors as well
-                Set<OrganizationConnectorDto> existingConnectors = participant.getMetadata().getConnectors();
-
-                // collect buckets of this orga
-                ArrayNode orgaBucketsNode = (ArrayNode) initialOrgaConnectors.get(content.getOrganizationLegalName());
-                List<String> orgaBuckets = new ArrayList<>();
-                for (JsonNode bucket : orgaBucketsNode) {
-                    orgaBuckets.add(bucket.textValue());
+                // add initial connectors as well
+                String orgaLegalName = ((GaxTrustLegalPersonCredentialSubject) participant.getSelfDescription()
+                        .getVerifiableCredential().getCredentialSubject()).getLegalName();
+                if (initialOrgaConnectors.containsKey(orgaLegalName)) {
+                    // if connectors exist, add them on behalf of the participant
+                    participant.getMetadata().getConnectors().addAll(initialOrgaConnectors.get(orgaLegalName));
+                    OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
+                            "OrgLegRep_" + participant.getId());
+                    organizationQueryController.updateOrganization(participant, internalRoleOrgLegRep);
                 }
-
-                // only add if we have no existing connectors and we have buckets
-                if (!existingConnectors.isEmpty() || orgaBuckets.isEmpty()) {
-                    continue;
-                }
-
-                OrganizationRoleGrantedAuthority internalRoleOrgLegRep
-                    = new OrganizationRoleGrantedAuthority(
-                    "OrgLegRep_" + participant.getId());
-
-                // add pool edcs with the found buckets
-                OrganizationConnectorDto connector1 = new OrganizationConnectorDto();
-                connector1.setConnectorId("edc1");
-                connector1.setConnectorEndpoint("http://edc-1.merlot.svc.cluster.local");
-                connector1.setConnectorAccessToken(poolEdc1Token);
-                connector1.setBucketNames(orgaBuckets);
-
-                OrganizationConnectorDto connector2 = new OrganizationConnectorDto();
-                connector2.setConnectorId("edc2");
-                connector2.setConnectorEndpoint("http://edc-2.merlot.svc.cluster.local");
-                connector2.setConnectorAccessToken(poolEdc2Token);
-                connector2.setBucketNames(orgaBuckets);
-
-                participant.getMetadata().getConnectors().add(connector1);
-                participant.getMetadata().getConnectors().add(connector2);
-                participantService.updateParticipant(participant, internalRoleOrgLegRep);
             }
 
         } catch (Exception e) {

@@ -55,7 +55,7 @@ Afterwards you can build the service with
 
 ## Run
 
-    INITDATA_CONNECTORS="src/main/resources/initial-orga-connectors.json" INITDATA_ORGANISATIONS="src/main/resources/organisations" KEYCLOAK_CLIENTSECRET="mysecret" java -jar target/organisations-orchestrator-1.6.8.jar
+    INITDATA_CONNECTORS="src/main/resources/initial-orga-connectors.json" INITDATA_ORGANISATIONS="src/main/resources/organisations" KEYCLOAK_CLIENTSECRET="mysecret" java -jar target/organisations-orchestrator-X.Y.Z.jar
 
 ## Deploy (Docker)
 

@@ -49,7 +49,7 @@ Then set up your ~/.m2/settings.xml file as follows:
         </servers>
     </settings>
 
-Afterwards you can build the service with
+Afterward you can build the service with
 
     mvn clean package
 

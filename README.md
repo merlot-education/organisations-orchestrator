@@ -61,3 +61,6 @@ Afterwards you can build the service with
 
 This microservice can be deployed as part of the full MERLOT docker stack at
 [localdeployment](https://github.com/merlot-education/localdeployment).
+
+## Deploy (Helm)
+TODO

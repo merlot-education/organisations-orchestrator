@@ -7,6 +7,12 @@ Internally, this service wraps self-description communication with the [XFSC Fed
 while also augmenting the self-description with some MERLOT-internal metadata such as organisation roles and
 parameters needed for a later data transfer.
 
+## Development
+
+To start development for the MERLOT marketplace, please refer to [this document](https://github.com/merlot-education/.github/blob/main/Docs/DevEnv.md)
+to set up a local WSL development environment of all relevant services.
+This is by far the easiest way to get everything up and running locally.
+
 ## Structure
 
 ```
@@ -19,7 +25,7 @@ parameters needed for a later data transfer.
 │   ├── service         # internal services for processing data from the controller layer
 ```
 
-API related models such as the DTOs can be found at [models-lib](https://github.com/merlot-education/models-lib/tree/main)
+REST API related models such as the DTOs can be found at [models-lib](https://github.com/merlot-education/models-lib/tree/main)
 which is shared amongst the microservices.
 
 ## Dependencies

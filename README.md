@@ -3,8 +3,8 @@ The Organisations Orchestrator is a microservice in the MERLOT marketplace
 which handles all participant (organisation) related information as well as
 onboarding of new participants.
 
-Internally, this service wraps self-description communication with the [XFSC Federated Catalog](https://gitlab.eclipse.org/eclipse/xfsc/cat/fc-service/-/tree/1.0.1?ref_type=tags)
-while also augmenting the self-description with some MERLOT-internal metadata such as organisation roles and
+Internally, this service wraps self-description communication with the [XFSC Federated Catalog](https://gitlab.eclipse.org/eclipse/xfsc/cat/fc-service/-/tree/1.0.1?ref_type=tags) and [XFSC Self-Description Wizard](https://gitlab.eclipse.org/eclipse/xfsc/self-description-tooling/sd-creation-wizard-api)
+while also augmenting the self-descriptions with some MERLOT-internal metadata such as organisation roles and
 parameters needed for a later data transfer.
 
 ## Development
@@ -61,7 +61,16 @@ Afterward you can build the service with
 
 ## Run
 
-    INITDATA_CONNECTORS="src/main/resources/initial-orga-connectors.json" INITDATA_ORGANISATIONS="src/main/resources/organisations" KEYCLOAK_CLIENTSECRET="mysecret" java -jar target/organisations-orchestrator-X.Y.Z.jar
+    export INITDATA_CONNECTORS="src/main/resources/initial-orga-connectors.json"
+    export INITDATA_ORGANISATIONS="src/main/resources/organisations"
+    export KEYCLOAK_CLIENTSECRET="mysecret"
+    java -jar target/organisations-orchestrator-X.Y.Z.jar
+
+The INITDATA_* specify which data to use to seed the organisation database of MERLOT.
+
+The KEYCLOAK_CLIENTSECRET corresponds to the client secret that is configured for the XFSC Federated Catalogue Realm in your Keycloak instance.
+
+Replace the X.Y.Z with the respective version of the service.
 
 ## Deploy (Docker)
 

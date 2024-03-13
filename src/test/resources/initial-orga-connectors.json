@@ -4,7 +4,15 @@
       "connectorId": "edc-example",
       "connectorEndpoint": "http://edc-example.local",
       "connectorAccessToken": "1234",
-      "bucketNames": ["some-bucket"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "some-bucket",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ]
 }

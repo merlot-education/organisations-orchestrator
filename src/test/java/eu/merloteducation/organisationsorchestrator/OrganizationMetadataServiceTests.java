@@ -1,11 +1,10 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import eu.merloteducation.modelslib.api.organization.MembershipClass;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
-import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
-import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
+import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
+import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3Bucket;
+import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3ExtensionConfig;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
@@ -70,17 +69,17 @@ class OrganizationMetadataServiceTests {
         OrganizationMetadata metadata2 = new OrganizationMetadata(otherOrgaId, "hij@kl.mn", MembershipClass.PARTICIPANT,
             false);
 
-        List<String> buckets = new ArrayList<String>();
-        buckets.add("bucket1");
-        buckets.add("bucket2");
-        buckets.add("bucket3");
+        List<IonosS3Bucket> buckets = List.of(
+                new IonosS3Bucket(null, "bucket1", "http://example.com"),
+                new IonosS3Bucket(null, "bucket2", "http://example.com"),
+                new IonosS3Bucket(null, "bucket3", "http://example.com"));
 
         OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
         connector.setOrgaId(someOrgaId);
         connector.setConnectorId("edc1");
         connector.setConnectorEndpoint("https://edc1.edchub.dev");
         connector.setConnectorAccessToken("token$123?");
-        connector.setBucketNames(buckets);
+        connector.setIonosS3ExtensionConfig(new IonosS3ExtensionConfig(null, buckets));
         metadata1.setConnectors(Set.of(connector));
 
         metadataRepository.save(metadata1);
@@ -104,16 +103,16 @@ class OrganizationMetadataServiceTests {
         expected1.setMembershipClass(MembershipClass.FEDERATOR);
         expected1.setActive(true);
 
-        List<String> buckets = new ArrayList<String>();
-        buckets.add("bucket1");
-        buckets.add("bucket2");
-        buckets.add("bucket3");
+        List<IonosS3BucketDto> buckets = List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"),
+                new IonosS3BucketDto("bucket3", "http://example.com"));
 
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
         connector.setConnectorId("edc1");
         connector.setConnectorEndpoint("https://edc1.edchub.dev");
         connector.setConnectorAccessToken("token$123?");
-        connector.setBucketNames(buckets);
+        connector.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets));
         expected1.setConnectors(Set.of(connector));
 
         MerlotParticipantMetaDto actual1 = metadataService.getMerlotParticipantMetaDto(someOrgaId);
@@ -128,7 +127,7 @@ class OrganizationMetadataServiceTests {
         assertEquals("edc1", actualDto.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualDto.getConnectorEndpoint());
         assertEquals("token$123?", actualDto.getConnectorAccessToken());
-        assertEquals(buckets, actualDto.getBucketNames());
+        assertIterableEquals(buckets, actualDto.getIonosS3ExtensionConfig().getBuckets());
 
         MerlotParticipantMetaDto expected2 = new MerlotParticipantMetaDto();
         expected2.setOrgaId(otherOrgaId);
@@ -200,15 +199,15 @@ class OrganizationMetadataServiceTests {
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
         metaDto.setActive(true);
 
-        List<String> buckets = new ArrayList<String>();
-        buckets.add("bucket1");
-        buckets.add("bucket2");
+        List<IonosS3BucketDto> buckets = List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"));
 
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
         connector.setConnectorId("edctest");
         connector.setConnectorEndpoint("https://edc1.edchub.dev");
         connector.setConnectorAccessToken("token$123?");
-        connector.setBucketNames(buckets);
+        connector.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets));
 
         metaDto.setConnectors(Set.of(connector));
 
@@ -224,7 +223,7 @@ class OrganizationMetadataServiceTests {
         assertEquals("edctest", actualDto.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualDto.getConnectorEndpoint());
         assertEquals("token$123?", actualDto.getConnectorAccessToken());
-        assertEquals(buckets, actualDto.getBucketNames());
+        assertIterableEquals(buckets, actualDto.getIonosS3ExtensionConfig().getBuckets());
     }
 
     @Transactional
@@ -242,15 +241,15 @@ class OrganizationMetadataServiceTests {
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
         metaDto.setActive(true);
 
-        List<String> buckets = new ArrayList<String>();
-        buckets.add("bucket1");
-        buckets.add("bucket2");
+        List<IonosS3BucketDto> buckets = List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"));
 
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
         connector.setConnectorId("edc1");
         connector.setConnectorEndpoint("https://edc1.edchub.dev#updated");
         connector.setConnectorAccessToken("token$123?567");
-        connector.setBucketNames(buckets);
+        connector.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets));
 
         metaDto.setConnectors(Set.of(connector));
 
@@ -266,13 +265,14 @@ class OrganizationMetadataServiceTests {
         assertEquals("edc1", actualDto.getConnectorId());
         assertEquals("https://edc1.edchub.dev#updated", actualDto.getConnectorEndpoint());
         assertEquals("token$123?567", actualDto.getConnectorAccessToken());
-        assertEquals(buckets, actualDto.getBucketNames());
+        assertIterableEquals(buckets, actualDto.getIonosS3ExtensionConfig().getBuckets());
 
         // compare with connector before update
         assertEquals(connectorDtoBeforeUpdate.getConnectorId(), actualDto.getConnectorId());
         assertNotEquals(connectorDtoBeforeUpdate.getConnectorEndpoint(), actualDto.getConnectorEndpoint());
         assertNotEquals(connectorDtoBeforeUpdate.getConnectorAccessToken(), actualDto.getConnectorAccessToken());
-        assertNotEquals(connectorDtoBeforeUpdate.getBucketNames(), actualDto.getBucketNames());
+        assertNotEquals(connectorDtoBeforeUpdate.getIonosS3ExtensionConfig().getBuckets().size(),
+                actualDto.getIonosS3ExtensionConfig().getBuckets().size());
 
     }
 
@@ -286,28 +286,28 @@ class OrganizationMetadataServiceTests {
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
         metaDto.setActive(true);
 
-        List<String> buckets1 = new ArrayList<String>();
-        buckets1.add("bucket1");
-        buckets1.add("bucket2");
+        List<IonosS3BucketDto> buckets1 = List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"));
 
-        List<String> buckets2 = new ArrayList<String>();
-        buckets2.add("bucket1");
-        buckets2.add("bucket2");
-        buckets2.add("bucket3");
-        buckets2.add("bucket4");
-        buckets2.add("bucket5");
+        List<IonosS3BucketDto> buckets2 = List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"),
+                new IonosS3BucketDto("bucket3", "http://example.com"),
+                new IonosS3BucketDto("bucket4", "http://example.com"),
+                new IonosS3BucketDto("bucket5", "http://example.com"));
 
         OrganizationConnectorDto connector1 = new OrganizationConnectorDto();
         connector1.setConnectorId("edctest");
         connector1.setConnectorEndpoint("https://edc1.edchub.dev");
         connector1.setConnectorAccessToken("token$123?");
-        connector1.setBucketNames(buckets1);
+        connector1.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets1));
 
         OrganizationConnectorDto connector2 = new OrganizationConnectorDto();
         connector2.setConnectorId("edc1");
         connector2.setConnectorEndpoint("https://edc1.edchub.dev#new");
         connector2.setConnectorAccessToken("token$123?");
-        connector2.setBucketNames(buckets2);
+        connector2.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets2));
 
         metaDto.setConnectors(Set.of(connector1, connector2));
 
@@ -324,7 +324,7 @@ class OrganizationMetadataServiceTests {
         assertEquals("edctest", actualConnectorDto1.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualConnectorDto1.getConnectorEndpoint());
         assertEquals("token$123?", actualConnectorDto1.getConnectorAccessToken());
-        assertEquals(buckets1, actualConnectorDto1.getBucketNames());
+        assertIterableEquals(buckets1, actualConnectorDto1.getIonosS3ExtensionConfig().getBuckets());
 
         OrganizationConnectorDto actualConnectorDto2 = actual.getConnectors().stream()
             .filter(con -> con.getConnectorId().equals("edc1")).findFirst().orElse(null);
@@ -332,7 +332,7 @@ class OrganizationMetadataServiceTests {
         assertEquals("edc1", actualConnectorDto2.getConnectorId());
         assertEquals("https://edc1.edchub.dev#new", actualConnectorDto2.getConnectorEndpoint());
         assertEquals("token$123?", actualConnectorDto2.getConnectorAccessToken());
-        assertEquals(buckets2, actualConnectorDto2.getBucketNames());
+        assertIterableEquals(buckets2, actualConnectorDto2.getIonosS3ExtensionConfig().getBuckets());
     }
 
     @Transactional
@@ -345,15 +345,15 @@ class OrganizationMetadataServiceTests {
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
         metaDto.setActive(true);
 
-        List<String> buckets1 = new ArrayList<String>();
-        buckets1.add("bucket1");
-        buckets1.add("bucket2");
+        List<IonosS3BucketDto> buckets1 = List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"));
 
         OrganizationConnectorDto connector1 = new OrganizationConnectorDto();
         connector1.setConnectorId("edctest");
         connector1.setConnectorEndpoint("https://edc1.edchub.dev");
         connector1.setConnectorAccessToken("token$123?");
-        connector1.setBucketNames(buckets1);
+        connector1.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets1));
 
         metaDto.setConnectors(Set.of(connector1));
 
@@ -370,7 +370,7 @@ class OrganizationMetadataServiceTests {
         assertEquals("edctest", actualDto1.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualDto1.getConnectorEndpoint());
         assertEquals("token$123?", actualDto1.getConnectorAccessToken());
-        assertEquals(buckets1, actualDto1.getBucketNames());
+        assertIterableEquals(buckets1, actualDto1.getIonosS3ExtensionConfig().getBuckets());
 
         metaDto.setConnectors(new HashSet<>());
 
@@ -409,16 +409,16 @@ class OrganizationMetadataServiceTests {
     @Test
     void getConnectorForParticipantCorrectly() {
 
-        List<String> buckets = new ArrayList<String>();
-        buckets.add("bucket1");
-        buckets.add("bucket2");
-        buckets.add("bucket3");
+        List<IonosS3BucketDto> buckets = List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"),
+                new IonosS3BucketDto("bucket3", "http://example.com"));
 
         OrganizationConnectorDto expected = new OrganizationConnectorDto();
         expected.setConnectorId("edc1");
         expected.setConnectorEndpoint("https://edc1.edchub.dev");
         expected.setConnectorAccessToken("token$123?");
-        expected.setBucketNames(buckets);
+        expected.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets));
 
         OrganizationConnectorTransferDto actual = metadataService.getConnectorForParticipant(someOrgaId, "edc1");
 
@@ -426,7 +426,7 @@ class OrganizationMetadataServiceTests {
         assertEquals(expected.getConnectorId(), actual.getConnectorId());
         assertEquals(expected.getConnectorEndpoint(), actual.getConnectorEndpoint());
         assertEquals(expected.getConnectorAccessToken(), actual.getConnectorAccessToken());
-        assertEquals(buckets, actual.getBucketNames());
+        assertIterableEquals(buckets, actual.getIonosS3ExtensionConfig().getBuckets());
 
     }
 
@@ -440,16 +440,16 @@ class OrganizationMetadataServiceTests {
         expected1.setMembershipClass(MembershipClass.FEDERATOR);
         expected1.setActive(true);
 
-        List<String> buckets = new ArrayList<String>();
-        buckets.add("bucket1");
-        buckets.add("bucket2");
-        buckets.add("bucket3");
+        List<IonosS3BucketDto> buckets = List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"),
+                new IonosS3BucketDto("bucket3", "http://example.com"));
 
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
         connector.setConnectorId("edc1");
         connector.setConnectorEndpoint("https://edc1.edchub.dev");
         connector.setConnectorAccessToken("token$123?");
-        connector.setBucketNames(buckets);
+        connector.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets));
         expected1.setConnectors(Set.of(connector));
 
         List<MerlotParticipantMetaDto> federatorList = metadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
@@ -467,7 +467,7 @@ class OrganizationMetadataServiceTests {
         assertEquals("edc1", actualDto.getConnectorId());
         assertEquals("https://edc1.edchub.dev", actualDto.getConnectorEndpoint());
         assertEquals("token$123?", actualDto.getConnectorAccessToken());
-        assertEquals(buckets, actualDto.getBucketNames());
+        assertIterableEquals(buckets, actualDto.getIonosS3ExtensionConfig().getBuckets());
 
         MerlotParticipantMetaDto expected2 = new MerlotParticipantMetaDto();
         expected2.setOrgaId(otherOrgaId);

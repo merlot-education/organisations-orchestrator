@@ -25,11 +25,14 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests().requestMatchers(new AntPathRequestMatcher("/health")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/federators")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/organization/*")).permitAll().anyRequest().authenticated();
         http.oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthConverter);
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.cors();
         http.headers().frameOptions().disable();
+        http.csrf(csrf -> csrf
+                .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")));
         return http.build();
     }
 }

@@ -1,16 +1,13 @@
 package eu.merloteducation.organisationsorchestrator.models.entities;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import java.util.List;
-import java.util.UUID;
 
 @Entity
 @IdClass(OrganisationConnectorExtensionId.class)
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class OrganisationConnectorExtension {
     @Id
@@ -19,10 +16,14 @@ public class OrganisationConnectorExtension {
     @Id
     private String connectorId;
 
+    @NotNull
     private String connectorEndpoint;
 
+    @NotNull
     private String connectorAccessToken;
 
-    private List<String> bucketNames;
+    @Nullable
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private IonosS3ExtensionConfig ionosS3ExtensionConfig;
 
 }

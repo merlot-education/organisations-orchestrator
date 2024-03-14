@@ -2,11 +2,10 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
-import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
+import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3Bucket;
+import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3ExtensionConfig;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import org.mapstruct.*;
@@ -145,10 +144,20 @@ public interface OrganizationMapper {
         connector.setConnectorId(dto.getConnectorId());
         connector.setConnectorEndpoint(dto.getConnectorEndpoint());
         connector.setConnectorAccessToken(dto.getConnectorAccessToken());
-        connector.setBucketNames(dto.getBucketNames());
+        connector.setIonosS3ExtensionConfig(
+                ionosS3ExtensionConfigDtoToIonosS3ExtensionConfig(dto.getIonosS3ExtensionConfig()));
 
         return connector;
     }
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "buckets", source = "buckets")
+    IonosS3ExtensionConfig ionosS3ExtensionConfigDtoToIonosS3ExtensionConfig(IonosS3ExtensionConfigDto dto);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "storageEndpoint", source = "storageEndpoint")
+    IonosS3Bucket ionosS3BucketDtoToIonosS3Bucket(IonosS3BucketDto dto);
 
     @Named("connectorsForDto")
     default Set<OrganizationConnectorDto> connectorsDtoMapper(Set<OrganisationConnectorExtension> connectors) {

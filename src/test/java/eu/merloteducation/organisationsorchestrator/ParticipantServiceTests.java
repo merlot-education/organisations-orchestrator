@@ -18,10 +18,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatyp
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
-import eu.merloteducation.modelslib.api.organization.MembershipClass;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
-import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
@@ -655,16 +652,15 @@ class ParticipantServiceTests {
         metaData.setMembershipClass(MembershipClass.FEDERATOR);
         metaData.setActive(false);
 
-        List<String> buckets = new ArrayList<String>();
-        buckets.add("bucket1");
-        buckets.add("bucket2");
-        buckets.add("bucket3");
-
         OrganizationConnectorDto connector = new OrganizationConnectorDto();
         connector.setConnectorId("edc1");
         connector.setConnectorEndpoint("https://edc1.edchub.dev");
         connector.setConnectorAccessToken("token$123?");
-        connector.setBucketNames(buckets);
+        connector.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto());
+        connector.getIonosS3ExtensionConfig().setBuckets(List.of(
+                new IonosS3BucketDto("bucket1", "http://example.com"),
+                new IonosS3BucketDto("bucket2", "http://example.com"),
+                new IonosS3BucketDto("bucket3", "http://example.com")));
         metaData.setConnectors(Set.of(connector));
 
         dtoWithEdits.setSelfDescription(selfDescription);

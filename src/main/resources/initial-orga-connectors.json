@@ -5,13 +5,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Gaia-X European Association for Data and Cloud AISBL": [
@@ -19,13 +43,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Dataport AöR": [
@@ -33,13 +81,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Hochschule Karlsruhe": [
@@ -47,13 +119,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "imc information multimedia communication AG": [
@@ -61,13 +157,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Schülerkarriere GmbH": [
@@ -75,13 +195,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "ChemPoint AG": [
@@ -89,13 +233,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Testorg AG": [
@@ -103,13 +271,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "August-Wilhelm Scheer Institut für digitale Produkte und Prozesse gGmbH": [
@@ -117,13 +309,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Hasso-Plattner-Institut für Digital Engineering gGmbH": [
@@ -131,13 +347,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "M.I.T e-Solutions GmbH": [
@@ -145,13 +385,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Schule (School MS)": [
@@ -159,13 +423,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Schule (LMS)": [
@@ -173,13 +461,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "HeadAI Oy": [
@@ -187,13 +499,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ],
   "Lightcast": [
@@ -201,13 +537,37 @@
       "connectorId": "edc1",
       "connectorEndpoint": "http://localhost:8123/edc1",
       "connectorAccessToken": "1234",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     },
     {
       "connectorId": "edc2",
       "connectorEndpoint": "http://localhost:8123/edc2",
       "connectorAccessToken": "5678",
-      "bucketNames": ["merlotedcconsumer", "merlotedcprovider"]
+      "ionosS3ExtensionConfig":
+      {
+        "buckets": [
+          {
+            "name": "merlotedcconsumer",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          },
+          {
+            "name": "merlotedcprovider",
+            "storageEndpoint": "s3-eu-central-1.ionoscloud.com"
+          }
+        ]
+      }
     }
   ]
 }

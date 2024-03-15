@@ -1,10 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.models;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class RegistrationFormContent {
     private String organizationName;
     private String organizationLegalName;
@@ -16,4 +14,5 @@ public class RegistrationFormContent {
     private String providerTncLink;
     private String providerTncHash;
     private String registrationNumberLocal;
+    private String didWeb;
 }

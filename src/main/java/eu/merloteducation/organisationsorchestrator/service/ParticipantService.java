@@ -13,6 +13,8 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescrip
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
+import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyCreateRequest;
+import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
@@ -33,7 +35,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
@@ -46,6 +47,9 @@ public class ParticipantService {
 
     @Autowired
     private GxfsCatalogService gxfsCatalogService;
+
+    @Autowired
+    private MerlotDidServiceClient merlotDidServiceClient;
 
     @Value("${merlot-domain}")
     private String merlotDomain;
@@ -299,12 +303,24 @@ public class ParticipantService {
             validateMandatoryFields(registrationFormContent);
             credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(registrationFormContent);
             metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(registrationFormContent);
+
+            // if the user did not specify a did, we can generate the private key and did for them
+            if (metaData.getOrgaId() == null || metaData.getOrgaId().isBlank()) {
+
+                // request did and private key
+                ParticipantDidPrivateKeyDto didPrivateKeyDto =
+                        merlotDidServiceClient.generateDidAndPrivateKey(
+                                new ParticipantDidPrivateKeyCreateRequest("", credentialSubject.getLegalName()));
+               // update metadata signer config
+                metaData.setOrganisationSignerConfigDto(
+                        organizationMapper.getSignerConfigDtoFromDidPrivateKeyDto(didPrivateKeyDto));
+
+                // update orga id with received did
+                metaData.setOrgaId(didPrivateKeyDto.getDid());
+            }
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }
-
-        String id = generateDidWeb(credentialSubject);
-        metaData.setOrgaId(id);
 
         MerlotParticipantMetaDto metaDataDto;
         try {
@@ -315,7 +331,8 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
         }
 
-        credentialSubject.setId(id);
+        // set credential subject id to did from metadata (self-assigned or received from did service)
+        credentialSubject.setId(metaDataDto.getOrgaId());
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
 
@@ -334,12 +351,6 @@ public class ParticipantService {
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
             metaDataDto);
-    }
-
-    private String generateDidWeb(MerlotOrganizationCredentialSubject credentialSubject) {
-        String uuid = UUID.nameUUIDFromBytes(credentialSubject.getLegalName().getBytes(StandardCharsets.UTF_8))
-                .toString(); // uuid v3 from md5
-        return "did:web:" + merlotDomain + "#" + uuid;
     }
 
     private Map<String, String> getContext() {
@@ -368,6 +379,9 @@ public class ParticipantService {
         String city = registrationFormContent.getCity();
         String postalCode = registrationFormContent.getPostalCode();
         String street = registrationFormContent.getStreet();
+        String didWeb = registrationFormContent.getDidWeb();
+
+        boolean invalidDidWeb = (!didWeb.isBlank() && !didWeb.startsWith("did:web:"));
 
         boolean anyFieldEmptyOrBlank =
                 orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
@@ -377,6 +391,10 @@ public class ParticipantService {
         if (anyFieldEmptyOrBlank) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Invalid registration form: Empty or blank fields.");
+        }
+        if (invalidDidWeb) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Invalid registration form: Invalid did:web specified.");
         }
     }
 }

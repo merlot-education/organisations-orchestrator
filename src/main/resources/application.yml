@@ -98,6 +98,11 @@ init-data:
 
 merlot-domain: "marketplace.dev.merlot-education.eu"
 
+db:
+  encryption:
+    key: "1234"
+    transformation: "AES/GCM/NoPadding"
+
 cors:
   global:
     origins:

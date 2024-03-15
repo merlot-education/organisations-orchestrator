@@ -17,5 +17,6 @@ public interface PdfContentMapper {
     @Mapping(target = "city", expression = "java(pDAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString())")
     @Mapping(target = "postalCode", expression = "java(pDAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString())")
     @Mapping(target = "street", expression = "java(pDAcroForm.getField(DocumentField.STREET.getValue()).getValueAsString())")
+    //@Mapping(target = "didWeb", expression = "java(pDAcroForm.getField(DocumentField.DIDWEB.getValue()).getValueAsString())") // TODO add this once form supports it
     RegistrationFormContent getRegistrationFormContentFromRegistrationForm(PDAcroForm pDAcroForm);
 }

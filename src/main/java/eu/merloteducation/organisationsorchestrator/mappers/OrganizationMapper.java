@@ -2,6 +2,7 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3Bucket;
@@ -85,9 +86,14 @@ public interface OrganizationMapper {
     MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "mailAddress", source = "content.mailAddress")
+    @Mapping(target = "orgaId", source = "content.didWeb")
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
     @Mapping(target = "active", constant = "true")
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
+
+    @Mapping(target = "privateKey", source = "privateKey")
+    @Mapping(target = "verificationMethod", source = "did")
+    OrganisationSignerConfigDto getSignerConfigDtoFromDidPrivateKeyDto(ParticipantDidPrivateKeyDto prk);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "orgaId", source = "orgaId")

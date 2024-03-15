@@ -123,5 +123,15 @@ public class OrganizationQueryController {
     public List<MerlotParticipantDto> getAllFederators() {
         return participantService.getFederators();
     }
+
+    /**
+     * GET endpoint for retrieving trusted dids.
+     *
+     * @return list of trusted dids
+     */
+    @GetMapping("/trustedDids")
+    public List<String> getTrustedDids() {
+        return participantService.getTrustedDids();
+    }
 }
 

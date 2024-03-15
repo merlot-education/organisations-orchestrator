@@ -526,6 +526,7 @@ class ParticipantServiceTests {
 
     @Test
     void getAllFederators() {
+
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         String orgaId = "did:web:" + merlotDomain + "#someorga";
         metaDto.setOrgaId(orgaId);
@@ -597,6 +598,32 @@ class ParticipantServiceTests {
             () -> participantService.createParticipant(content));
 
         assertEquals("400 BAD_REQUEST \"Invalid registration form: Empty or blank fields.\"", e.getMessage());
+    }
+
+    @Test
+    void getTrustedDidsNoFederatorsExisting() {
+
+        List<String> trustedDids = participantService.getTrustedDids();
+        assertThat(trustedDids, empty());
+    }
+
+    @Test
+    void getTrustedDids() {
+
+        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
+        String orgaId = "did:web:" + merlotDomain + "#someorga";
+        metaDto.setOrgaId(orgaId);
+        metaDto.setMailAddress("mymail@example.com");
+        metaDto.setMembershipClass(MembershipClass.FEDERATOR);
+        List<MerlotParticipantMetaDto> list = new ArrayList<>();
+        list.add(metaDto);
+
+        lenient().when(organizationMetadataService.getParticipantsByMembershipClass(eq(MembershipClass.FEDERATOR))).thenReturn(list);
+
+        List<String> trustedDids = participantService.getTrustedDids();
+        assertThat(trustedDids, not(empty()));
+        assertEquals(1, trustedDids.size());
+        assertEquals(orgaId, trustedDids.get(0));
     }
 
     private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {

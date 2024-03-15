@@ -35,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ParticipantService {
@@ -334,6 +335,16 @@ public class ParticipantService {
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
             metaDataDto);
+    }
+
+    /**
+     * Return the list of trusted dids. In the context of MERLOT the dids of the federators are trusted.
+     *
+     * @return list of trusted dids
+     */
+    public List<String> getTrustedDids() {
+        List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
+        return metadataList.stream().map(MerlotParticipantMetaDto::getOrgaId).collect(Collectors.toList());
     }
 
     private String generateDidWeb(MerlotOrganizationCredentialSubject credentialSubject) {

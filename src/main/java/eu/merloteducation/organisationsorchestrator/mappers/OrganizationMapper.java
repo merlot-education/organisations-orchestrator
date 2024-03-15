@@ -5,10 +5,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3Bucket;
-import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3ExtensionConfig;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
+import eu.merloteducation.organisationsorchestrator.models.entities.*;
 import org.mapstruct.*;
 
 import java.util.Set;
@@ -86,7 +83,7 @@ public interface OrganizationMapper {
     MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "mailAddress", source = "content.mailAddress")
-    @Mapping(target = "orgaId", source = "content.didWeb")
+    @Mapping(target = "orgaId", source = "content.didWeb", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE )
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
     @Mapping(target = "active", constant = "true")
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
@@ -109,7 +106,12 @@ public interface OrganizationMapper {
     @Mapping(target = "membershipClass", source = "membershipClass")
     @Mapping(target = "active", source = "active")
     @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(metadataDto.getConnectors(), metadataDto.getOrgaId()))")
+    @Mapping(target = "organisationSignerConfig", source = "organisationSignerConfigDto")
     OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
+
+    @Mapping(target = "privateKey", source = "privateKey")
+    @Mapping(target = "verificationMethod", source = "verificationMethod")
+    OrganisationSignerConfig organisationSignerConfigDtoToOrganisationSignerConfig(OrganisationSignerConfigDto signerConfigDto);
 
     default void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source,
         @MappingTarget OrganizationMetadata target) {

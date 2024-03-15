@@ -17,15 +17,12 @@ import java.util.Base64;
 @Component
 public class AttributeEncryptor implements AttributeConverter<String, String> {
 
-    @Value("${db.encryption.transformation:AES/GCM/NoPadding}")
-    private String transformation;
-    @Value("${db.encryption.key}")
-    private String encryptionKey;
-
     private final Key key;
     private final Cipher cipher;
 
-    public AttributeEncryptor() throws NoSuchPaddingException, NoSuchAlgorithmException {
+    public AttributeEncryptor(@Value("${db.encryption.key}") String encryptionKey,
+                              @Value("${db.encryption.transformation:AES}") String transformation) // TODO check options
+            throws NoSuchPaddingException, NoSuchAlgorithmException {
         key = new SecretKeySpec(encryptionKey.getBytes(), transformation);
         cipher = Cipher.getInstance(transformation);
     }

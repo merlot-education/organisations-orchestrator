@@ -100,8 +100,11 @@ merlot-domain: "marketplace.dev.merlot-education.eu"
 
 db:
   encryption:
-    key: "1234"
-    transformation: "AES/GCM/NoPadding"
+    key: "1234123412341234"
+    transformation: "AES"
+
+merlot-did-service:
+  base-uri: "http://localhost:1111/api"
 
 cors:
   global:

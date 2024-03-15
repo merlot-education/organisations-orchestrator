@@ -308,9 +308,14 @@ public class ParticipantService {
             if (metaData.getOrgaId() == null || metaData.getOrgaId().isBlank()) {
 
                 // request did and private key
-                ParticipantDidPrivateKeyDto didPrivateKeyDto =
+                /*ParticipantDidPrivateKeyDto didPrivateKeyDto =
                         merlotDidServiceClient.generateDidAndPrivateKey(
-                                new ParticipantDidPrivateKeyCreateRequest("", credentialSubject.getLegalName()));
+                                new ParticipantDidPrivateKeyCreateRequest("", credentialSubject.getLegalName()));*/
+                String did = "did:web:" + merlotDomain + ":participant:" + UUID.randomUUID();
+                ParticipantDidPrivateKeyDto didPrivateKeyDto = new ParticipantDidPrivateKeyDto(
+                        did,
+                        did + "#JWK2020",
+                        "1234");
                // update metadata signer config
                 metaData.setOrganisationSignerConfigDto(
                         organizationMapper.getSignerConfigDtoFromDidPrivateKeyDto(didPrivateKeyDto));
@@ -381,7 +386,7 @@ public class ParticipantService {
         String street = registrationFormContent.getStreet();
         String didWeb = registrationFormContent.getDidWeb();
 
-        boolean invalidDidWeb = (!didWeb.isBlank() && !didWeb.startsWith("did:web:"));
+        boolean invalidDidWeb = (didWeb != null && !didWeb.isBlank() && !didWeb.startsWith("did:web:"));
 
         boolean anyFieldEmptyOrBlank =
                 orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()

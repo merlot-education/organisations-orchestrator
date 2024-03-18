@@ -35,7 +35,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ParticipantService {
@@ -344,7 +343,7 @@ public class ParticipantService {
      */
     public List<String> getTrustedDids() {
         List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
-        return metadataList.stream().map(MerlotParticipantMetaDto::getOrgaId).collect(Collectors.toList());
+        return metadataList.stream().map(MerlotParticipantMetaDto::getOrgaId).toList();
     }
 
     private String generateDidWeb(MerlotOrganizationCredentialSubject credentialSubject) {

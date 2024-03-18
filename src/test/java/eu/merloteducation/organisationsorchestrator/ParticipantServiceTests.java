@@ -610,15 +610,8 @@ class ParticipantServiceTests {
     @Test
     void getTrustedDids() {
 
-        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         String orgaId = "did:web:" + merlotDomain + "#someorga";
-        metaDto.setOrgaId(orgaId);
-        metaDto.setMailAddress("mymail@example.com");
-        metaDto.setMembershipClass(MembershipClass.FEDERATOR);
-        List<MerlotParticipantMetaDto> list = new ArrayList<>();
-        list.add(metaDto);
-
-        lenient().when(organizationMetadataService.getParticipantsByMembershipClass(eq(MembershipClass.FEDERATOR))).thenReturn(list);
+        lenient().when(organizationMetadataService.getParticipantIdsByMembershipClass(eq(MembershipClass.FEDERATOR))).thenReturn(List.of(orgaId));
 
         List<String> trustedDids = participantService.getTrustedDids();
         assertThat(trustedDids, not(empty()));

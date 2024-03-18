@@ -487,4 +487,17 @@ class OrganizationMetadataServiceTests {
         assertEquals(new HashSet<>(), actual2.getConnectors());
 
     }
+
+    @Test
+    void getParticipantIdsByMembershipClassCorrectly(){
+
+        List<String> federatorIds = metadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
+        assertEquals(1, federatorIds.size());
+        assertEquals(someOrgaId, federatorIds.get(0));
+
+        List<String> participantIds = metadataService.getParticipantIdsByMembershipClass(MembershipClass.PARTICIPANT);
+        assertEquals(1, participantIds.size());
+        assertEquals(otherOrgaId, participantIds.get(0));
+
+    }
 }

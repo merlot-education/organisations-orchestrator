@@ -342,8 +342,7 @@ public class ParticipantService {
      * @return list of trusted dids
      */
     public List<String> getTrustedDids() {
-        List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
-        return metadataList.stream().map(MerlotParticipantMetaDto::getOrgaId).toList();
+        return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
     }
 
     private String generateDidWeb(MerlotOrganizationCredentialSubject credentialSubject) {

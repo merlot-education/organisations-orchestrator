@@ -2,7 +2,7 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
-import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyDto;
+import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.*;

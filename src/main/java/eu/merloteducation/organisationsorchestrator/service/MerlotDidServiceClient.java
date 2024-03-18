@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
-import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyCreateRequest;
-import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyDto;
+import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
+import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.PostExchange;
 

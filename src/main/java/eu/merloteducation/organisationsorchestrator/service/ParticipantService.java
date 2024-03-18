@@ -13,8 +13,8 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescrip
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
-import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyCreateRequest;
-import eu.merloteducation.modelslib.api.merlotdidservice.ParticipantDidPrivateKeyDto;
+import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
+import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;

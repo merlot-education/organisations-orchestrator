@@ -104,10 +104,13 @@ db:
     transformation: "AES"
 
 merlot-did-service:
-  base-uri: "http://localhost:1111/api"
+  base-uri: "http://localhost:8088"
 
 cors:
   global:
     origins:
     patterns: >
       http://localhost:[*]
+
+gxfscatalog-library:
+  ignore-ssl: true

@@ -66,7 +66,7 @@ public class ParticipantService {
      */
     public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
         // input sanitization, must be a did:web
-        String regex = "did:web:[-.#A-Za-z0-9]*";
+        String regex = "did:web:[-.A-Za-z0-9:%#]*";
         if (!id.matches(regex)) {
             throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did:web.");
         }
@@ -233,7 +233,9 @@ public class ParticipantService {
 
         ParticipantItem participantItem;
         try {
-            participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject);
+            participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
+                    participantMetadata.getOrganisationSignerConfigDto().getVerificationMethod(),
+                    participantMetadata.getOrganisationSignerConfigDto().getPrivateKey()); // TODO use key of caller
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found in the catalog.");
         } catch (CredentialPresentationException | CredentialSignatureException e) {
@@ -308,14 +310,10 @@ public class ParticipantService {
             if (metaData.getOrgaId() == null || metaData.getOrgaId().isBlank()) {
 
                 // request did and private key
-                /*ParticipantDidPrivateKeyDto didPrivateKeyDto =
+                ParticipantDidPrivateKeyDto didPrivateKeyDto =
                         merlotDidServiceClient.generateDidAndPrivateKey(
-                                new ParticipantDidPrivateKeyCreateRequest("", credentialSubject.getLegalName()));*/
-                String did = "did:web:" + merlotDomain + ":participant:" + UUID.randomUUID();
-                ParticipantDidPrivateKeyDto didPrivateKeyDto = new ParticipantDidPrivateKeyDto(
-                        did,
-                        did + "#JWK2020",
-                        "1234");
+                                new ParticipantDidPrivateKeyCreateRequest(credentialSubject.getLegalName()));
+
                // update metadata signer config
                 metaData.setOrganisationSignerConfigDto(
                         organizationMapper.getSignerConfigDtoFromDidPrivateKeyDto(didPrivateKeyDto));
@@ -343,7 +341,9 @@ public class ParticipantService {
 
         ParticipantItem participantItem = null;
         try {
-            participantItem = gxfsCatalogService.addParticipant(credentialSubject);
+            participantItem = gxfsCatalogService.addParticipant(credentialSubject,
+                    metaData.getOrganisationSignerConfigDto().getVerificationMethod(),
+                    metaData.getOrganisationSignerConfigDto().getPrivateKey()); // TODO get key from caller, not from created orga
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
         } catch (WebClientResponseException e) {

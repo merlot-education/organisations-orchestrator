@@ -1,10 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.models.entities;
 
 import eu.merloteducation.organisationsorchestrator.models.AttributeEncryptor;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +17,7 @@ public class OrganisationSignerConfig {
 
     @NotNull
     @Convert(converter = AttributeEncryptor.class)
+    @Lob
     private String privateKey;
 
     @NotNull

@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -51,7 +50,6 @@ public class InitialDataLoader implements CommandLineRunner {
 
 
     @Override
-    @Transactional
     public void run(String... args) {
         try {
             // MERLOT federation
@@ -82,6 +80,7 @@ public class InitialDataLoader implements CommandLineRunner {
             for (MultipartFile orgaPdf : orgaPdfs) {
                 MerlotParticipantDto participant = organizationQueryController
                         .createOrganization(new MultipartFile[]{orgaPdf}, internalRoleFedAdmin);
+
 
                 // set federator role for initial organisations
                 participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);

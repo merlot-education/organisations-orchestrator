@@ -31,10 +31,6 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>danubetech-maven-public</id>
-			<url>https://repo.danubetech.com/repository/maven-public/</url>
-		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -118,21 +114,6 @@
 			<version>${org.mapstruct.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.danubetech</groupId>
-			<artifactId>verifiable-credentials-java</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.danubetech</groupId>
-			<artifactId>key-formats-java</artifactId>
-			<version>1.5.0</version>
-		</dependency>
-		<dependency>
-			<groupId>decentralized-identity</groupId>
-			<artifactId>did-common-java</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
@@ -154,7 +135,7 @@
 		<dependency>
 			<groupId>eu.merlot-education</groupId>
 			<artifactId>gxfscatalog-library</artifactId>
-			<version>0.4.0</version>
+			<version>0.4.1</version>
 		</dependency>
         <dependency>
             <groupId>org.springframework</groupId>

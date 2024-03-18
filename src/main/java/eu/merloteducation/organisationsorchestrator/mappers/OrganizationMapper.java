@@ -89,7 +89,7 @@ public interface OrganizationMapper {
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "privateKey", source = "privateKey")
-    @Mapping(target = "verificationMethod", source = "did")
+    @Mapping(target = "verificationMethod", source = "verificationMethod")
     OrganisationSignerConfigDto getSignerConfigDtoFromDidPrivateKeyDto(ParticipantDidPrivateKeyDto prk);
 
     @BeanMapping(ignoreByDefault = true)
@@ -98,6 +98,7 @@ public interface OrganizationMapper {
     @Mapping(target = "membershipClass", source = "membershipClass")
     @Mapping(target = "active", source = "active")
     @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsForDto")
+    @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfig")
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
 
     @BeanMapping(ignoreByDefault = true)

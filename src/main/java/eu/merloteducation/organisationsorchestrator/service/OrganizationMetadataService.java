@@ -92,7 +92,7 @@ public class OrganizationMetadataService {
      */
     public List<String> getInactiveParticipantsIds() {
 
-        return repository.findByActive(false);
+        return repository.getOrgaIdByActive(false);
     }
 
     /**
@@ -114,6 +114,17 @@ public class OrganizationMetadataService {
         }
 
         return connector != null ? mapper.connectorExtensionToOrganizationConnectorTransferDto(connector) : null;
+    }
+
+    /**
+     * Given a membership class, return the ids of the participants with that membership class.
+     *
+     * @param membershipClass membership class
+     * @return list of participant ids
+     */
+    public List<String> getParticipantIdsByMembershipClass(MembershipClass membershipClass) {
+
+        return repository.getOrgaIdByMembershipClass(membershipClass);
     }
 
 }

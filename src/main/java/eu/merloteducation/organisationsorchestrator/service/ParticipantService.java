@@ -336,6 +336,15 @@ public class ParticipantService {
             metaDataDto);
     }
 
+    /**
+     * Return the list of trusted dids. In the context of MERLOT the dids of the federators are trusted.
+     *
+     * @return list of trusted dids
+     */
+    public List<String> getTrustedDids() {
+        return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
+    }
+
     private String generateDidWeb(MerlotOrganizationCredentialSubject credentialSubject) {
         String uuid = UUID.nameUUIDFromBytes(credentialSubject.getLegalName().getBytes(StandardCharsets.UTF_8))
                 .toString(); // uuid v3 from md5

@@ -84,7 +84,6 @@ cors:
 db:
   encryption:
     key: "1234123412341234"
-    transformation: "AES"
 
 merlot-did-service:
   base-uri: "http://localhost:8088"

@@ -678,6 +678,10 @@ class ParticipantServiceTests {
                 new IonosS3BucketDto("bucket2", "http://example.com"),
                 new IonosS3BucketDto("bucket3", "http://example.com")));
         metaData.setConnectors(Set.of(connector));
+        OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
+        signerConfigDto.setPrivateKey("privateKey");
+        signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
+        metaData.setOrganisationSignerConfigDto(signerConfigDto);
 
         dtoWithEdits.setSelfDescription(selfDescription);
         dtoWithEdits.setId(someOrgaId);

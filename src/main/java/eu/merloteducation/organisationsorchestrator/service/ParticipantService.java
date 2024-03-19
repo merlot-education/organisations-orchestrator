@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.models.client.SelfDescriptionStatus;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
@@ -244,6 +245,13 @@ public class ParticipantService {
             participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
                     activeRoleSignerConfig.getVerificationMethod(),
                     activeRoleSignerConfig.getPrivateKey());
+            // clean up old SDs, remove these lines if you need the history of participant SDs
+            GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
+                    gxfsCatalogService.getSelfDescriptionsByIds(new String[]{participantItem.getId()},
+                    new SelfDescriptionStatus[]{SelfDescriptionStatus.DEPRECATED});
+            for (SelfDescriptionItem item : deprecatedParticipantSds.getItems()) {
+                gxfsCatalogService.deleteSelfDescriptionByHash(item.getMeta().getSdHash());
+            }
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found in the catalog.");
         } catch (CredentialPresentationException | CredentialSignatureException e) {

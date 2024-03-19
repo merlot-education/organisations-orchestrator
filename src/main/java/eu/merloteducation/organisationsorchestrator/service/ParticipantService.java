@@ -45,18 +45,15 @@ public class ParticipantService {
 
     private final OrganizationMapper organizationMapper;
     private final GxfsCatalogService gxfsCatalogService;
-    private final MerlotDidServiceClient merlotDidServiceClient;
     private final OrganizationMetadataService organizationMetadataService;
     private final OutgoingMessageService outgoingMessageService;
 
     public ParticipantService(@Autowired OrganizationMapper organizationMapper,
                               @Autowired GxfsCatalogService gxfsCatalogService,
-                              @Autowired MerlotDidServiceClient merlotDidServiceClient,
                               @Autowired OrganizationMetadataService organizationMetadataService,
                               @Autowired OutgoingMessageService outgoingMessageService) {
         this.organizationMapper = organizationMapper;
         this.gxfsCatalogService = gxfsCatalogService;
-        this.merlotDidServiceClient = merlotDidServiceClient;
         this.organizationMetadataService = organizationMetadataService;
         this.outgoingMessageService = outgoingMessageService;
     }
@@ -330,7 +327,7 @@ public class ParticipantService {
 
                 // request did and private key
                 ParticipantDidPrivateKeyDto didPrivateKeyDto =
-                        merlotDidServiceClient.generateDidAndPrivateKey(
+                        outgoingMessageService.requestNewDidPrivateKey(
                                 new ParticipantDidPrivateKeyCreateRequest(credentialSubject.getLegalName()));
 
                // update metadata signer config

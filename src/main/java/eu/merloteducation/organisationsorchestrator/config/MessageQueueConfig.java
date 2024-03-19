@@ -17,6 +17,10 @@ public class MessageQueueConfig {
     public static final String ORGANIZATION_REQUEST_QUEUE = "organization.request.organization.queue";
     public static final String ORGANIZATIONCONNECTOR_REQUEST_QUEUE = "organizationconnector.request.organizationconnector.queue";
     public static final String ORGANIZATION_REVOKED_KEY = "revoked.organization";
+
+    public static final String DID_SERVICE_EXCHANGE = "service.exchange";
+    public static final String DID_PRIVATE_KEY_REQUEST_KEY = "request.did_privatekey";
+
     @Bean
     DirectExchange orchestratorExchange() {
         return new DirectExchange(ORCHESTRATOR_EXCHANGE);
@@ -41,6 +45,12 @@ public class MessageQueueConfig {
     public Queue orgaConnectorRequestedQueue() {
         return new Queue(ORGANIZATIONCONNECTOR_REQUEST_QUEUE, false);
     }
+
+    @Bean
+    DirectExchange didServiceExchange() {
+        return new DirectExchange(DID_SERVICE_EXCHANGE);
+    }
+
     @Bean
     public MessageConverter converter(){
         return new Jackson2JsonMessageConverter();

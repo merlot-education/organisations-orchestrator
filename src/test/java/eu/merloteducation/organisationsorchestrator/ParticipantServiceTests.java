@@ -586,10 +586,10 @@ class ParticipantServiceTests {
     void createParticipantWithInvalidRegistrationForm() {
 
         RegistrationFormContent content = new RegistrationFormContent();
-
+        OrganizationRoleGrantedAuthority role =
+                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga");
         Exception e = assertThrows(ResponseStatusException.class,
-            () -> participantService.createParticipant(content,
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga")));
+            () -> participantService.createParticipant(content, role));
 
         assertEquals("400 BAD_REQUEST \"Invalid registration form file.\"", e.getMessage());
     }
@@ -609,9 +609,10 @@ class ParticipantServiceTests {
         content.setProviderTncLink("");
         content.setProviderTncHash("");
 
+        OrganizationRoleGrantedAuthority role =
+                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga");
         Exception e = assertThrows(ResponseStatusException.class,
-            () -> participantService.createParticipant(content,
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga")));
+            () -> participantService.createParticipant(content, role));
 
         assertEquals("400 BAD_REQUEST \"Invalid registration form: Empty or blank fields.\"", e.getMessage());
     }

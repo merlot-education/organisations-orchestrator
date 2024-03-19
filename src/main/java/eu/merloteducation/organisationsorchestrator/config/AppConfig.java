@@ -19,7 +19,8 @@ public class AppConfig {
                 .baseUrl(merlotDidServiceBaseUri)
                 .build();
         HttpServiceProxyFactory httpServiceProxyFactory = HttpServiceProxyFactory
-                .builder(WebClientAdapter.forClient(webClient))
+                .builder()
+                .exchangeAdapter(WebClientAdapter.create(webClient))
                 .build();
         return httpServiceProxyFactory.createClient(MerlotDidServiceClient.class);
     }

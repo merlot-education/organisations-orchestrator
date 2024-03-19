@@ -3,7 +3,6 @@ package eu.merloteducation.organisationsorchestrator.models.entities;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

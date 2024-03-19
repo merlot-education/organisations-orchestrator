@@ -27,7 +27,6 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -44,16 +43,23 @@ public class ParticipantService {
 
     private final Logger logger = LoggerFactory.getLogger(ParticipantService.class);
 
-    @Autowired
-    private OrganizationMapper organizationMapper;
-    @Autowired
-    private GxfsCatalogService gxfsCatalogService;
-    @Autowired
-    private MerlotDidServiceClient merlotDidServiceClient;
-    @Autowired
-    private OrganizationMetadataService organizationMetadataService;
-    @Autowired
-    private OutgoingMessageService outgoingMessageService;
+    private final OrganizationMapper organizationMapper;
+    private final GxfsCatalogService gxfsCatalogService;
+    private final MerlotDidServiceClient merlotDidServiceClient;
+    private final OrganizationMetadataService organizationMetadataService;
+    private final OutgoingMessageService outgoingMessageService;
+
+    public ParticipantService(@Autowired OrganizationMapper organizationMapper,
+                              @Autowired GxfsCatalogService gxfsCatalogService,
+                              @Autowired MerlotDidServiceClient merlotDidServiceClient,
+                              @Autowired OrganizationMetadataService organizationMetadataService,
+                              @Autowired OutgoingMessageService outgoingMessageService) {
+        this.organizationMapper = organizationMapper;
+        this.gxfsCatalogService = gxfsCatalogService;
+        this.merlotDidServiceClient = merlotDidServiceClient;
+        this.organizationMetadataService = organizationMetadataService;
+        this.outgoingMessageService = outgoingMessageService;
+    }
 
     /**
      * Given a participant ID, return the organization data from the GXFS catalog.

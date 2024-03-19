@@ -54,7 +54,7 @@ class InitialDataLoaderTests {
         MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
         credentialSubject.setLegalName("MERLOT Federation");
         dto.getSelfDescription().getVerifiableCredential().setCredentialSubject(credentialSubject);
-        dto.setId("did:web:example.com#someid");
+        dto.setId("did:web:example.com:participant:someid");
         dto.setMetadata(new MerlotParticipantMetaDto());
         dto.getMetadata().setMembershipClass(MembershipClass.PARTICIPANT);
         when(organizationQueryController.createOrganization(any(), any()))
@@ -69,7 +69,9 @@ class InitialDataLoaderTests {
                 "example.com");
         dataLoader.run();
 
-        verify(organizationQueryController, times(1)).createOrganization(any(), any());
+        // create MERLOT fed, create example
+        verify(organizationQueryController, times(2)).createOrganization(any(), any());
+        // update example for adding connectors, update again for federator role
         verify(organizationQueryController, times(2)).updateOrganization(any(), any());
     }
 

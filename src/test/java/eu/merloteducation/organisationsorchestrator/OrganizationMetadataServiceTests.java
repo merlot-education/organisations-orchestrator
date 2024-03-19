@@ -57,8 +57,8 @@ class OrganizationMetadataServiceTests {
         ReflectionTestUtils.setField(metadataService, "repository", metadataRepository);
         ReflectionTestUtils.setField(metadataService, "mapper", metadataMapper);
 
-        someOrgaId = "did:web:" + merlotDomain + "#" + "someorga";
-        otherOrgaId = "did:web:" + merlotDomain + "#" + "otherorga";
+        someOrgaId = "did:web:" + merlotDomain + ":participant:" + "someorga";
+        otherOrgaId = "did:web:" + merlotDomain + ":participant:" + "otherorga";
     }
 
     @BeforeEach
@@ -148,7 +148,7 @@ class OrganizationMetadataServiceTests {
     @Test
     void saveMerlotParticipantMetaCorrectly() {
 
-        String id = "did:web:" + merlotDomain + "#" + "7d0ad7ce-cb1f-479f-9b7d-33b0d7d6f347";
+        String id = "did:web:" + merlotDomain + ":participant:" + "7d0ad7ce-cb1f-479f-9b7d-33b0d7d6f347";
 
         MerlotParticipantMetaDto metadataToSave = new MerlotParticipantMetaDto();
         metadataToSave.setOrgaId(id);
@@ -180,7 +180,7 @@ class OrganizationMetadataServiceTests {
     void updateMerlotParticipantMetaFail() {
 
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
-        metaDto.setOrgaId("did:web:" + merlotDomain + "#" + "fail");
+        metaDto.setOrgaId("did:web:" + merlotDomain + ":participant:" + "fail");
         metaDto.setMailAddress("foo@bar.de");
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
         metaDto.setActive(false);

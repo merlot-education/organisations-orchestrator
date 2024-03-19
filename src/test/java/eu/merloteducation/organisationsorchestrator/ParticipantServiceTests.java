@@ -18,12 +18,12 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatyp
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
+import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
 import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
-import eu.merloteducation.organisationsorchestrator.service.MerlotDidServiceClient;
 import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
 import eu.merloteducation.organisationsorchestrator.service.OutgoingMessageService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
@@ -76,10 +76,6 @@ class ParticipantServiceTests {
     @MockBean
     private GxfsCatalogService gxfsCatalogService;
 
-    // mock away the autowired did service as we give our own fake implementation
-    @MockBean
-    private MerlotDidServiceClient merlotDidServiceClient;
-
     @MockBean
     OrganizationMetadataService organizationMetadataService;
 
@@ -88,6 +84,8 @@ class ParticipantServiceTests {
 
     @MockBean
     private OutgoingMessageService outgoingMessageService;
+
+    private final MerlotDidServiceClientFake merlotDidServiceClientFake = new MerlotDidServiceClientFake();
 
     String mailAddress = "test@test.de";
 
@@ -110,6 +108,9 @@ class ParticipantServiceTests {
     String postalCode = "12345";
 
     String id = "12345";
+
+    ParticipantServiceTests() throws IOException {
+    }
 
     MerlotOrganizationCredentialSubject getExpectedCredentialSubject() {
 
@@ -193,7 +194,6 @@ class ParticipantServiceTests {
         ReflectionTestUtils.setField(participantService, "gxfsCatalogService", gxfsCatalogService);
         ReflectionTestUtils.setField(participantService, "organizationMetadataService", organizationMetadataService);
         ReflectionTestUtils.setField(participantService, "outgoingMessageService", outgoingMessageService);
-        ReflectionTestUtils.setField(participantService, "merlotDidServiceClient", new MerlotDidServiceClientFake());
 
         String mockParticipant = """
             {
@@ -284,6 +284,9 @@ class ParticipantServiceTests {
         lenient().when(organizationMetadataService.updateMerlotParticipantMeta(any())).thenAnswer(i -> i.getArguments()[0]);
         lenient().when(organizationMetadataService.getInactiveParticipantsIds()).thenReturn(new ArrayList<>());
         lenient().when(organizationMetadataService.saveMerlotParticipantMeta(any())).thenReturn(metaDto);
+
+        lenient().when(outgoingMessageService.requestNewDidPrivateKey(any())).thenReturn(
+                merlotDidServiceClientFake.generateDidAndPrivateKey(new ParticipantDidPrivateKeyCreateRequest()));
     }
 
     @Test

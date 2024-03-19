@@ -142,46 +142,4 @@ public class InitialDataLoader implements CommandLineRunner {
 
         return orgaPdfs;
     }
-
-    /*@Transactional
-    private ParticipantItem createMerlotFederationOrganisation() throws CredentialSignatureException, CredentialPresentationException {
-        String merlotFederationDid = "did:web:" + merlotDomain + ":participant:" + "df15587a-0760-32b5-9c42-bb7be66e8076";
-        OrganizationMetadata metadata = new OrganizationMetadata();
-        metadata.setOrgaId(merlotFederationDid);
-        metadata.setActive(true);
-        metadata.setMembershipClass(MembershipClass.FEDERATOR);
-        metadata.setMailAddress("-");
-        metadata.setConnectors(Collections.emptySet());
-        OrganisationSignerConfig signerConfig = new OrganisationSignerConfig();
-        signerConfig.setPrivateKey(""); // TODO
-        signerConfig.setVerificationMethod(merlotFederationDid + "#JWK2020");
-        metadata.setOrganisationSignerConfig(signerConfig);
-        organizationMetadataRepository.save(metadata);
-
-        MerlotOrganizationCredentialSubject merlotOrganizationCredentialSubject = new MerlotOrganizationCredentialSubject();
-        merlotOrganizationCredentialSubject.setId(merlotFederationDid);
-        merlotOrganizationCredentialSubject.setLegalName("MERLOT Federation");
-        merlotOrganizationCredentialSubject.setOrgaName("MERLOT Federation");
-
-        TermsAndConditions merlotTnc = new TermsAndConditions();
-        merlotTnc.setContent("https://www.merlot-education.eu/");
-        merlotTnc.setHash("hash1234");
-        merlotOrganizationCredentialSubject.setTermsAndConditions(merlotTnc);
-
-        RegistrationNumber merlotRegistrationNumber = new RegistrationNumber();
-        merlotRegistrationNumber.setLocal("-");
-        merlotOrganizationCredentialSubject.setRegistrationNumber(merlotRegistrationNumber);
-
-        VCard merlotAddress = new VCard();
-        merlotAddress.setLocality("-");
-        merlotAddress.setStreetAddress("-");
-        merlotAddress.setCountryName("-");
-        merlotAddress.setPostalCode("-");
-        merlotOrganizationCredentialSubject.setLegalAddress(merlotAddress);
-        merlotOrganizationCredentialSubject.setHeadquarterAddress(merlotAddress);
-
-        return gxfsCatalogService.addParticipant(merlotOrganizationCredentialSubject,
-                signerConfig.getVerificationMethod(),
-                signerConfig.getPrivateKey());
-    }*/
 }

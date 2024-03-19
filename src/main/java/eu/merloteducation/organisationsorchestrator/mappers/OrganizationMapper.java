@@ -126,6 +126,8 @@ public interface OrganizationMapper {
 
         target.getConnectors().clear();
         target.getConnectors().addAll(updatedConnectors);
+        target.setOrganisationSignerConfig(
+                organisationSignerConfigDtoToOrganisationSignerConfig(source.getOrganisationSignerConfigDto()));
     }
 
     @BeanMapping(ignoreByDefault = true)

@@ -131,6 +131,7 @@ public interface OrganizationMapper {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "connectors", source = "connectors")
+    @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfigDto")
     void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source,
         @MappingTarget MerlotParticipantMetaDto target);
 

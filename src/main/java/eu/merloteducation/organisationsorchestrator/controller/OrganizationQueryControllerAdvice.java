@@ -45,8 +45,9 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
             }
 
             if (!representsOrganization) {
-                // hide connector data if we are not representing
+                // hide connector data and signer config if we are not representing
                 participantDto.getMetadata().setConnectors(null);
+                participantDto.getMetadata().setOrganisationSignerConfigDto(null);
             }
             return;
         }

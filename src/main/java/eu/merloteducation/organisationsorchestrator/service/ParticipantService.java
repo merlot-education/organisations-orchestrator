@@ -22,7 +22,6 @@ import eu.merloteducation.modelslib.api.organization.OrganisationSignerConfigDto
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationSignerConfig;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -47,15 +46,10 @@ public class ParticipantService {
 
     @Autowired
     private OrganizationMapper organizationMapper;
-
     @Autowired
     private GxfsCatalogService gxfsCatalogService;
-
     @Autowired
     private MerlotDidServiceClient merlotDidServiceClient;
-
-    @Value("${merlot-domain}")
-    private String merlotDomain;
     @Autowired
     private OrganizationMetadataService organizationMetadataService;
     @Autowired
@@ -235,9 +229,11 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be updated.");
         }
 
-        // fetch the signer config for the role that performs this action
+        // fetch the corresponding  signer config for the performing role
         OrganisationSignerConfigDto activeRoleSignerConfig =
-                organizationMetadataService.getMerlotParticipantMetaDto(activeRole.getOrganizationId())
+                (participantMetadata.getOrgaId().equals(activeRole.getOrganizationId()))
+                        ? participantMetadata.getOrganisationSignerConfigDto()
+                        : organizationMetadataService.getMerlotParticipantMetaDto(activeRole.getOrganizationId())
                         .getOrganisationSignerConfigDto();
 
         ParticipantItem participantItem;

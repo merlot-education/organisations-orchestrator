@@ -73,10 +73,13 @@ public class InitialDataLoader implements CommandLineRunner {
         }
     }
 
-    private void onboardMerlotFederation(OrganizationRoleGrantedAuthority merlotFederationRole) {
+    private void onboardMerlotFederation(OrganizationRoleGrantedAuthority merlotFederationRole) throws Exception {
         MultipartFile merlotFederationPdf = getMerlotFederationDocument();
-        organizationQueryController
+        MerlotParticipantDto participant = organizationQueryController
                 .createOrganization(new MultipartFile[]{merlotFederationPdf}, merlotFederationRole);
+        // set federator role for MERLOT federation
+        participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
+        organizationQueryController.updateOrganization(participant, merlotFederationRole);
     }
 
     private void onboardOtherOrganisations(OrganizationRoleGrantedAuthority merlotFederationRole) throws Exception {

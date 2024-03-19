@@ -3,10 +3,7 @@ package eu.merloteducation.organisationsorchestrator;
 import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
-import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3Bucket;
-import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3ExtensionConfig;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
+import eu.merloteducation.organisationsorchestrator.models.entities.*;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
 import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
 import jakarta.transaction.Transactional;
@@ -20,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,6 +77,14 @@ class OrganizationMetadataServiceTests {
         connector.setConnectorAccessToken("token$123?");
         connector.setIonosS3ExtensionConfig(new IonosS3ExtensionConfig(null, buckets));
         metadata1.setConnectors(Set.of(connector));
+        OrganisationSignerConfig signerConfig = new OrganisationSignerConfig();
+        signerConfig.setPrivateKey("privateKey");
+        signerConfig.setVerificationMethod(someOrgaId + "#somemethod");
+        metadata1.setOrganisationSignerConfig(signerConfig);
+        OrganisationSignerConfig signerConfig2 = new OrganisationSignerConfig();
+        signerConfig2.setPrivateKey("privateKey2");
+        signerConfig2.setVerificationMethod(otherOrgaId + "#somemethod");
+        metadata2.setOrganisationSignerConfig(signerConfig2);
 
         metadataRepository.save(metadata1);
         metadataRepository.save(metadata2);
@@ -115,6 +119,11 @@ class OrganizationMetadataServiceTests {
         connector.setIonosS3ExtensionConfig(new IonosS3ExtensionConfigDto(buckets));
         expected1.setConnectors(Set.of(connector));
 
+        OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
+        signerConfigDto.setPrivateKey("privateKey");
+        signerConfigDto.setVerificationMethod(someOrgaId + "#somemethod");
+        expected1.setOrganisationSignerConfigDto(signerConfigDto);
+
         MerlotParticipantMetaDto actual1 = metadataService.getMerlotParticipantMetaDto(someOrgaId);
         assertEquals(expected1.getOrgaId(), actual1.getOrgaId());
         assertEquals(expected1.getMembershipClass(), actual1.getMembershipClass());
@@ -129,6 +138,11 @@ class OrganizationMetadataServiceTests {
         assertEquals("token$123?", actualDto.getConnectorAccessToken());
         assertIterableEquals(buckets, actualDto.getIonosS3ExtensionConfig().getBuckets());
 
+        assertEquals(expected1.getOrganisationSignerConfigDto().getPrivateKey(),
+                actual1.getOrganisationSignerConfigDto().getPrivateKey());
+        assertEquals(expected1.getOrganisationSignerConfigDto().getVerificationMethod(),
+                actual1.getOrganisationSignerConfigDto().getVerificationMethod());
+
         MerlotParticipantMetaDto expected2 = new MerlotParticipantMetaDto();
         expected2.setOrgaId(otherOrgaId);
         expected2.setMailAddress("hij@kl.mn");
@@ -136,12 +150,21 @@ class OrganizationMetadataServiceTests {
         expected2.setActive(false);
         expected2.setConnectors(new HashSet<>());
 
+        OrganisationSignerConfigDto signerConfigDto2 = new OrganisationSignerConfigDto();
+        signerConfigDto2.setPrivateKey("privateKey2");
+        signerConfigDto2.setVerificationMethod(otherOrgaId + "#somemethod");
+        expected2.setOrganisationSignerConfigDto(signerConfigDto2);
+
         MerlotParticipantMetaDto actual2 = metadataService.getMerlotParticipantMetaDto(otherOrgaId);
         assertEquals(expected2.getOrgaId(), actual2.getOrgaId());
         assertEquals(expected2.getMembershipClass(), actual2.getMembershipClass());
         assertEquals(expected2.getMailAddress(), actual2.getMailAddress());
         assertEquals(expected2.isActive(), actual2.isActive());
         assertEquals(new HashSet<>(), actual2.getConnectors());
+        assertEquals(expected2.getOrganisationSignerConfigDto().getPrivateKey(),
+                actual2.getOrganisationSignerConfigDto().getPrivateKey());
+        assertEquals(expected2.getOrganisationSignerConfigDto().getVerificationMethod(),
+                actual2.getOrganisationSignerConfigDto().getVerificationMethod());
     }
 
     @Transactional
@@ -156,12 +179,18 @@ class OrganizationMetadataServiceTests {
         metadataToSave.setMembershipClass(MembershipClass.FEDERATOR);
         metadataToSave.setActive(true);
 
+        OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
+        signerConfigDto.setPrivateKey("key123");
+        signerConfigDto.setVerificationMethod(id + "#somemethod");
+        metadataToSave.setOrganisationSignerConfigDto(signerConfigDto);
+
         MerlotParticipantMetaDto expected = new MerlotParticipantMetaDto();
         expected.setOrgaId(id);
         expected.setMailAddress("foo@bar.de");
         expected.setMembershipClass(MembershipClass.FEDERATOR);
         expected.setActive(true);
         expected.setConnectors(new HashSet<>());
+        expected.setOrganisationSignerConfigDto(signerConfigDto);
 
         MerlotParticipantMetaDto actual = metadataService.saveMerlotParticipantMeta(metadataToSave);
 
@@ -170,6 +199,10 @@ class OrganizationMetadataServiceTests {
         assertEquals(expected.getMailAddress(), actual.getMailAddress());
         assertEquals(expected.isActive(), actual.isActive());
         assertEquals(expected.getConnectors(), actual.getConnectors());
+        assertEquals(expected.getOrganisationSignerConfigDto().getPrivateKey(),
+                actual.getOrganisationSignerConfigDto().getPrivateKey());
+        assertEquals(expected.getOrganisationSignerConfigDto().getVerificationMethod(),
+                actual.getOrganisationSignerConfigDto().getVerificationMethod());
 
         // clean-up
         metadataRepository.deleteById(id);

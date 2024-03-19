@@ -311,6 +311,17 @@ class OrganizationQueryControllerTests {
             .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void getTrustedDidsUnauthenticatedTest() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .get("/trustedDids")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
     private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {
 
         MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();

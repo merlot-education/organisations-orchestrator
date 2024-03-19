@@ -378,6 +378,16 @@ public class ParticipantService {
             metaDataDto);
     }
 
+
+    /**
+     * Return the list of trusted dids. In the context of MERLOT the dids of the federators are trusted.
+     *
+     * @return list of trusted dids
+     */
+    public List<String> getTrustedDids() {
+        return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
+    }
+
     private Map<String, String> getContext() {
 
         Map<String, String> context = new HashMap<>();

@@ -173,6 +173,7 @@ class ParticipantServiceTests {
         content.setStreet(street);
         content.setProviderTncLink(providerTncLink);
         content.setProviderTncHash(providerTncHash);
+        content.setDidWeb("");
 
         return content;
     }
@@ -280,6 +281,7 @@ class ParticipantServiceTests {
         metaDto.setOrganisationSignerConfigDto(signerConfigDto);
 
         lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:someorga"))).thenReturn(metaDto);
+        lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:somefedorga"))).thenReturn(metaDto);
         lenient().when(organizationMetadataService.getParticipantsByMembershipClass(eq(MembershipClass.FEDERATOR))).thenReturn(new ArrayList<>());
         lenient().when(organizationMetadataService.updateMerlotParticipantMeta(any())).thenAnswer(i -> i.getArguments()[0]);
         lenient().when(organizationMetadataService.getInactiveParticipantsIds()).thenReturn(new ArrayList<>());
@@ -461,7 +463,7 @@ class ParticipantServiceTests {
                 .getCredentialSubject();
         MerlotParticipantMetaDto editedMetadata = dtoWithEdits.getMetadata();
 
-        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga");
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:somefedorga");
 
         dtoWithEdits.setId("did:web:example.com:participant:someorga");
         MerlotParticipantDto participantDto = participantService.updateParticipant(dtoWithEdits, activeRole);
@@ -583,6 +585,41 @@ class ParticipantServiceTests {
         assertEquals(metadataExpected.getMailAddress(), varArgs.getValue().getMailAddress());
         assertEquals(metadataExpected.getMembershipClass(), varArgs.getValue().getMembershipClass());
         assertEquals(0,  varArgs.getValue().getConnectors().size());
+    }
+
+    @Test
+    void createParticipantWithValidRegistrationFormAsFederator() throws Exception {
+        MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationFormContent(),
+                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:somefedorga"));
+        MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
+                participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
+
+        assertThat(resultCredentialSubject).usingRecursiveComparison().ignoringFields("id", "merlotId")
+                .isEqualTo(getExpectedCredentialSubject());
+
+        String id = resultCredentialSubject.getId();
+        assertThat(id).isNotNull().isNotBlank();
+
+        OrganizationMetadata metadataExpected = new OrganizationMetadata(id, mailAddress,
+                MembershipClass.PARTICIPANT, true);
+
+        ArgumentCaptor<MerlotParticipantMetaDto> varArgs = ArgumentCaptor.forClass(MerlotParticipantMetaDto.class);
+        verify(organizationMetadataService, times(1)).saveMerlotParticipantMeta(varArgs.capture());
+        assertEquals(metadataExpected.getOrgaId(), varArgs.getValue().getOrgaId());
+        assertEquals(metadataExpected.getMailAddress(), varArgs.getValue().getMailAddress());
+        assertEquals(metadataExpected.getMembershipClass(), varArgs.getValue().getMembershipClass());
+        assertEquals(0,  varArgs.getValue().getConnectors().size());
+    }
+
+    @Test
+    void createParticipantWithInvalidDid() throws Exception {
+        RegistrationFormContent registrationFormContent = getTestRegistrationFormContent();
+        registrationFormContent.setDidWeb("garbage");
+        OrganizationRoleGrantedAuthority role =
+                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:somefedorga");
+        Exception e = assertThrows(ResponseStatusException.class,
+                () -> participantService.createParticipant(registrationFormContent, role));
+        assertEquals("400 BAD_REQUEST \"Invalid registration form: Invalid did:web specified.\"", e.getMessage());
     }
 
     @Test

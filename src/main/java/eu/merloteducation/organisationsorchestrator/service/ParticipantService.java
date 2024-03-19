@@ -323,7 +323,7 @@ public class ParticipantService {
             metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(registrationFormContent);
 
             // if the user did not specify a did, we can generate the private key and did for them
-            if (metaData.getOrgaId() == null || metaData.getOrgaId().isBlank()) {
+            if (metaData.getOrgaId().isBlank()) {
 
                 // request did and private key
                 ParticipantDidPrivateKeyDto didPrivateKeyDto =

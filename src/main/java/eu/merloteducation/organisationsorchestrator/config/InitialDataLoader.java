@@ -128,7 +128,7 @@ public class InitialDataLoader implements CommandLineRunner {
         List<MultipartFile> orgaPdfs = new ArrayList<>();
         for (File orgaPdf : initialOrgasFolder.listFiles()) {
             // skip merlot federation
-            if (!orgaPdf.getName().equals("merlotRegistrationForm_MERLOT.pdf")) {
+            if (!orgaPdf.getName().equals(MERLOT_FED_DOC_FILENAME)) {
                 try (FileInputStream input = new FileInputStream(orgaPdf)) {
 
                     MultipartFile file = new MockMultipartFile("formular", input.readAllBytes());

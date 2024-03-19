@@ -96,7 +96,7 @@ init-data:
   organisations: "classpath:organisations/"
   connectors: "classpath:initial-orga-connectors.json"
 
-merlot-domain: "marketplace.dev.merlot-education.eu"
+merlot-domain: "localhost"
 
 db:
   encryption:

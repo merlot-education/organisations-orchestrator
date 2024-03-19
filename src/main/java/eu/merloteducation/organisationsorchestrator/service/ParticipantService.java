@@ -17,9 +17,11 @@ import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateReques
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.OrganisationSignerConfigDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationSignerConfig;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -193,6 +195,7 @@ public class ParticipantService {
      * in the GXFS catalog and update the metadata in the database.
      *
      * @param participantDtoWithEdits dto with updated fields
+     * @param activeRole currently acting role
      * @return update response from catalog
      * @throws JsonProcessingException mapping exception
      */
@@ -231,11 +234,16 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be updated.");
         }
 
+        // fetch the signer config for the role that performs this action
+        OrganisationSignerConfigDto activeRoleSignerConfig =
+                organizationMetadataService.getMerlotParticipantMetaDto(activeRole.getOrganizationId())
+                        .getOrganisationSignerConfigDto();
+
         ParticipantItem participantItem;
         try {
             participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
-                    participantMetadata.getOrganisationSignerConfigDto().getVerificationMethod(),
-                    participantMetadata.getOrganisationSignerConfigDto().getPrivateKey()); // TODO use key of caller
+                    activeRoleSignerConfig.getVerificationMethod(),
+                    activeRoleSignerConfig.getPrivateKey());
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found in the catalog.");
         } catch (CredentialPresentationException | CredentialSignatureException e) {
@@ -291,13 +299,14 @@ public class ParticipantService {
      * Given the content of a registration form, attempt to create the self-description of the participant in the GXFS catalog.
      *
      * @param registrationFormContent content of the registration form
+     * @param activeRole currently acting role
      * @return post response from catalog
      * @throws JsonProcessingException failed to read catalog response
      */
     @Transactional(rollbackOn = { ResponseStatusException.class })
-    public MerlotParticipantDto createParticipant(RegistrationFormContent registrationFormContent)
+    public MerlotParticipantDto createParticipant(RegistrationFormContent registrationFormContent,
+                                                  OrganizationRoleGrantedAuthority activeRole)
             throws JsonProcessingException {
-
 
         MerlotOrganizationCredentialSubject credentialSubject;
         MerlotParticipantMetaDto metaData;
@@ -339,11 +348,18 @@ public class ParticipantService {
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
 
+        // fetch the corresponding  signer config for the performing role
+        OrganisationSignerConfigDto activeRoleSignerConfig =
+                (metaDataDto.getOrgaId().equals(activeRole.getOrganizationId()))
+                        ? metaDataDto.getOrganisationSignerConfigDto()
+                        : organizationMetadataService.getMerlotParticipantMetaDto(activeRole.getOrganizationId())
+                        .getOrganisationSignerConfigDto();
+
         ParticipantItem participantItem = null;
         try {
             participantItem = gxfsCatalogService.addParticipant(credentialSubject,
-                    metaData.getOrganisationSignerConfigDto().getVerificationMethod(),
-                    metaData.getOrganisationSignerConfigDto().getPrivateKey()); // TODO get key from caller, not from created orga
+                    activeRoleSignerConfig.getVerificationMethod(),
+                    activeRoleSignerConfig.getPrivateKey());
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
         } catch (WebClientResponseException e) {

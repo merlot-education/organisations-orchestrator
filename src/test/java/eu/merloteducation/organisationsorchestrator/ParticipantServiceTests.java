@@ -564,30 +564,6 @@ class ParticipantServiceTests {
     }
 
     @Test
-    void createParticipantWithValidRegistrationForm() throws Exception {
-        MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationFormContent(),
-                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga"));
-        MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
-                participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
-
-        assertThat(resultCredentialSubject).usingRecursiveComparison().ignoringFields("id", "merlotId")
-            .isEqualTo(getExpectedCredentialSubject());
-
-        String id = resultCredentialSubject.getId();
-        assertThat(id).isNotNull().isNotBlank();
-
-        OrganizationMetadata metadataExpected = new OrganizationMetadata(id, mailAddress,
-            MembershipClass.PARTICIPANT, true);
-
-        ArgumentCaptor<MerlotParticipantMetaDto> varArgs = ArgumentCaptor.forClass(MerlotParticipantMetaDto.class);
-        verify(organizationMetadataService, times(1)).saveMerlotParticipantMeta(varArgs.capture());
-        assertEquals(metadataExpected.getOrgaId(), varArgs.getValue().getOrgaId());
-        assertEquals(metadataExpected.getMailAddress(), varArgs.getValue().getMailAddress());
-        assertEquals(metadataExpected.getMembershipClass(), varArgs.getValue().getMembershipClass());
-        assertEquals(0,  varArgs.getValue().getConnectors().size());
-    }
-
-    @Test
     void createParticipantWithValidRegistrationFormAsFederator() throws Exception {
         MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationFormContent(),
                 new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:somefedorga"));

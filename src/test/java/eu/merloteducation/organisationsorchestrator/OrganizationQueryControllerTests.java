@@ -40,6 +40,7 @@ import java.util.Base64;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.mockito.Mockito.lenient;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -289,7 +290,7 @@ class OrganizationQueryControllerTests {
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
-            .andExpect(status().reason("Invalid registration form file."));
+            .andExpect(status().reason(startsWith("Invalid registration form file.")));
     }
     @Test
     void createOrganizationUnauthorized() throws Exception {

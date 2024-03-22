@@ -17,7 +17,7 @@ public class OrganisationSignerConfig {
 
     @NotNull
     @Convert(converter = AttributeEncryptor.class)
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String privateKey;
 
     @NotNull

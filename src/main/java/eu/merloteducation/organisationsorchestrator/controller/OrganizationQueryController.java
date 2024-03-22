@@ -73,7 +73,7 @@ public class OrganizationQueryController {
                     pdfContentMapper.getRegistrationFormContentFromRegistrationForm(pdAcroForm);
             return participantService.createParticipant(content, activeRole);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file. " + e.getMessage());
         }
     }
 

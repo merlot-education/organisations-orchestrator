@@ -14,3 +14,7 @@ merlot-domain: "marketplace.demo.merlot-education.eu"
 
 gxfscatalog-library:
   ignore-ssl: false
+
+db:
+  encryption:
+    key: ""

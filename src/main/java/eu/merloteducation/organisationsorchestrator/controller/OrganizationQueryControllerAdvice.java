@@ -4,7 +4,6 @@ import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
@@ -45,8 +44,9 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
             }
 
             if (!representsOrganization) {
-                // hide connector data if we are not representing
+                // hide connector data and signer config if we are not representing
                 participantDto.getMetadata().setConnectors(null);
+                participantDto.getMetadata().setOrganisationSignerConfigDto(null);
             }
             return;
         }
@@ -65,6 +65,9 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                     // hide connector data if we are not representing
                     p.getMetadata().setConnectors(null);
                 }
+
+                // always hide signer config in page/list view
+                p.getMetadata().setOrganisationSignerConfigDto(null);
             }
         } catch (ClassCastException ignored) {
             // if it's the wrong class, we don't want to modify it anyway

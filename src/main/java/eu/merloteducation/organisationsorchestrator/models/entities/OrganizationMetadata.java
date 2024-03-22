@@ -1,6 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.models.entities;
 
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,10 @@ public class OrganizationMetadata {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "orgaId", referencedColumnName = "orgaId", updatable = false)
     private Set<OrganisationConnectorExtension> connectors = new HashSet<>();
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @Nullable
+    private OrganisationSignerConfig organisationSignerConfig;
 
     public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass, boolean active) {
 

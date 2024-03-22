@@ -2,12 +2,10 @@ package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3Bucket;
-import eu.merloteducation.organisationsorchestrator.models.entities.IonosS3ExtensionConfig;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
+import eu.merloteducation.organisationsorchestrator.models.entities.*;
 import org.mapstruct.*;
 
 import java.util.Set;
@@ -85,9 +83,14 @@ public interface OrganizationMapper {
     MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "mailAddress", source = "content.mailAddress")
+    @Mapping(target = "orgaId", source = "content.didWeb", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE )
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
     @Mapping(target = "active", constant = "true")
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
+
+    @Mapping(target = "privateKey", source = "privateKey")
+    @Mapping(target = "verificationMethod", source = "verificationMethod")
+    OrganisationSignerConfigDto getSignerConfigDtoFromDidPrivateKeyDto(ParticipantDidPrivateKeyDto prk);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "orgaId", source = "orgaId")
@@ -95,6 +98,7 @@ public interface OrganizationMapper {
     @Mapping(target = "membershipClass", source = "membershipClass")
     @Mapping(target = "active", source = "active")
     @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsForDto")
+    @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfig")
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
 
     @BeanMapping(ignoreByDefault = true)
@@ -103,7 +107,12 @@ public interface OrganizationMapper {
     @Mapping(target = "membershipClass", source = "membershipClass")
     @Mapping(target = "active", source = "active")
     @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(metadataDto.getConnectors(), metadataDto.getOrgaId()))")
+    @Mapping(target = "organisationSignerConfig", source = "organisationSignerConfigDto")
     OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
+
+    @Mapping(target = "privateKey", source = "privateKey")
+    @Mapping(target = "verificationMethod", source = "verificationMethod")
+    OrganisationSignerConfig organisationSignerConfigDtoToOrganisationSignerConfig(OrganisationSignerConfigDto signerConfigDto);
 
     default void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source,
         @MappingTarget OrganizationMetadata target) {
@@ -117,11 +126,14 @@ public interface OrganizationMapper {
 
         target.getConnectors().clear();
         target.getConnectors().addAll(updatedConnectors);
+        target.setOrganisationSignerConfig(
+                organisationSignerConfigDtoToOrganisationSignerConfig(source.getOrganisationSignerConfigDto()));
     }
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "connectors", source = "connectors")
+    @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfigDto")
     void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source,
         @MappingTarget MerlotParticipantMetaDto target);
 

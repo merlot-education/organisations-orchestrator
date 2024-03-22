@@ -80,3 +80,13 @@ cors:
     origins:
     patterns: >
       http://localhost:[*]
+
+db:
+  encryption:
+    key: "1234123412341234"
+
+merlot-did-service:
+  base-uri: "http://localhost:8088"
+
+gxfscatalog-library:
+  ignore-ssl: true

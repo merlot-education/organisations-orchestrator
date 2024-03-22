@@ -6,4 +6,11 @@ cors:
       https://cif.dev.merlot-education.eu
     patterns:
 
+spring:
+  h2:
+    console.enabled: false
+
 merlot-domain: "marketplace.dev.merlot-education.eu"
+
+gxfscatalog-library:
+  ignore-ssl: false

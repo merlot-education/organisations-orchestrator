@@ -693,9 +693,13 @@ class ParticipantServiceTests {
 
     @Test
     void createParticipantAsFederatorNoSignerConfig() throws Exception {
+
+        RegistrationFormContent registrationFormContent = getTestRegistrationFormContent();
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:nosignerconfig");
+
         ResponseStatusException e =
-            assertThrows(ResponseStatusException.class, () -> participantService.createParticipant(getTestRegistrationFormContent(),
-                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:nosignerconfig")));
+            assertThrows(ResponseStatusException.class, () -> participantService.createParticipant(registrationFormContent, activeRole));
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
     }
 

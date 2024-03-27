@@ -8,6 +8,7 @@ import eu.merloteducation.gxfscataloglibrary.models.client.SelfDescriptionStatus
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
+import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
@@ -89,7 +90,19 @@ public class ParticipantService {
         if (response == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found.");
         }
-        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(response.getSelfDescription(),
+
+        SelfDescription selfDescription = response.getSelfDescription();
+
+        String signerLegalName = null;
+        try {
+            signerLegalName = getSignerLegalNameFromCatalog(selfDescription);
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+
+        metaDto.setSignedBy(signerLegalName);
+
+        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription,
             metaDto);
     }
 
@@ -126,28 +139,53 @@ public class ParticipantService {
         }
 
         // from the SDs create DTO objects. Also sort by name again since the catalog does not respect argument order
-        List<MerlotParticipantDto> selfDescriptions = sdResponse.getItems().stream()
-            .map(item -> {
-                SelfDescription selfDescription = item.getMeta().getContent();
+        List<MerlotParticipantDto> selfDescriptions = null;
+        try {
+            selfDescriptions = sdResponse.getItems().stream()
+                .map(item -> {
+                    SelfDescription selfDescription = item.getMeta().getContent();
 
-                String id = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
-                MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(id);
+                    String id = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
+                    MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(id);
 
-                if (metaDto == null) {
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Error while retrieving Participant with id: " + id);
-                }
+                    if (metaDto == null) {
+                        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Error while retrieving Participant with id: " + id);
+                    }
 
-                return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription,
-                    metaDto);
-            }).sorted(
-                Comparator.comparing(
-                    p -> ((MerlotOrganizationCredentialSubject)
-                        p.getSelfDescription().getVerifiableCredential().getCredentialSubject())
-                        .getOrgaName().toLowerCase())).toList();
+                    String signerLegalName = getSignerLegalNameFromCatalog(selfDescription);
 
+                    metaDto.setSignedBy(signerLegalName);
+
+                    return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription, metaDto);
+                }).sorted(Comparator.comparing(
+                    p -> ((MerlotOrganizationCredentialSubject) p.getSelfDescription().getVerifiableCredential()
+                        .getCredentialSubject()).getOrgaName().toLowerCase())).toList();
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
         // wrap result into page
         return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());
+    }
+
+    private String getSignerLegalNameFromCatalog(SelfDescription selfDescription) {
+
+        String proofVerificationMethod = selfDescription.getProof().getVerificationMethod();
+
+        // If "#" is found, extract substring before it, otherwise, keep the original string
+        int indexFragmentIdentifier = proofVerificationMethod.indexOf("#");
+        String signerId = indexFragmentIdentifier != -1 ? proofVerificationMethod.substring(0, indexFragmentIdentifier) : proofVerificationMethod;
+
+        GXFSCatalogListResponse<GXFSQueryLegalNameItem>
+            response = gxfsCatalogService.getParticipantLegalNameByUri("MerlotOrganization", signerId);
+
+        
+        // if we do not get exactly one item, we did not find the signer participant and the corresponding legal name
+        if (response.getTotalCount() != 1) {
+            return "N/A";
+        } else {
+            return response.getItems().get(0).getLegalName();
+        }
     }
 
     private GXFSCatalogListResponse<GXFSQueryUriItem> getActiveParticipantsUris(Pageable pageable) throws JsonProcessingException {

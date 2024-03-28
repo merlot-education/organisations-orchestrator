@@ -8,7 +8,6 @@ import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGra
 import eu.merloteducation.gxfscataloglibrary.models.client.SelfDescriptionStatus;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
-import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialTypeException;
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
@@ -25,7 +24,6 @@ import eu.merloteducation.modelslib.api.organization.OrganisationSignerConfigDto
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
-import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -252,13 +250,8 @@ public class ParticipantService {
             participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
                     activeRoleSignerConfig.getVerificationMethod(),
                     activeRoleSignerConfig.getPrivateKey());
-            // clean up old SDs, remove these lines if you need the history of participant SDs
-            GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
-                    gxfsCatalogService.getSelfDescriptionsByIds(new String[]{participantItem.getId()},
-                    new SelfDescriptionStatus[]{SelfDescriptionStatus.DEPRECATED});
-            for (SelfDescriptionItem item : deprecatedParticipantSds.getItems()) {
-                gxfsCatalogService.deleteSelfDescriptionByHash(item.getMeta().getSdHash());
-            }
+            // clean up old SDs, remove this line if you need the history of participant SDs
+            cleanUpDeprecatedParticipantSds(participantItem);
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found in the catalog.");
         } catch (CredentialPresentationException | CredentialSignatureException e) {
@@ -353,7 +346,7 @@ public class ParticipantService {
         try {
             metaDataDto = organizationMetadataService.saveMerlotParticipantMeta(metaData);
         } catch (ParticipantConflictException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Participant with this legal name already exists.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Participant with this id already exists.");
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
         }
@@ -399,8 +392,16 @@ public class ParticipantService {
         return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
     }
 
+    /**
+     * Given the signed verifiable presentation of the credential subject of a self-description that inherits from gax-trust-framework:LegalPerson,
+     * send it to the catalog to create or update a participant in the catalog.
+     *
+     * @param participantVerifiablePresentation signed verifiable presentation of the participant credential subject
+     * @return post response from catalog
+     * @throws JsonProcessingException failed to read catalog response
+     */
     @Transactional(rollbackOn = { ResponseStatusException.class })
-    public MerlotParticipantDto processParticipantSd(VerifiablePresentation participantVerifiablePresentation)
+    public MerlotParticipantDto processParticipantVerifiablePresentation(VerifiablePresentation participantVerifiablePresentation)
         throws JsonProcessingException {
         GaxTrustLegalPersonCredentialSubject participantCredentialSubject = null;
         try {
@@ -408,58 +409,58 @@ public class ParticipantService {
             participantCredentialSubject = objectMapper.readValue(credentialSubjectJson, GaxTrustLegalPersonCredentialSubject.class);
 
             if (participantCredentialSubject == null) {
-                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Credential subject of the self description is not a subtype of gax-trust-framework:LegalPerson");
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Credential subject of the self-description is not a subtype of gax-trust-framework:LegalPerson");
             }
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
         }
 
+        // check if a participant with the credential subject id already exists in the database
         String participantId = participantCredentialSubject.getId();
+        MerlotParticipantMetaDto participantMetadata = organizationMetadataService.getMerlotParticipantMetaDto(participantId);
 
-        ParticipantItem preexistingParticipant = null;
-        try {
-
-            preexistingParticipant = gxfsCatalogService.getParticipantById(participantId);
-        } catch (WebClientResponseException e) {
-            handleCatalogError(e);
-        }
-
+        // if the participant does not exist, create a new participant,
+        // else update the participant self-description in the catalog
         ParticipantItem participant = null;
-        MerlotParticipantMetaDto metadata = null;
         try {
-            if (preexistingParticipant == null) {
-                MerlotParticipantMetaDto defaultMetadata = new MerlotParticipantMetaDto();
-                defaultMetadata.setOrgaId(participantId);
-                defaultMetadata.setMailAddress("");
-                defaultMetadata.setActive(true);
-                defaultMetadata.setMembershipClass(MembershipClass.PARTICIPANT);
-                metadata = organizationMetadataService.saveMerlotParticipantMeta(defaultMetadata);
+            if (participantMetadata == null) {
+                // save default metadata values for the participant in the database
+                participantMetadata = new MerlotParticipantMetaDto();
+                participantMetadata.setOrgaId(participantId);
+                participantMetadata.setMailAddress("");
+                participantMetadata.setActive(true);
+                participantMetadata.setMembershipClass(MembershipClass.PARTICIPANT);
+                participantMetadata = organizationMetadataService.saveMerlotParticipantMeta(participantMetadata);
+                // create a new participant in the catalog
                 participant = gxfsCatalogService.addParticipant(participantVerifiablePresentation);
             } else {
-                metadata = organizationMetadataService.getMerlotParticipantMetaDto(participantId);
+                // update existing participant in the catalog, leave existing participant metadata unchanged
                 participant = gxfsCatalogService.updateParticipant(participantId, participantVerifiablePresentation);
-
-                // clean up old SDs, remove these lines if you need the history of participant SDs
-                GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
-                    gxfsCatalogService.getSelfDescriptionsByIds(new String[]{participant.getId()},
-                        new SelfDescriptionStatus[]{SelfDescriptionStatus.DEPRECATED});
-                for (SelfDescriptionItem item : deprecatedParticipantSds.getItems()) {
-                    gxfsCatalogService.deleteSelfDescriptionByHash(item.getMeta().getSdHash());
-                }
+                // clean up old SDs, remove this line if you need the history of participant SDs
+                cleanUpDeprecatedParticipantSds(participant);
             }
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         } catch (ParticipantConflictException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Participant with this legal name already exists.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Participant with this id already exists.");
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
         }
 
         if (participant == null){
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to process participant self description");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to process participant self-description");
         }
 
-        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participant.getSelfDescription(), metadata);
+        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participant.getSelfDescription(), participantMetadata);
+    }
+
+    private void cleanUpDeprecatedParticipantSds(ParticipantItem participant) {
+        GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
+            gxfsCatalogService.getSelfDescriptionsByIds(new String[]{ participant.getId()},
+                new SelfDescriptionStatus[]{SelfDescriptionStatus.DEPRECATED});
+        for (SelfDescriptionItem item : deprecatedParticipantSds.getItems()) {
+            gxfsCatalogService.deleteSelfDescriptionByHash(item.getMeta().getSdHash());
+        }
     }
 
     private Map<String, String> getContext() {

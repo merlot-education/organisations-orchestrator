@@ -171,7 +171,7 @@ public class OrganizationQueryController {
         }
 
         try {
-            return participantService.processParticipantSd(verifiablePresentation);
+            return participantService.processParticipantVerifiablePresentation(verifiablePresentation);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
         }

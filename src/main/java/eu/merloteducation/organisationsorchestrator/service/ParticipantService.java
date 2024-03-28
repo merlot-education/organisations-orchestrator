@@ -1,5 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
+import com.danubetech.verifiablecredentials.VerifiablePresentation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,11 +8,13 @@ import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGra
 import eu.merloteducation.gxfscataloglibrary.models.client.SelfDescriptionStatus;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
+import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialTypeException;
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.participants.GaxTrustLegalPersonCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
@@ -22,6 +25,7 @@ import eu.merloteducation.modelslib.api.organization.OrganisationSignerConfigDto
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -48,14 +52,18 @@ public class ParticipantService {
     private final OrganizationMetadataService organizationMetadataService;
     private final OutgoingMessageService outgoingMessageService;
 
+    private final ObjectMapper objectMapper;
+
     public ParticipantService(@Autowired OrganizationMapper organizationMapper,
                               @Autowired GxfsCatalogService gxfsCatalogService,
                               @Autowired OrganizationMetadataService organizationMetadataService,
-                              @Autowired OutgoingMessageService outgoingMessageService) {
+                              @Autowired OutgoingMessageService outgoingMessageService,
+                              @Autowired ObjectMapper objectMapper) {
         this.organizationMapper = organizationMapper;
         this.gxfsCatalogService = gxfsCatalogService;
         this.organizationMetadataService = organizationMetadataService;
         this.outgoingMessageService = outgoingMessageService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -389,6 +397,69 @@ public class ParticipantService {
      */
     public List<String> getTrustedDids() {
         return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
+    }
+
+    @Transactional(rollbackOn = { ResponseStatusException.class })
+    public MerlotParticipantDto processParticipantSd(VerifiablePresentation participantVerifiablePresentation)
+        throws JsonProcessingException {
+        GaxTrustLegalPersonCredentialSubject participantCredentialSubject = null;
+        try {
+            String credentialSubjectJson = objectMapper.writeValueAsString(participantVerifiablePresentation.getVerifiableCredential().getCredentialSubject());
+            participantCredentialSubject = objectMapper.readValue(credentialSubjectJson, GaxTrustLegalPersonCredentialSubject.class);
+
+            if (participantCredentialSubject == null) {
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Credential subject of the self description is not a subtype of gax-trust-framework:LegalPerson");
+            }
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
+        }
+
+        String participantId = participantCredentialSubject.getId();
+
+        ParticipantItem preexistingParticipant = null;
+        try {
+
+            preexistingParticipant = gxfsCatalogService.getParticipantById(participantId);
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+
+        ParticipantItem participant = null;
+        MerlotParticipantMetaDto metadata = null;
+        try {
+            if (preexistingParticipant == null) {
+                MerlotParticipantMetaDto defaultMetadata = new MerlotParticipantMetaDto();
+                defaultMetadata.setOrgaId(participantId);
+                defaultMetadata.setMailAddress("");
+                defaultMetadata.setActive(true);
+                defaultMetadata.setMembershipClass(MembershipClass.PARTICIPANT);
+                metadata = organizationMetadataService.saveMerlotParticipantMeta(defaultMetadata);
+                participant = gxfsCatalogService.addParticipant(participantVerifiablePresentation);
+            } else {
+                metadata = organizationMetadataService.getMerlotParticipantMetaDto(participantId);
+                participant = gxfsCatalogService.updateParticipant(participantId, participantVerifiablePresentation);
+
+                // clean up old SDs, remove these lines if you need the history of participant SDs
+                GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
+                    gxfsCatalogService.getSelfDescriptionsByIds(new String[]{participant.getId()},
+                        new SelfDescriptionStatus[]{SelfDescriptionStatus.DEPRECATED});
+                for (SelfDescriptionItem item : deprecatedParticipantSds.getItems()) {
+                    gxfsCatalogService.deleteSelfDescriptionByHash(item.getMeta().getSdHash());
+                }
+            }
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        } catch (ParticipantConflictException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Participant with this legal name already exists.");
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
+        }
+
+        if (participant == null){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to process participant self description");
+        }
+
+        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participant.getSelfDescription(), metadata);
     }
 
     private Map<String, String> getContext() {

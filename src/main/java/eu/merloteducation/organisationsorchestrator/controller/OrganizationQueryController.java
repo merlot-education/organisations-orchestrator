@@ -1,7 +1,9 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
+import com.danubetech.verifiablecredentials.VerifiablePresentation;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
@@ -23,7 +25,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -37,6 +38,9 @@ public class OrganizationQueryController {
 
     @Autowired
     private PdfContentMapper pdfContentMapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * GET endpoint for retrieving all enrolled organizations.
@@ -132,6 +136,45 @@ public class OrganizationQueryController {
     @GetMapping("/trustedDids")
     public List<String> getTrustedDids() {
         return participantService.getTrustedDids();
+    }
+
+    /**
+     * POST endpoint for creating an organization.
+     *
+     * @return created organization
+     */
+    @PostMapping("/organization/sdUpload")
+    @JsonView(OrganisationViews.PublicView.class)
+//    @PreAuthorize("#activeRole.isFedAdmin()")
+    public MerlotParticipantDto uploadOrganizationSdJson(@Valid @RequestPart("file") MultipartFile[] files //,
+//        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole
+    ) {
+
+        if (files.length != 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files specified");
+        }
+
+        if (files[0].isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is empty");
+        }
+
+        if (files[0].getContentType() == null || !files[0].getContentType().equals("application/json")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is not a JSON file");
+        }
+
+        VerifiablePresentation verifiablePresentation = null;
+
+        try {
+            verifiablePresentation = objectMapper.readValue(files[0].getBytes(), VerifiablePresentation.class);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid JSON file. " + e.getMessage());
+        }
+
+        try {
+            return participantService.processParticipantSd(verifiablePresentation);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
+        }
     }
 }
 

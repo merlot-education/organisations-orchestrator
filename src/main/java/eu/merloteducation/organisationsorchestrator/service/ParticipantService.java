@@ -172,9 +172,7 @@ public class ParticipantService {
 
         String proofVerificationMethod = selfDescription.getProof().getVerificationMethod();
 
-        // If "#" is found, extract substring before it, otherwise, keep the original string
-        int indexFragmentIdentifier = proofVerificationMethod.indexOf("#");
-        String signerId = indexFragmentIdentifier != -1 ? proofVerificationMethod.substring(0, indexFragmentIdentifier) : proofVerificationMethod;
+        String signerId = proofVerificationMethod.replaceFirst("#.*", "");
 
         GXFSCatalogListResponse<GXFSQueryLegalNameItem>
             response = gxfsCatalogService.getParticipantLegalNameByUri("MerlotOrganization", signerId);
@@ -182,7 +180,7 @@ public class ParticipantService {
         
         // if we do not get exactly one item, we did not find the signer participant and the corresponding legal name
         if (response.getTotalCount() != 1) {
-            return "N/A";
+            return null;
         } else {
             return response.getItems().get(0).getLegalName();
         }

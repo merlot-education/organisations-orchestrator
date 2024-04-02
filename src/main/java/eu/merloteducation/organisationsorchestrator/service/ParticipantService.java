@@ -49,7 +49,7 @@ public class ParticipantService {
     private final OrganizationMetadataService organizationMetadataService;
     private final OutgoingMessageService outgoingMessageService;
 
-    private final String PARTICIPANT_TYPE = "MerlotOrganization";
+    private static final String PARTICIPANTTYPE = "MerlotOrganization";
 
     public ParticipantService(@Autowired OrganizationMapper organizationMapper,
                               @Autowired GxfsCatalogService gxfsCatalogService,
@@ -177,7 +177,7 @@ public class ParticipantService {
         String signerId = proofVerificationMethod.replaceFirst("#.*", "");
 
         GXFSCatalogListResponse<GXFSQueryLegalNameItem>
-            response = gxfsCatalogService.getParticipantLegalNameByUri(PARTICIPANT_TYPE, signerId);
+            response = gxfsCatalogService.getParticipantLegalNameByUri(PARTICIPANTTYPE, signerId);
 
         
         // if we do not get exactly one item, we did not find the signer participant and the corresponding legal name
@@ -194,8 +194,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of active participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(
-                PARTICIPANT_TYPE, "orgaName", inactiveOrgasIds,
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(PARTICIPANTTYPE, "orgaName", inactiveOrgasIds,
                 pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
@@ -207,8 +206,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(
-                PARTICIPANT_TYPE, "orgaName",
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(PARTICIPANTTYPE, "orgaName",
                     pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);

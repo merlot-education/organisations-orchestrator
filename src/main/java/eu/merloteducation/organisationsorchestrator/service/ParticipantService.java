@@ -49,6 +49,8 @@ public class ParticipantService {
     private final OrganizationMetadataService organizationMetadataService;
     private final OutgoingMessageService outgoingMessageService;
 
+    private final String PARTICIPANT_TYPE = "MerlotOrganization";
+
     public ParticipantService(@Autowired OrganizationMapper organizationMapper,
                               @Autowired GxfsCatalogService gxfsCatalogService,
                               @Autowired OrganizationMetadataService organizationMetadataService,
@@ -175,7 +177,7 @@ public class ParticipantService {
         String signerId = proofVerificationMethod.replaceFirst("#.*", "");
 
         GXFSCatalogListResponse<GXFSQueryLegalNameItem>
-            response = gxfsCatalogService.getParticipantLegalNameByUri("MerlotOrganization", signerId);
+            response = gxfsCatalogService.getParticipantLegalNameByUri(PARTICIPANT_TYPE, signerId);
 
         
         // if we do not get exactly one item, we did not find the signer participant and the corresponding legal name
@@ -193,7 +195,7 @@ public class ParticipantService {
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
             uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(
-                "MerlotOrganization", "orgaName", inactiveOrgasIds,
+                PARTICIPANT_TYPE, "orgaName", inactiveOrgasIds,
                 pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
@@ -206,7 +208,7 @@ public class ParticipantService {
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
             uriResponse = gxfsCatalogService.getSortedParticipantUriPage(
-                    "MerlotOrganization", "orgaName",
+                PARTICIPANT_TYPE, "orgaName",
                     pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);

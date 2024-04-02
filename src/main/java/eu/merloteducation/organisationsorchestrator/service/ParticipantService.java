@@ -401,7 +401,8 @@ public class ParticipantService {
      * @throws JsonProcessingException failed to read catalog response
      */
     @Transactional(rollbackOn = { ResponseStatusException.class })
-    public MerlotParticipantDto processParticipantVerifiablePresentation(VerifiablePresentation participantVerifiablePresentation)
+    public MerlotParticipantDto processParticipantVerifiablePresentation(VerifiablePresentation participantVerifiablePresentation,
+                                                                         OrganizationRoleGrantedAuthority activeRole)
         throws JsonProcessingException {
         GaxTrustLegalPersonCredentialSubject participantCredentialSubject = null;
         try {
@@ -415,43 +416,59 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
         }
 
-        // check if a participant with the credential subject id already exists in the database
         String participantId = participantCredentialSubject.getId();
-        MerlotParticipantMetaDto participantMetadata = organizationMetadataService.getMerlotParticipantMetaDto(participantId);
 
-        // if the participant does not exist, create a new participant,
-        // else update the participant self-description in the catalog
-        ParticipantItem participant = null;
+        // if you are a representative and the participant id and the organization id of the active role are not matching,
+        // then it means that ...
+        // 1) the participant does not exist yet and you as a representative try to create a new participant in MERLOT -> forbidden
+        // 2) or the participant exists and you as a representative of a different organization try to update that participant -> forbidden
+        if (activeRole.isRepresentative() && !activeRole.getOrganizationId().equals(participantId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Participant creation or update is not allowed.");
+        }
+
+        // retrieve participant from catalog
+        ParticipantItem participant= null;
         try {
-            if (participantMetadata == null) {
-                // save default metadata values for the participant in the database
-                participantMetadata = new MerlotParticipantMetaDto();
-                participantMetadata.setOrgaId(participantId);
-                participantMetadata.setMailAddress("");
-                participantMetadata.setActive(true);
-                participantMetadata.setMembershipClass(MembershipClass.PARTICIPANT);
-                participantMetadata = organizationMetadataService.saveMerlotParticipantMeta(participantMetadata);
-                // create a new participant in the catalog
-                participant = gxfsCatalogService.addParticipant(participantVerifiablePresentation);
-            } else {
-                // update existing participant in the catalog, leave existing participant metadata unchanged
-                participant = gxfsCatalogService.updateParticipant(participantId, participantVerifiablePresentation);
+            participant = gxfsCatalogService.getParticipantById(participantId);
+        } catch (WebClientResponseException e) {
+            handleCatalogError(e);
+        }
+
+        // retrieve participant's metadata from db
+        MerlotParticipantMetaDto metadata = organizationMetadataService.getMerlotParticipantMetaDto(participantId);
+
+        ParticipantItem response = null;
+
+        try {
+            if (metadata != null && participant != null && (activeRole.isFedAdmin() || activeRole.isRepresentative())) {
+                // send vp directly to the catalog to update the participant, leave metadata unchanged
+                response = gxfsCatalogService.updateParticipant(participantId, participantVerifiablePresentation);
                 // clean up old SDs, remove this line if you need the history of participant SDs
-                cleanUpDeprecatedParticipantSds(participant);
+                cleanUpDeprecatedParticipantSds(response);
+            } else if (metadata == null && participant == null && activeRole.isFedAdmin()) {
+                // save default metadata for the participant in the database
+                metadata = new MerlotParticipantMetaDto();
+                metadata.setOrgaId(participantId);
+                metadata.setMailAddress("");
+                metadata.setActive(true);
+                metadata.setMembershipClass(MembershipClass.PARTICIPANT);
+                metadata = organizationMetadataService.saveMerlotParticipantMeta(metadata);
+                // send vp directly to the catalog to create a new participant
+                response = gxfsCatalogService.addParticipant(participantVerifiablePresentation);
             }
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         } catch (ParticipantConflictException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Participant with this id already exists.");
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created or updated.");
         }
 
-        if (participant == null){
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to process participant self-description");
+        if (response == null){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created or updated.");
         }
 
-        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participant.getSelfDescription(), participantMetadata);
+        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(response.getSelfDescription(), metadata);
     }
 
     private void cleanUpDeprecatedParticipantSds(ParticipantItem participant) {

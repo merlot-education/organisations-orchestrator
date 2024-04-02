@@ -145,10 +145,8 @@ public class OrganizationQueryController {
      */
     @PostMapping("/organization/sdUpload")
     @JsonView(OrganisationViews.PublicView.class)
-//    @PreAuthorize("#activeRole.isFedAdmin()")
-    public MerlotParticipantDto uploadOrganizationSdJson(@Valid @RequestPart("file") MultipartFile[] files //,
-//        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole
-    ) {
+    public MerlotParticipantDto uploadOrganizationSdJson(@Valid @RequestPart("file") MultipartFile[] files,
+        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole) {
 
         if (files.length != 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too many files specified");
@@ -171,7 +169,7 @@ public class OrganizationQueryController {
         }
 
         try {
-            return participantService.processParticipantVerifiablePresentation(verifiablePresentation);
+            return participantService.processParticipantVerifiablePresentation(verifiablePresentation, activeRole);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
         }

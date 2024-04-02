@@ -258,17 +258,19 @@ class ParticipantServiceTests {
         GXFSCatalogListResponse<GXFSQueryUriItem> uriItems = mapper.readValue(mockQueryResponse, new TypeReference<>() {});
 
         lenient().when(gxfsCatalogService.getSortedParticipantUriPage(any(), any(), anyLong(), anyLong()))
-                .thenReturn(uriItems);
+            .thenReturn(uriItems);
         lenient().when(gxfsCatalogService.getSelfDescriptionsByIds(any()))
-                    .thenReturn(sdItems);
+            .thenReturn(sdItems);
         lenient().when(gxfsCatalogService.getSelfDescriptionsByIds(any(), any()))
-                .thenReturn(sdItems);
+            .thenReturn(sdItems);
         lenient().when(gxfsCatalogService.getParticipantById(eq("did:web:example.com:participant:someorga")))
             .thenReturn(participantItem);
         lenient().when(gxfsCatalogService.updateParticipant(any(), any(), any()))
             .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
         lenient().when(gxfsCatalogService.addParticipant(any(), any(), any()))
-                .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
+            .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
+        lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(eq("MerlotOrganization"), any()))
+            .thenReturn(new GXFSCatalogListResponse<>());
 
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         metaDto.setOrgaId("did:web:example.com:participant:someorga");

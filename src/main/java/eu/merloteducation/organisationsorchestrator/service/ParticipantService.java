@@ -27,6 +27,7 @@ import eu.merloteducation.organisationsorchestrator.models.RegistrationFormConte
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -438,28 +439,24 @@ public class ParticipantService {
     public MerlotParticipantDto processParticipantVerifiablePresentation(VerifiablePresentation participantVerifiablePresentation,
                                                                          OrganizationRoleGrantedAuthority activeRole)
         throws JsonProcessingException {
-        GaxTrustLegalPersonCredentialSubject participantCredentialSubject = null;
-        try {
-            String credentialSubjectJson = objectMapper.writeValueAsString(participantVerifiablePresentation.getVerifiableCredential().getCredentialSubject());
-            participantCredentialSubject = objectMapper.readValue(credentialSubjectJson, GaxTrustLegalPersonCredentialSubject.class);
 
-            if (participantCredentialSubject == null) {
-                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Credential subject of the self-description is not a subtype of gax-trust-framework:LegalPerson");
-            }
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
+        GaxTrustLegalPersonCredentialSubject participantCredentialSubject = getGaxTrustLegalPersonCredentialSubject(
+            participantVerifiablePresentation);
+
+        String regex = "did:web:[-.A-Za-z0-9:%#]*";
+        if (!participantCredentialSubject.getId().matches(regex)) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Provided participant credential subject id is invalid. It has to be a valid did:web.");
         }
 
-        String participantId = participantCredentialSubject.getId();
-
-        // if you are a representative and the participant id and the organization id of the active role are not matching,
+        // if you act as a representative and the organization id of the active role and the participant id do not match,
         // then it means that ...
         // 1) the participant does not exist yet and you as a representative try to create a new participant in MERLOT -> forbidden
-        // 2) or the participant exists and you as a representative of a different organization try to update that participant -> forbidden
-        if (activeRole.isRepresentative() && !activeRole.getOrganizationId().equals(participantId)) {
+        // 2) or the participant exists, and you try to update that participant as a representative of a different organization -> forbidden
+        if (activeRole.isRepresentative() && !activeRole.getOrganizationId().equals(participantCredentialSubject.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Participant creation or update is not allowed.");
         }
 
+        String participantId = participantCredentialSubject.getId();
         // retrieve participant from catalog
         ParticipantItem participant= null;
         try {
@@ -475,11 +472,13 @@ public class ParticipantService {
 
         try {
             if (metadata != null && participant != null && (activeRole.isFedAdmin() || activeRole.isRepresentative())) {
+                // the participant already exists in the catalog as well as the db -> update participant in the catalog:
                 // send vp directly to the catalog to update the participant, leave metadata unchanged
                 response = gxfsCatalogService.updateParticipant(participantId, participantVerifiablePresentation);
                 // clean up old SDs, remove this line if you need the history of participant SDs
                 cleanUpDeprecatedParticipantSds(response);
             } else if (metadata == null && participant == null && activeRole.isFedAdmin()) {
+                // the participant does not exist in the catalog and the db yet -> create participant in the catalog and db:
                 // save default metadata for the participant in the database
                 metadata = new MerlotParticipantMetaDto();
                 metadata.setOrgaId(participantId);
@@ -503,6 +502,24 @@ public class ParticipantService {
         }
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(response.getSelfDescription(), metadata);
+    }
+
+    private GaxTrustLegalPersonCredentialSubject getGaxTrustLegalPersonCredentialSubject(
+        VerifiablePresentation participantVerifiablePresentation) {
+
+        GaxTrustLegalPersonCredentialSubject participantCredentialSubject = null;
+        try {
+            String credentialSubjectJson = objectMapper.writeValueAsString(
+                participantVerifiablePresentation.getVerifiableCredential().getCredentialSubject());
+            participantCredentialSubject = objectMapper.readValue(credentialSubjectJson, GaxTrustLegalPersonCredentialSubject.class);
+
+            if (participantCredentialSubject == null || participantCredentialSubject.getLegalName() == null) {
+                throw new IllegalArgumentException("Credential subject of the self-description is not a subtype of gax-trust-framework:LegalPerson.");
+            }
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
+        }
+        return participantCredentialSubject;
     }
 
     private void cleanUpDeprecatedParticipantSds(ParticipantItem participant) {

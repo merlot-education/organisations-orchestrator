@@ -145,7 +145,7 @@ public class OrganizationQueryController {
      */
     @PostMapping("/organization/sdUpload")
     @JsonView(OrganisationViews.PublicView.class)
-    public MerlotParticipantDto uploadOrganizationSdJson(@Valid @RequestPart("file") MultipartFile[] files,
+    public MerlotParticipantDto processOrganizationSdJson(@Valid @RequestPart("file") MultipartFile[] files,
         @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole) {
 
         if (files.length != 1) {

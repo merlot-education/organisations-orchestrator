@@ -8,6 +8,7 @@ import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGra
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
+import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
@@ -258,17 +259,19 @@ class ParticipantServiceTests {
         GXFSCatalogListResponse<GXFSQueryUriItem> uriItems = mapper.readValue(mockQueryResponse, new TypeReference<>() {});
 
         lenient().when(gxfsCatalogService.getSortedParticipantUriPage(any(), any(), anyLong(), anyLong()))
-                .thenReturn(uriItems);
+            .thenReturn(uriItems);
         lenient().when(gxfsCatalogService.getSelfDescriptionsByIds(any()))
-                    .thenReturn(sdItems);
+            .thenReturn(sdItems);
         lenient().when(gxfsCatalogService.getSelfDescriptionsByIds(any(), any()))
-                .thenReturn(sdItems);
+            .thenReturn(sdItems);
         lenient().when(gxfsCatalogService.getParticipantById(eq("did:web:example.com:participant:someorga")))
             .thenReturn(participantItem);
         lenient().when(gxfsCatalogService.updateParticipant(any(), any(), any()))
             .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
         lenient().when(gxfsCatalogService.addParticipant(any(), any(), any()))
-                .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
+            .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
+        lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(eq("MerlotOrganization"), any()))
+            .thenReturn(new GXFSCatalogListResponse<>());
 
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
         metaDto.setOrgaId("did:web:example.com:participant:someorga");
@@ -311,6 +314,7 @@ class ParticipantServiceTests {
         assertEquals(MembershipClass.PARTICIPANT, membershipClass);
 
         assertEquals(0,  organizations.getContent().get(0).getMetadata().getConnectors().size());
+        assertNull(organizations.getContent().get(0).getMetadata().getSignedBy());
     }
 
     @Test
@@ -361,6 +365,14 @@ class ParticipantServiceTests {
 
     @Test
     void getParticipantById() throws Exception {
+        GXFSCatalogListResponse<GXFSQueryLegalNameItem> legalNameItems = new GXFSCatalogListResponse<>();
+        GXFSQueryLegalNameItem legalNameItem = new GXFSQueryLegalNameItem();
+        legalNameItem.setLegalName("Some Orga");
+        legalNameItems.setItems(List.of(legalNameItem));
+        legalNameItems.setTotalCount(1);
+
+        lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(eq("MerlotOrganization"), eq("did:web:compliance.lab.gaia-x.eu")))
+            .thenReturn(legalNameItems);
 
         MerlotParticipantDto organization = participantService.getParticipantById("did:web:example.com:participant:someorga");
         assertThat(organization, isA(MerlotParticipantDto.class));
@@ -376,6 +388,7 @@ class ParticipantServiceTests {
         assertEquals(MembershipClass.PARTICIPANT, membershipClass);
 
         assertEquals(0,  organization.getMetadata().getConnectors().size());
+        assertEquals("Some Orga", organization.getMetadata().getSignedBy());
     }
 
     @Test

@@ -39,6 +39,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+
 @Service
 public class ParticipantService {
 
@@ -268,12 +270,17 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be updated.");
         }
 
-        // fetch the corresponding  signer config for the performing role
+        // fetch the corresponding signer config for the performing role
         OrganisationSignerConfigDto activeRoleSignerConfig =
                 (participantMetadata.getOrgaId().equals(activeRole.getOrganizationId()))
                         ? participantMetadata.getOrganisationSignerConfigDto()
                         : organizationMetadataService.getMerlotParticipantMetaDto(activeRole.getOrganizationId())
                         .getOrganisationSignerConfigDto();
+
+        if (!isSignerConfigValid(activeRoleSignerConfig)) {
+            throw new ResponseStatusException(UNPROCESSABLE_ENTITY,
+                "Participant cannot be updated: No private key and/or verification method found for the executing participant.");
+        }
 
         ParticipantItem participantItem;
         try {
@@ -391,12 +398,17 @@ public class ParticipantService {
         credentialSubject.setContext(getContext());
         credentialSubject.setType("merlot:MerlotOrganization");
 
-        // fetch the corresponding  signer config for the performing role
+        // fetch the corresponding signer config for the performing role
         OrganisationSignerConfigDto activeRoleSignerConfig =
                 (metaDataDto.getOrgaId().equals(activeRole.getOrganizationId()))
                         ? metaDataDto.getOrganisationSignerConfigDto()
                         : organizationMetadataService.getMerlotParticipantMetaDto(activeRole.getOrganizationId())
                         .getOrganisationSignerConfigDto();
+
+        if (!isSignerConfigValid(activeRoleSignerConfig)) {
+            throw new ResponseStatusException(UNPROCESSABLE_ENTITY,
+                "Participant cannot be created: No private key and/or verification method found for the executing participant.");
+        }
 
         ParticipantItem participantItem = null;
         try {
@@ -416,7 +428,6 @@ public class ParticipantService {
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
             metaDataDto);
     }
-
 
     /**
      * Return the list of trusted dids. In the context of MERLOT the dids of the federators are trusted.
@@ -470,5 +481,13 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Invalid registration form: Invalid did:web specified.");
         }
+    }
+
+    private boolean isSignerConfigValid(OrganisationSignerConfigDto signerConfig) {
+
+        return signerConfig != null && signerConfig.getPrivateKey() != null
+            && !signerConfig.getPrivateKey().isBlank()
+            && signerConfig.getVerificationMethod() != null
+            && !signerConfig.getVerificationMethod().isBlank();
     }
 }

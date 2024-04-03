@@ -32,6 +32,7 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -189,6 +190,20 @@ class ParticipantServiceTests {
         return item;
     }
 
+    private MerlotParticipantMetaDto getTestMerlotParticipantMetaDto() {
+
+        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
+        metaDto.setOrgaId("did:web:example.com:participant:someorga");
+        metaDto.setMailAddress("mymail@example.com");
+        metaDto.setMembershipClass(MembershipClass.PARTICIPANT);
+        metaDto.setActive(true);
+        OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
+        signerConfigDto.setPrivateKey("privateKey");
+        signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
+        metaDto.setOrganisationSignerConfigDto(signerConfigDto);
+        return metaDto;
+    }
+
     @BeforeEach
     public void setUp() throws IOException, CredentialSignatureException, CredentialPresentationException {
         ObjectMapper mapper = new ObjectMapper();
@@ -266,6 +281,8 @@ class ParticipantServiceTests {
             .thenReturn(sdItems);
         lenient().when(gxfsCatalogService.getParticipantById(eq("did:web:example.com:participant:someorga")))
             .thenReturn(participantItem);
+        lenient().when(gxfsCatalogService.getParticipantById(eq("did:web:example.com:participant:nosignerconfig")))
+            .thenReturn(participantItem);
         lenient().when(gxfsCatalogService.updateParticipant(any(), any(), any()))
             .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
         lenient().when(gxfsCatalogService.addParticipant(any(), any(), any()))
@@ -273,16 +290,12 @@ class ParticipantServiceTests {
         lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(eq("MerlotOrganization"), any()))
             .thenReturn(new GXFSCatalogListResponse<>());
 
-        MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
-        metaDto.setOrgaId("did:web:example.com:participant:someorga");
-        metaDto.setMailAddress("mymail@example.com");
-        metaDto.setMembershipClass(MembershipClass.PARTICIPANT);
-        metaDto.setActive(true);
-        OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
-        signerConfigDto.setPrivateKey("privateKey");
-        signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
-        metaDto.setOrganisationSignerConfigDto(signerConfigDto);
+        MerlotParticipantMetaDto metaDto = getTestMerlotParticipantMetaDto();
 
+        MerlotParticipantMetaDto metaDtoNoSignerConfig = getTestMerlotParticipantMetaDto();
+        metaDtoNoSignerConfig.setOrganisationSignerConfigDto(new OrganisationSignerConfigDto());
+
+        lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:nosignerconfig"))).thenReturn(metaDtoNoSignerConfig);
         lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:someorga"))).thenReturn(metaDto);
         lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:somefedorga"))).thenReturn(metaDto);
         lenient().when(organizationMetadataService.getParticipantsByMembershipClass(eq(MembershipClass.FEDERATOR))).thenReturn(new ArrayList<>());
@@ -664,6 +677,45 @@ class ParticipantServiceTests {
         assertEquals(1, trustedDids.size());
         assertEquals(orgaId, trustedDids.get(0));
     }
+
+    @Test
+    void updateParticipantAsParticipantNoSignerConfig() throws Exception {
+
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+        participantDtoWithEdits.setId("did:web:example.com:participant:nosignerconfig");
+        participantDtoWithEdits.getMetadata().setOrganisationSignerConfigDto(null);
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:example.com:participant:nosignerconfig");
+
+        ResponseStatusException e =
+            assertThrows(ResponseStatusException.class, () -> participantService.updateParticipant(participantDtoWithEdits, activeRole));
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
+    }
+
+    @Test
+    void updateParticipantAsFedAdminNoSignerConfig() throws Exception {
+
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:nosignerconfig");
+
+        ResponseStatusException e =
+            assertThrows(ResponseStatusException.class, () -> participantService.updateParticipant(participantDtoWithEdits, activeRole));
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
+    }
+
+    @Test
+    void createParticipantAsFederatorNoSignerConfig() throws Exception {
+
+        RegistrationFormContent registrationFormContent = getTestRegistrationFormContent();
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:nosignerconfig");
+
+        ResponseStatusException e =
+            assertThrows(ResponseStatusException.class, () -> participantService.createParticipant(registrationFormContent, activeRole));
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
+    }
+
 
     private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {
 

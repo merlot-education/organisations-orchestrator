@@ -443,6 +443,10 @@ public class ParticipantService {
         GaxTrustLegalPersonCredentialSubject participantCredentialSubject = getGaxTrustLegalPersonCredentialSubject(
             participantVerifiablePresentation);
 
+        if (!participantCredentialSubject.getType().equals("merlot:MerlotOrganization")) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Provided participant credential subject type is invalid. It has to be \"merlot:MerlotOrganization\".");
+        }
+
         String regex = "did:web:[-.A-Za-z0-9:%#]*";
         if (!participantCredentialSubject.getId().matches(regex)) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Provided participant credential subject id is invalid. It has to be a valid did:web.");

@@ -57,7 +57,7 @@ public class OrganizationQueryController {
     }
 
     /**
-     * POST endpoint for creating an organization.
+     * POST endpoint for creating an organization via registration form PDF.
      *
      * @return created organization
      */
@@ -139,9 +139,9 @@ public class OrganizationQueryController {
     }
 
     /**
-     * POST endpoint for creating an organization.
+     * POST endpoint for creating or updating an organization via SD JSON file.
      *
-     * @return created organization
+     * @return created or updated organization
      */
     @PostMapping("/organization/sdUpload")
     @JsonView(OrganisationViews.PublicView.class)
@@ -166,6 +166,11 @@ public class OrganizationQueryController {
             verifiablePresentation = objectMapper.readValue(files[0].getBytes(), VerifiablePresentation.class);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid JSON file. " + e.getMessage());
+        }
+
+        if (verifiablePresentation == null || verifiablePresentation.getVerifiableCredential() == null
+            || verifiablePresentation.getVerifiableCredential().getCredentialSubject() == null) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "File does not contain a valid verifiable presentation.");
         }
 
         try {

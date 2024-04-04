@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
+import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
@@ -57,6 +60,9 @@ class OrganizationQueryControllerTests {
     private ParticipantService participantService;
 
     @MockBean
+    private GxfsCatalogService gxfsCatalogService;
+
+    @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;
 
     @Autowired
@@ -96,6 +102,12 @@ class OrganizationQueryControllerTests {
         lenient().when(participantService.updateParticipant(any(), any()))
                 .thenReturn(participantDto);
 
+        GXFSCatalogListResponse<GXFSQueryLegalNameItem> legalNameResponse = new GXFSCatalogListResponse<>();
+        GXFSQueryLegalNameItem item = new GXFSQueryLegalNameItem();
+        item.setLegalName("Some Orga");
+        legalNameResponse.setTotalCount(1);
+        legalNameResponse.setItems(List.of(item));
+        lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(any(), any())).thenReturn(legalNameResponse);
     }
 
     @Test

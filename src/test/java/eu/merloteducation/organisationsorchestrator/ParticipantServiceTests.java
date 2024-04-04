@@ -401,7 +401,6 @@ class ParticipantServiceTests {
         assertEquals(MembershipClass.PARTICIPANT, membershipClass);
 
         assertEquals(0,  organization.getMetadata().getConnectors().size());
-        assertEquals("Some Orga", organization.getMetadata().getSignedBy());
     }
 
     @Test

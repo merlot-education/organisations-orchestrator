@@ -5,6 +5,7 @@ import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.JwtAuthConverter;
 import eu.merloteducation.authorizationlibrary.authorization.JwtAuthConverterProperties;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
+import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsWizardApiService;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.ParticipantShapeController;
@@ -34,6 +35,9 @@ class ParticipantShapeControllerTests {
 
     @MockBean
     private GxfsWizardApiService gxfsWizardApiService;
+
+    @MockBean
+    private GxfsCatalogService gxfsCatalogService;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;

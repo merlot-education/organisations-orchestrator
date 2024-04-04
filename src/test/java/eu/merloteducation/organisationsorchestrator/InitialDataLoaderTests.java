@@ -69,10 +69,11 @@ class InitialDataLoaderTests {
                 "example.com");
         dataLoader.run();
 
-        // create MERLOT fed, create example
-        verify(organizationQueryController, times(2)).createOrganization(any(), any());
+        // create MERLOT fed, create example, create example 2
+        verify(organizationQueryController, times(3)).createOrganization(any(), any());
         // update example for adding connectors, update again for federator role
-        verify(organizationQueryController, times(3)).updateOrganization(any(), any());
+        // update example2 for adding connectors, update again for MERLOT signature
+        verify(organizationQueryController, times(5)).updateOrganization(any(), any());
     }
 
     @Test

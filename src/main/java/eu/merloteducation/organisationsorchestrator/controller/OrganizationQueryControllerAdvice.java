@@ -4,7 +4,6 @@ import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
@@ -27,11 +26,15 @@ import static eu.merloteducation.organisationsorchestrator.service.ParticipantSe
 @ControllerAdvice(assignableTypes = OrganizationQueryController.class)
 public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 
-    @Autowired
-    private AuthorityChecker authorityChecker;
+    private final AuthorityChecker authorityChecker;
 
-    @Autowired
-    private GxfsCatalogService gxfsCatalogService;
+    private final GxfsCatalogService gxfsCatalogService;
+
+    public OrganizationQueryControllerAdvice(@Autowired AuthorityChecker authorityChecker,
+                                             @Autowired GxfsCatalogService gxfsCatalogService) {
+        this.authorityChecker = authorityChecker;
+        this.gxfsCatalogService = gxfsCatalogService;
+    }
 
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, @NotNull MediaType contentType,

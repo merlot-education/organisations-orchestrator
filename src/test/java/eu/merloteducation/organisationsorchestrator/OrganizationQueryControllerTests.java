@@ -9,6 +9,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalog
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.SDProof;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
@@ -89,6 +90,9 @@ class OrganizationQueryControllerTests {
         participantDto.setId("did:web:example.com:participant:someid");
         participantDto.setMetadata(new MerlotParticipantMetaDto());
         participantDto.getMetadata().setMembershipClass(MembershipClass.PARTICIPANT);
+        participantDto.setSelfDescription(new SelfDescription());
+        participantDto.getSelfDescription().setProof(new SDProof());
+        participantDto.getSelfDescription().getProof().setVerificationMethod("did:web:somemethod.com#1234");
         participants.add(participantDto);
 
         Page<MerlotParticipantDto> participantsPage = new PageImpl<>(participants);

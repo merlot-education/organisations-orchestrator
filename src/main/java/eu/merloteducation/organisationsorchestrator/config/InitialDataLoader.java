@@ -30,7 +30,9 @@ public class InitialDataLoader implements CommandLineRunner {
     private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
     private final OrganizationQueryController organizationQueryController;
     private final ObjectMapper objectMapper;
-    private final File initialOrgasFolder;
+    private File initialFederatorsFolder;
+    private File initialParticipantsFolder;
+    private File merlotFederationRegistrationFormFile;
     private final File initialOrgaConnectorsResource;
     private final String merlotDomain;
 
@@ -42,7 +44,15 @@ public class InitialDataLoader implements CommandLineRunner {
                              @Value("${merlot-domain}") String merlotDomain) {
         this.organizationQueryController = organizationQueryController;
         this.objectMapper = objectMapper;
-        this.initialOrgasFolder = initialOrgasFolder;
+        for (File file : initialOrgasFolder.listFiles()) {
+            if (!file.isFile() && file.getName().equals("federators")) {
+                this.initialFederatorsFolder = file;
+            } else if (!file.isFile() && file.getName().equals("participants")) {
+                this.initialParticipantsFolder = file;
+            } else if (file.isFile() && file.getName().equals(MERLOT_FED_DOC_FILENAME)) {
+                this.merlotFederationRegistrationFormFile = file;
+            }
+        }
         this.initialOrgaConnectorsResource = initialOrgaConnectorsResource;
         this.merlotDomain = merlotDomain;
     }
@@ -83,7 +93,8 @@ public class InitialDataLoader implements CommandLineRunner {
     }
 
     private void onboardOtherOrganisations(OrganizationRoleGrantedAuthority merlotFederationRole) throws Exception {
-        List<MultipartFile> orgaPdfs = getOrganisationDocuments();
+        List<MultipartFile> participantPdfs = getOrganisationDocuments(initialParticipantsFolder);
+        List<MultipartFile> federatorPdfs = getOrganisationDocuments(initialFederatorsFolder);
 
         // check if we have initial data for connectors
         Map<String, Set<OrganizationConnectorDto>> initialOrgaConnectors = Collections.emptyMap();
@@ -92,55 +103,66 @@ public class InitialDataLoader implements CommandLineRunner {
                     objectMapper.readValue(initialOrgaConnectorsResource, new TypeReference<>(){});
         }
 
-        for (MultipartFile orgaPdf : orgaPdfs) {
-            MerlotParticipantDto participant = organizationQueryController
-                    .createOrganization(new MultipartFile[]{orgaPdf}, merlotFederationRole);
-
-            // add initial connectors as well
-            String orgaLegalName = ((GaxTrustLegalPersonCredentialSubject) participant.getSelfDescription()
-                    .getVerifiableCredential().getCredentialSubject()).getLegalName();
-            if (initialOrgaConnectors.containsKey(orgaLegalName)) {
-                // if connectors exist, add them on behalf of the participant
-                participant.getMetadata().getConnectors().addAll(initialOrgaConnectors.get(orgaLegalName));
-                OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
-                        "OrgLegRep_" + participant.getId());
-                // update with the role of the participant in order to update the connector data
-                organizationQueryController.updateOrganization(participant, internalRoleOrgLegRep);
-            }
-
-            // set federator role for initial organisations and reset signature to MERLOT
-            participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
-            organizationQueryController.updateOrganization(participant, merlotFederationRole);
+        for (MultipartFile orgaPdf : participantPdfs) {
+            importOrganisation(merlotFederationRole, orgaPdf, initialOrgaConnectors, false);
         }
+
+        for (MultipartFile orgaPdf : federatorPdfs) {
+            importOrganisation(merlotFederationRole, orgaPdf, initialOrgaConnectors, true);
+        }
+    }
+
+    private void importOrganisation(OrganizationRoleGrantedAuthority merlotFederationRole,
+                                    MultipartFile orgaPdf,
+                                    Map<String, Set<OrganizationConnectorDto>> connectorMap,
+                                    boolean isFederator) throws Exception {
+        MerlotParticipantDto participant = organizationQueryController
+                .createOrganization(new MultipartFile[]{orgaPdf}, merlotFederationRole);
+
+        // add initial connectors as well
+        String orgaLegalName = ((GaxTrustLegalPersonCredentialSubject) participant.getSelfDescription()
+                .getVerifiableCredential().getCredentialSubject()).getLegalName();
+        Set<OrganizationConnectorDto> connectors = connectorMap.getOrDefault(orgaLegalName, Collections.emptySet());
+
+        // if connectors exist, add them on behalf of the participant
+        participant.getMetadata().getConnectors().addAll(connectors);
+        OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
+                "OrgLegRep_" + participant.getId());
+        // update with the role of the participant in order to update the connector data
+        organizationQueryController.updateOrganization(participant, internalRoleOrgLegRep);
+
+        if (isFederator) {
+            // set federator role for initial organisations
+            participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
+        }
+
+        // reset signature to MERLOT Federation again
+        organizationQueryController.updateOrganization(participant, merlotFederationRole);
     }
 
     private MultipartFile getMerlotFederationDocument() {
-        File merlotFederationPdfFile = Arrays.stream(initialOrgasFolder.listFiles())
-                .filter(f -> f.getName().equals(MERLOT_FED_DOC_FILENAME)).findFirst().orElse(null);
-        try (FileInputStream input = new FileInputStream(merlotFederationPdfFile)) {
+        try (FileInputStream input = new FileInputStream(merlotFederationRegistrationFormFile)) {
             return new MockMultipartFile("formular", input.readAllBytes());
         } catch (IOException | NullPointerException e) {
-            throw new NoInitDataException(("Failed to find merlot federation PDF in " + initialOrgasFolder.getPath()));
+            throw new NoInitDataException(("Failed to find merlot federation PDF at "
+                    + merlotFederationRegistrationFormFile.getPath()));
         }
     }
 
-    private List<MultipartFile> getOrganisationDocuments() {
+    private List<MultipartFile> getOrganisationDocuments(File folder) {
         List<MultipartFile> orgaPdfs = new ArrayList<>();
-        for (File orgaPdf : initialOrgasFolder.listFiles()) {
-            // skip merlot federation
-            if (!orgaPdf.getName().equals(MERLOT_FED_DOC_FILENAME)) {
-                try (FileInputStream input = new FileInputStream(orgaPdf)) {
+        for (File orgaPdf : folder.listFiles()) {
+            try (FileInputStream input = new FileInputStream(orgaPdf)) {
 
-                    MultipartFile file = new MockMultipartFile("formular", input.readAllBytes());
-                    orgaPdfs.add(file);
-                } catch (IOException e) {
-                    logger.warn("Failed to read file {}: {}", orgaPdf.getName(), e.getMessage());
-                }
+                MultipartFile file = new MockMultipartFile("formular", input.readAllBytes());
+                orgaPdfs.add(file);
+            } catch (IOException e) {
+                logger.warn("Failed to read file {}: {}", orgaPdf.getName(), e.getMessage());
             }
         }
 
         if (orgaPdfs.isEmpty()) {
-            throw new NoInitDataException(("Failed to find any valid PDF files in " + initialOrgasFolder.getPath()));
+            throw new NoInitDataException(("Failed to find any valid PDF files in " + folder.getPath()));
         }
 
         return orgaPdfs;

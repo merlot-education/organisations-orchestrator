@@ -144,7 +144,8 @@ public class InitialDataLoader implements CommandLineRunner {
         try (FileInputStream input = new FileInputStream(merlotFederationRegistrationFormFile)) {
             return new MockMultipartFile("formular", input.readAllBytes());
         } catch (IOException | NullPointerException e) {
-            throw new NoInitDataException(("Failed to find merlot federation PDF in " + initialFederatorsFolder.getPath()));
+            throw new NoInitDataException(("Failed to find merlot federation PDF at "
+                    + merlotFederationRegistrationFormFile.getPath()));
         }
     }
 

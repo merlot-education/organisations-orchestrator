@@ -90,3 +90,6 @@ merlot-did-service:
 
 gxfscatalog-library:
   ignore-ssl: true
+
+daps-server:
+  base-uri: http://example.com

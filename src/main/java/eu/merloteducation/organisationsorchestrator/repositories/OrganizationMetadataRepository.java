@@ -11,8 +11,11 @@ import java.util.List;
 public interface OrganizationMetadataRepository extends JpaRepository<OrganizationMetadata, String> {
     List<OrganizationMetadata> findByMembershipClass(MembershipClass membershipClass);
 
+    @Query("SELECT orgaId FROM OrganizationMetadata metadata WHERE metadata.membershipClass = :membershipClass")
+    List<String> getOrgaIdByMembershipClass(@Param("membershipClass") MembershipClass membershipClass);
+
     @Query("SELECT orgaId FROM OrganizationMetadata metadata WHERE metadata.active = :active")
-    List<String> findByActive(@Param("active") boolean active);
+    List<String> getOrgaIdByActive(@Param("active") boolean active);
 
     void deleteByOrgaId(String merlotId);
 }

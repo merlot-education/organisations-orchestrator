@@ -2,7 +2,9 @@ package eu.merloteducation.organisationsorchestrator.service;
 
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
+import eu.merloteducation.organisationsorchestrator.models.entities.OrganisationConnectorExtension;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import eu.merloteducation.organisationsorchestrator.repositories.OrganizationMetadataRepository;
@@ -26,6 +28,7 @@ public class OrganizationMetadataService {
      * @return metadata of the participant
      */
     public MerlotParticipantMetaDto getMerlotParticipantMetaDto(String orgaId) {
+
         OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
 
         return mapper.organizationMetadataToMerlotParticipantMetaDto(dbMeta);
@@ -38,11 +41,13 @@ public class OrganizationMetadataService {
      * @return metadata of the new participant
      */
     public MerlotParticipantMetaDto saveMerlotParticipantMeta(MerlotParticipantMetaDto metaDto) {
+
         OrganizationMetadata dbMeta = repository.findById(metaDto.getOrgaId()).orElse(null);
         if (dbMeta != null) {
             throw new ParticipantConflictException("Participant with this id already exists");
         }
         OrganizationMetadata metadata = mapper.merlotParticipantMetaDtoToOrganizationMetadata(metaDto);
+
         return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));
     }
 
@@ -53,6 +58,7 @@ public class OrganizationMetadataService {
      * @return metadata of the participant
      */
     public MerlotParticipantMetaDto updateMerlotParticipantMeta(MerlotParticipantMetaDto metaDtoWithEdits) {
+
         String orgaId = metaDtoWithEdits.getOrgaId();
 
         OrganizationMetadata dbMetadata = repository.findById(orgaId).orElse(null);
@@ -86,7 +92,39 @@ public class OrganizationMetadataService {
      */
     public List<String> getInactiveParticipantsIds() {
 
-        return repository.findByActive(false);
+        return repository.getOrgaIdByActive(false);
+    }
+
+    /**
+     * Given a participant's id and the connector id, return the connector.
+     *
+     * @param orgaId the id of the participant
+     * @param connectorId the connector id
+     * @return connector
+     */
+    public OrganizationConnectorTransferDto getConnectorForParticipant(String orgaId, String connectorId) {
+
+        OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
+        OrganisationConnectorExtension connector = null;
+
+        if (dbMeta != null) {
+            connector = dbMeta.getConnectors().stream()
+                .filter(con -> con.getConnectorId().equals(connectorId))
+                .findFirst().orElse(null);
+        }
+
+        return connector != null ? mapper.connectorExtensionToOrganizationConnectorTransferDto(connector) : null;
+    }
+
+    /**
+     * Given a membership class, return the ids of the participants with that membership class.
+     *
+     * @param membershipClass membership class
+     * @return list of participant ids
+     */
+    public List<String> getParticipantIdsByMembershipClass(MembershipClass membershipClass) {
+
+        return repository.getOrgaIdByMembershipClass(membershipClass);
     }
 
 }

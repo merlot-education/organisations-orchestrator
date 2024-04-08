@@ -18,15 +18,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -74,9 +70,9 @@ public class OrganizationQueryController {
             PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
             RegistrationFormContent content =
                     pdfContentMapper.getRegistrationFormContentFromRegistrationForm(pdAcroForm);
-            return participantService.createParticipant(content);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
+            return participantService.createParticipant(content, activeRole);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file. " + e.getMessage());
         }
     }
 
@@ -88,9 +84,9 @@ public class OrganizationQueryController {
      */
     @PutMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
-    @PreAuthorize("(@authorityChecker.representsOrganization(authentication, " +
+    @PreAuthorize("((#activeRole.getOrganizationId() ==" +
             "#participantDtoWithEdits.selfDescription.verifiableCredential.credentialSubject.id)" +
-            "and @authorityChecker.representsOrganization(authentication, #participantDtoWithEdits.id)) " +
+            "and (#activeRole.getOrganizationId() == #participantDtoWithEdits.id)) " +
             "or #activeRole.isFedAdmin()")
     public MerlotParticipantDto updateOrganization(
         @Valid @RequestBody MerlotParticipantDto participantDtoWithEdits,
@@ -125,6 +121,16 @@ public class OrganizationQueryController {
     @JsonView(OrganisationViews.PublicView.class)
     public List<MerlotParticipantDto> getAllFederators() {
         return participantService.getFederators();
+    }
+
+    /**
+     * GET endpoint for retrieving trusted dids.
+     *
+     * @return list of trusted dids
+     */
+    @GetMapping("/trustedDids")
+    public List<String> getTrustedDids() {
+        return participantService.getTrustedDids();
     }
 }
 

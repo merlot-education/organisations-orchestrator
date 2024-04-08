@@ -5,12 +5,16 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
 import eu.merloteducation.authorizationlibrary.config.MerlotSecurityConfig;
+import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.SDProof;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
@@ -41,6 +45,7 @@ import java.util.Base64;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.mockito.Mockito.lenient;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -59,6 +64,9 @@ class OrganizationQueryControllerTests {
 
     @MockBean
     private UserInfoOpaqueTokenIntrospector userInfoOpaqueTokenIntrospector;
+
+    @MockBean
+    private GxfsCatalogService gxfsCatalogService;
 
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;
@@ -84,9 +92,12 @@ class OrganizationQueryControllerTests {
     public void beforeEach() throws Exception {
         List<MerlotParticipantDto> participants = new ArrayList<>();
         MerlotParticipantDto participantDto = new MerlotParticipantDto();
-        participantDto.setId("did:web:example.com#someid");
+        participantDto.setId("did:web:example.com:participant:someid");
         participantDto.setMetadata(new MerlotParticipantMetaDto());
         participantDto.getMetadata().setMembershipClass(MembershipClass.PARTICIPANT);
+        participantDto.setSelfDescription(new SelfDescription());
+        participantDto.getSelfDescription().setProof(new SDProof());
+        participantDto.getSelfDescription().getProof().setVerificationMethod("did:web:somemethod.com#1234");
         participants.add(participantDto);
 
         Page<MerlotParticipantDto> participantsPage = new PageImpl<>(participants);
@@ -100,6 +111,12 @@ class OrganizationQueryControllerTests {
         lenient().when(participantService.updateParticipant(any(), any()))
                 .thenReturn(participantDto);
 
+        GXFSCatalogListResponse<GXFSQueryLegalNameItem> legalNameResponse = new GXFSCatalogListResponse<>();
+        GXFSQueryLegalNameItem item = new GXFSQueryLegalNameItem();
+        item.setLegalName("Some Orga");
+        legalNameResponse.setTotalCount(1);
+        legalNameResponse.setItems(List.of(item));
+        lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(any(), any())).thenReturn(legalNameResponse);
     }
 
     @Test
@@ -294,7 +311,7 @@ class OrganizationQueryControllerTests {
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
-            .andExpect(status().reason("Invalid registration form file."));
+            .andExpect(status().reason(startsWith("Invalid registration form file.")));
     }
     @Test
     void createOrganizationUnauthorized() throws Exception {
@@ -314,6 +331,17 @@ class OrganizationQueryControllerTests {
                 .with(csrf()))
             .andDo(print())
             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getTrustedDidsUnauthenticatedTest() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .get("/trustedDids")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk());
     }
 
     private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {

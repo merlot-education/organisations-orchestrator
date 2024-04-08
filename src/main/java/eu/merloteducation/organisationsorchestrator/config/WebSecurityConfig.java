@@ -23,6 +23,7 @@ public class WebSecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/health")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/federators")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/trustedDids")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/organization/*")).permitAll()
                 .anyRequest().authenticated());
         merlotSecurityConfig.applySecurityConfig(http);

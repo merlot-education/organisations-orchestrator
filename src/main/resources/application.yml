@@ -28,6 +28,7 @@ spring:
     port: 5672
     username: admin
     password: admin
+    connection-timeout: 30000
   cloud:
     bus:
       enabled: true
@@ -49,9 +50,9 @@ gxfscatalog:
   participants-uri: "${gxfscatalog.base-uri}/participants"
   selfdescriptions-uri: "${gxfscatalog.base-uri}/self-descriptions"
   query-uri: "${gxfscatalog.base-uri}/query"
-  private-key-path: "${user.home}/workspace/mpo/merlot-cert/prk.ss.pem"
-  cert-path: "${user.home}/workspace/mpo/merlot-cert/cert.ss.pem"
-  verification-method: "did:web:merlot-education.eu"
+  private-key-path: ""
+  cert-path: ""
+  verification-method: "did:web:compliance.lab.gaia-x.eu"
 
 gxfswizardapi:
   base-uri: "http://localhost:8085"
@@ -76,12 +77,21 @@ keycloak:
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"
 
-edc-tokens:
-  edc1: "somevalue"
-  edc2: "somevalue"
-
 init-data:
-  organisations: "${user.home}/workspace/mpo/initial-orgas.json"
-  connectors: "${user.home}/workspace/mpo/initial-orga-connectors.json"
+  organisations: "classpath:organisations/"
+  connectors: "classpath:initial-orga-connectors.json"
 
-merlot-domain: "marketplace.dev.merlot-education.eu"
+merlot-domain: "localhost"
+
+db:
+  encryption:
+    key: "1234123412341234"
+
+cors:
+  global:
+    origins:
+    patterns: >
+      http://localhost:[*]
+
+gxfscatalog-library:
+  ignore-ssl: true

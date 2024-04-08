@@ -2,6 +2,9 @@ package eu.merloteducation.organisationsorchestrator.controller;
 
 import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
+import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +21,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJacksonResponseBodyAdvice;
 
+import static eu.merloteducation.organisationsorchestrator.service.ParticipantService.PARTICIPANTTYPE;
+
 @ControllerAdvice(assignableTypes = OrganizationQueryController.class)
 public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 
-    @Autowired
-    private AuthorityChecker authorityChecker;
+    private final AuthorityChecker authorityChecker;
+
+    private final GxfsCatalogService gxfsCatalogService;
+
+    public OrganizationQueryControllerAdvice(@Autowired AuthorityChecker authorityChecker,
+                                             @Autowired GxfsCatalogService gxfsCatalogService) {
+        this.authorityChecker = authorityChecker;
+        this.gxfsCatalogService = gxfsCatalogService;
+    }
 
     @Override
     protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, @NotNull MediaType contentType,
@@ -37,24 +49,65 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                 && new OrganizationRoleGrantedAuthority(activeRoleString).isFedAdmin();
 
         if (bodyContainer.getValue() instanceof MerlotParticipantDto participantDto) {
-            if (!isFedAdmin &&
-                    !authorityChecker.representsOrganization(authentication, participantDto.getId())) {
-                participantDto.setMetadata(null); // for single objects hide metadata if we are not representing
+            boolean representsOrganization = authorityChecker.representsOrganization(authentication, participantDto.getId());
+            if (!isFedAdmin && !representsOrganization) {
+                // hide email address if we are not a federator admin and also not representing
+                participantDto.getMetadata().setMailAddress(null);
             }
+
+            if (!representsOrganization) {
+                // hide connector data and signer config if we are not representing
+                participantDto.getMetadata().setConnectors(null);
+                participantDto.getMetadata().setOrganisationSignerConfigDto(null);
+            }
+
+            // try to also set the signedBy field
+            setSignerLegalNameFromCatalog(participantDto);
             return;
         }
 
         try {
             Page<MerlotParticipantDto> participantDtos = (Page<MerlotParticipantDto>) bodyContainer.getValue();
             for (MerlotParticipantDto p : participantDtos) {
-                if (!isFedAdmin &&
-                        !authorityChecker.representsOrganization(authentication, p.getId()) &&
+                boolean representsOrganization = authorityChecker.representsOrganization(authentication, p.getId());
+                if (!isFedAdmin && !representsOrganization &&
                         !p.getMetadata().getMembershipClass().equals(MembershipClass.FEDERATOR)) {
-                    p.setMetadata(null); // for lists hide metadata if we are not representing, or it's a federator
+                    // hide email address if we are not a federator admin and also not representing, unless it's a federator
+                    p.getMetadata().setMailAddress(null);
                 }
+
+                if (!representsOrganization) {
+                    // hide connector data if we are not representing
+                    p.getMetadata().setConnectors(null);
+                }
+
+                // try to also set the signedBy field
+                setSignerLegalNameFromCatalog(p);
+
+                // always hide signer config in page/list view
+                p.getMetadata().setOrganisationSignerConfigDto(null);
             }
         } catch (ClassCastException ignored) {
             // if it's the wrong class, we don't want to modify it anyway
+        }
+    }
+
+    private void setSignerLegalNameFromCatalog(MerlotParticipantDto dto) {
+        try {
+            String proofVerificationMethod = dto.getSelfDescription().getProof().getVerificationMethod();
+
+            String signerId = proofVerificationMethod.replaceFirst("#.*", "");
+
+            GXFSCatalogListResponse<GXFSQueryLegalNameItem>
+                    response = gxfsCatalogService.getParticipantLegalNameByUri(PARTICIPANTTYPE, signerId);
+
+
+            // if we do not get exactly one item, we did not find the signer participant and the corresponding legal name
+            if (response.getTotalCount() == 1) {
+                dto.getMetadata().setSignedBy(response.getItems().get(0).getLegalName());
+            }
+        } catch (Exception ignored) {
+            // if something fails, we just leave the signedBy as null (not resolvable)
         }
     }
 }

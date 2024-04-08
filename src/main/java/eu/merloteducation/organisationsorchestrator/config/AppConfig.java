@@ -11,13 +11,13 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 @Configuration
 public class AppConfig {
 
-    @Value("${daps-connector-api.base-uri}")
-    private String dapsConnectorApiBaseUri;
+    @Value("${daps-server.base-uri}")
+    private String dapsServerBaseUri;
 
     @Bean
     public OmejdnConnectorApiClient dapsConnectorApiClient() {
         WebClient webClient = WebClient.builder()
-                .baseUrl(dapsConnectorApiBaseUri)
+                .baseUrl(dapsServerBaseUri + "/api/v1/connectors")
                 .build();
         HttpServiceProxyFactory httpServiceProxyFactory = HttpServiceProxyFactory
                 .builder()

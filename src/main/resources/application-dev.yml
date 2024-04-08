@@ -19,5 +19,5 @@ db:
   encryption:
     key: ""
 
-daps-connector-api:
-  base-uri: http://daps-server.merlot.svc.cluster.local:4567/api/v1/connectors
+daps-server:
+  base-uri: http://daps-server.merlot.svc.cluster.local:4567

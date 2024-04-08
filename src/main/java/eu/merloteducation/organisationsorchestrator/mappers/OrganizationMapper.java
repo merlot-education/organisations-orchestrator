@@ -118,6 +118,7 @@ public interface OrganizationMapper {
     @Mapping(target = "clientId", source = "clientId")
     @Mapping(target = "keystore", source = "keystore")
     @Mapping(target = "password", source = "password")
+    @Mapping(target = "scope", source = "scope")
     DapsCertificate certificateDtoToCertificate(DapsCertificateDto dto);
 
     @BeanMapping(ignoreByDefault = true)
@@ -125,6 +126,7 @@ public interface OrganizationMapper {
     @Mapping(target = "clientId", source = "clientId")
     @Mapping(target = "keystore", source = "keystore")
     @Mapping(target = "password", source = "password")
+    @Mapping(target = "scope", source = "scope")
     DapsCertificateDto certificateToCertificateDto(DapsCertificate cert);
 
     @BeanMapping(ignoreByDefault = true)
@@ -132,6 +134,7 @@ public interface OrganizationMapper {
     @Mapping(target = "clientId", source = "clientId")
     @Mapping(target = "keystore", source = "keystore")
     @Mapping(target = "password", source = "password")
+    @Mapping(target = "scope", source = "scope")
     DapsCertificateDto omejdnCertificateToDapsCertificateDto(OmejdnConnectorCertificateDto dto);
 
     @Mapping(target = "privateKey", source = "privateKey")

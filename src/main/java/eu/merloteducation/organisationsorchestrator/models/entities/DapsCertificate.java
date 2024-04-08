@@ -30,4 +30,7 @@ public class DapsCertificate {
     @NotNull
     @Convert(converter = AttributeEncryptor.class)
     private String password;
+
+    @NotNull
+    private String scope;
 }

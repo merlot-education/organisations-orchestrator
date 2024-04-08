@@ -111,3 +111,6 @@ cors:
 
 gxfscatalog-library:
   ignore-ssl: true
+
+daps-connector-api:
+  base-uri: http://localhost:4567/api/v1/connectors

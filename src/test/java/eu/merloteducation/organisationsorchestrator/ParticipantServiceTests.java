@@ -25,6 +25,7 @@ import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
+import eu.merloteducation.organisationsorchestrator.service.OmejdnConnectorApiClient;
 import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
 import eu.merloteducation.organisationsorchestrator.service.OutgoingMessageService;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
@@ -86,6 +87,9 @@ class ParticipantServiceTests {
 
     @MockBean
     private OutgoingMessageService outgoingMessageService;
+
+    @MockBean
+    private OmejdnConnectorApiClient omejdnConnectorApiClient;
 
     private final MerlotDidServiceClientFake merlotDidServiceClientFake = new MerlotDidServiceClientFake();
 
@@ -211,6 +215,7 @@ class ParticipantServiceTests {
         ReflectionTestUtils.setField(participantService, "gxfsCatalogService", gxfsCatalogService);
         ReflectionTestUtils.setField(participantService, "organizationMetadataService", organizationMetadataService);
         ReflectionTestUtils.setField(participantService, "outgoingMessageService", outgoingMessageService);
+        ReflectionTestUtils.setField(participantService, "omejdnConnectorApiClient", new OmejdnConnectorApiClientFake());
 
         String mockParticipant = """
             {

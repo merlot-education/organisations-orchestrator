@@ -4,6 +4,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescrip
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.*;
+import eu.merloteducation.modelslib.daps.OmejdnConnectorCertificateDto;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.*;
 import org.mapstruct.*;
@@ -99,6 +100,7 @@ public interface OrganizationMapper {
     @Mapping(target = "active", source = "active")
     @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsForDto")
     @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfig")
+    @Mapping(target = "dapsCertificates", source = "dapsCertificates")
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
 
     @BeanMapping(ignoreByDefault = true)
@@ -108,7 +110,32 @@ public interface OrganizationMapper {
     @Mapping(target = "active", source = "active")
     @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(metadataDto.getConnectors(), metadataDto.getOrgaId()))")
     @Mapping(target = "organisationSignerConfig", source = "organisationSignerConfigDto")
+    @Mapping(target = "dapsCertificates", source = "dapsCertificates")
     OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "clientName", source = "clientName")
+    @Mapping(target = "clientId", source = "clientId")
+    @Mapping(target = "keystore", source = "keystore")
+    @Mapping(target = "password", source = "password")
+    @Mapping(target = "scope", source = "scope")
+    DapsCertificate certificateDtoToCertificate(DapsCertificateDto dto);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "clientName", source = "clientName")
+    @Mapping(target = "clientId", source = "clientId")
+    @Mapping(target = "keystore", source = "keystore")
+    @Mapping(target = "password", source = "password")
+    @Mapping(target = "scope", source = "scope")
+    DapsCertificateDto certificateToCertificateDto(DapsCertificate cert);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "clientName", source = "clientName")
+    @Mapping(target = "clientId", source = "clientId")
+    @Mapping(target = "keystore", source = "keystore")
+    @Mapping(target = "password", source = "password")
+    @Mapping(target = "scope", source = "scope")
+    DapsCertificateDto omejdnCertificateToDapsCertificateDto(OmejdnConnectorCertificateDto dto);
 
     @Mapping(target = "privateKey", source = "privateKey")
     @Mapping(target = "verificationMethod", source = "verificationMethod")

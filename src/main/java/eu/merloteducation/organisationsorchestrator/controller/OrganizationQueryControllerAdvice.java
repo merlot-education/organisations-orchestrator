@@ -56,9 +56,10 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
             }
 
             if (!representsOrganization) {
-                // hide connector data and signer config if we are not representing
+                // hide connector data and signer config and certificates if we are not representing
                 participantDto.getMetadata().setConnectors(null);
                 participantDto.getMetadata().setOrganisationSignerConfigDto(null);
+                participantDto.getMetadata().setDapsCertificates(null);
             }
 
             // try to also set the signedBy field
@@ -84,8 +85,9 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                 // try to also set the signedBy field
                 setSignerLegalNameFromCatalog(p);
 
-                // always hide signer config in page/list view
+                // always hide signer config and certificates in page/list view
                 p.getMetadata().setOrganisationSignerConfigDto(null);
+                p.getMetadata().setDapsCertificates(null);
             }
         } catch (ClassCastException ignored) {
             // if it's the wrong class, we don't want to modify it anyway

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -32,6 +33,9 @@ public class OrganizationMetadata {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @Nullable
     private OrganisationSignerConfig organisationSignerConfig;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<DapsCertificate> dapsCertificates;
 
     public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass, boolean active) {
 

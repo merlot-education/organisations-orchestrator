@@ -19,6 +19,8 @@ import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganisationSignerConfigDto;
+import eu.merloteducation.modelslib.daps.OmejdnConnectorCertificateDto;
+import eu.merloteducation.modelslib.daps.OmejdnConnectorCertificateRequest;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
@@ -49,17 +51,20 @@ public class ParticipantService {
     private final GxfsCatalogService gxfsCatalogService;
     private final OrganizationMetadataService organizationMetadataService;
     private final OutgoingMessageService outgoingMessageService;
+    private final OmejdnConnectorApiClient omejdnConnectorApiClient;
 
     public static final String PARTICIPANTTYPE = "MerlotOrganization";
 
     public ParticipantService(@Autowired OrganizationMapper organizationMapper,
                               @Autowired GxfsCatalogService gxfsCatalogService,
                               @Autowired OrganizationMetadataService organizationMetadataService,
-                              @Autowired OutgoingMessageService outgoingMessageService) {
+                              @Autowired OutgoingMessageService outgoingMessageService,
+                              @Autowired OmejdnConnectorApiClient omejdnConnectorApiClient) {
         this.organizationMapper = organizationMapper;
         this.gxfsCatalogService = gxfsCatalogService;
         this.organizationMetadataService = organizationMetadataService;
         this.outgoingMessageService = outgoingMessageService;
+        this.omejdnConnectorApiClient = omejdnConnectorApiClient;
     }
 
     /**
@@ -348,6 +353,13 @@ public class ParticipantService {
                 // update orga id with received did
                 metaData.setOrgaId(didPrivateKeyDto.getDid());
             }
+
+            // request a new DAPS certificate for organization and store it
+            OmejdnConnectorCertificateDto omejdnCertificate
+                    = omejdnConnectorApiClient.addConnector(
+                    new OmejdnConnectorCertificateRequest(metaData.getOrgaId()));
+            metaData.setDapsCertificates(
+                    List.of(organizationMapper.omejdnCertificateToDapsCertificateDto(omejdnCertificate)));
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }

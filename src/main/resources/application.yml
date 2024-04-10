@@ -111,3 +111,6 @@ cors:
 
 gxfscatalog-library:
   ignore-ssl: true
+
+daps-server:
+  base-uri: http://localhost:4567

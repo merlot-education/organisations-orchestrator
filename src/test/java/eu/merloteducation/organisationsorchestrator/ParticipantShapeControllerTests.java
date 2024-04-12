@@ -44,6 +44,9 @@ class ParticipantShapeControllerTests {
     @MockBean
     private JwtAuthConverterProperties jwtAuthConverterProperties;
 
+    @MockBean
+    private JwtAuthConverter jwtAuthConverter;
+
     @Autowired
     private MockMvc mvc;
 

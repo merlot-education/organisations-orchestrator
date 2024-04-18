@@ -42,9 +42,6 @@ class ParticipantShapeControllerTests {
     private GxfsCatalogService gxfsCatalogService;
 
     @MockBean
-    private JwtAuthConverterProperties jwtAuthConverterProperties;
-
-    @MockBean
     private JwtAuthConverter jwtAuthConverter;
 
     @Autowired

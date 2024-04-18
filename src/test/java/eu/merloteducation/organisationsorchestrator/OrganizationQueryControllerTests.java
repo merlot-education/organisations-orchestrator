@@ -69,9 +69,6 @@ class OrganizationQueryControllerTests {
     private GxfsCatalogService gxfsCatalogService;
 
     @MockBean
-    private JwtAuthConverterProperties jwtAuthConverterProperties;
-
-    @MockBean
     private JwtAuthConverter jwtAuthConverter;
 
     @Autowired
@@ -167,7 +164,7 @@ class OrganizationQueryControllerTests {
                         .header("Active-Role", "OrgLegRep_did:web:someorga.example.com")
                         .with(csrf())
                         .with(jwt().authorities(
-                                new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someorga.example.com"),
+                                new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someorga.example.com"),
                                 new SimpleGrantedAuthority("ROLE_some_other_role")
                         )))
                 .andDo(print())
@@ -186,8 +183,8 @@ class OrganizationQueryControllerTests {
                 .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com"),
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com"),
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someotherorga.example.com"),
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com"),
                     new SimpleGrantedAuthority("ROLE_some_other_role")
                 )))
             .andDo(print())
@@ -211,8 +208,8 @@ class OrganizationQueryControllerTests {
                 .header("Active-Role", "OrgLegRep_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com"),
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someorga.example.com"),
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someotherorga.example.com"),
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someorga.example.com"),
                     new SimpleGrantedAuthority("ROLE_some_other_role")
                 )))
             .andDo(print())
@@ -231,7 +228,7 @@ class OrganizationQueryControllerTests {
                         .header("Active-Role", "OrgLegRep_did:web:someotherorga.example.com")
                         .with(csrf())
                         .with(jwt().authorities(
-                                new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com")
+                                new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someotherorga.example.com")
                         )))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -266,7 +263,7 @@ class OrganizationQueryControllerTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isOk());
@@ -291,7 +288,7 @@ class OrganizationQueryControllerTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
@@ -310,7 +307,7 @@ class OrganizationQueryControllerTests {
                 .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
+import eu.merloteducation.authorizationlibrary.config.MerlotSecurityConfig;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
@@ -53,7 +54,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest({OrganizationQueryController.class, WebSecurityConfig.class, PdfContentMapper.class})
-@Import({JwtAuthConverter.class, AuthorityChecker.class, InterceptorConfig.class, ActiveRoleHeaderHandlerInterceptor.class, AuthorityChecker.class})
+@Import({JwtAuthConverter.class, AuthorityChecker.class, InterceptorConfig.class, ActiveRoleHeaderHandlerInterceptor.class,
+        AuthorityChecker.class, MerlotSecurityConfig.class})
 @AutoConfigureMockMvc()
 class OrganizationQueryControllerTests {
 
@@ -61,10 +63,13 @@ class OrganizationQueryControllerTests {
     private ParticipantService participantService;
 
     @MockBean
+    private UserInfoOpaqueTokenIntrospector userInfoOpaqueTokenIntrospector;
+
+    @MockBean
     private GxfsCatalogService gxfsCatalogService;
 
     @MockBean
-    private JwtAuthConverterProperties jwtAuthConverterProperties;
+    private JwtAuthConverter jwtAuthConverter;
 
     @Autowired
     private MockMvc mvc;
@@ -159,7 +164,7 @@ class OrganizationQueryControllerTests {
                         .header("Active-Role", "OrgLegRep_did:web:someorga.example.com")
                         .with(csrf())
                         .with(jwt().authorities(
-                                new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someorga.example.com"),
+                                new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someorga.example.com"),
                                 new SimpleGrantedAuthority("ROLE_some_other_role")
                         )))
                 .andDo(print())
@@ -178,8 +183,8 @@ class OrganizationQueryControllerTests {
                 .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com"),
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com"),
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someotherorga.example.com"),
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com"),
                     new SimpleGrantedAuthority("ROLE_some_other_role")
                 )))
             .andDo(print())
@@ -203,8 +208,8 @@ class OrganizationQueryControllerTests {
                 .header("Active-Role", "OrgLegRep_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com"),
-                    new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someorga.example.com"),
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someotherorga.example.com"),
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someorga.example.com"),
                     new SimpleGrantedAuthority("ROLE_some_other_role")
                 )))
             .andDo(print())
@@ -223,7 +228,7 @@ class OrganizationQueryControllerTests {
                         .header("Active-Role", "OrgLegRep_did:web:someotherorga.example.com")
                         .with(csrf())
                         .with(jwt().authorities(
-                                new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:someotherorga.example.com")
+                                new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someotherorga.example.com")
                         )))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -258,7 +263,7 @@ class OrganizationQueryControllerTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isOk());
@@ -283,7 +288,7 @@ class OrganizationQueryControllerTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())
@@ -302,7 +307,7 @@ class OrganizationQueryControllerTests {
                 .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
                 .with(csrf())
                 .with(jwt().authorities(
-                    new OrganizationRoleGrantedAuthority("FedAdmin_did:web:someorga.example.com")
+                    new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com")
                 )))
             .andDo(print())
             .andExpect(status().isBadRequest())

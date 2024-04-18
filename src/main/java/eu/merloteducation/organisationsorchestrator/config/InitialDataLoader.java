@@ -2,6 +2,7 @@ package eu.merloteducation.organisationsorchestrator.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.merloteducation.authorizationlibrary.authorization.OrganizationRole;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.participants.GaxTrustLegalPersonCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
@@ -63,8 +64,8 @@ public class InitialDataLoader implements CommandLineRunner {
         try {
             // MERLOT federation
             OrganizationRoleGrantedAuthority merlotFederationRole
-                    = new OrganizationRoleGrantedAuthority(
-                            "FedAdmin_did:web:" + merlotDomain + ":participant:df15587a-0760-32b5-9c42-bb7be66e8076");
+                    = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN,
+                            "did:web:" + merlotDomain + ":participant:df15587a-0760-32b5-9c42-bb7be66e8076");
 
             if (!organizationQueryController.getAllOrganizations(0, 1, merlotFederationRole).getContent().isEmpty()) {
                 logger.info("Database will not be reinitialised since organisations exist.");
@@ -127,7 +128,7 @@ public class InitialDataLoader implements CommandLineRunner {
         // if connectors exist, add them on behalf of the participant
         participant.getMetadata().getConnectors().addAll(connectors);
         OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
-                "OrgLegRep_" + participant.getId());
+                OrganizationRole.ORG_LEG_REP, participant.getId());
         // update with the role of the participant in order to update the connector data
         organizationQueryController.updateOrganization(participant, internalRoleOrgLegRep);
 

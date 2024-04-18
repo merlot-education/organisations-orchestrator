@@ -436,7 +436,7 @@ class ParticipantServiceTests {
             .getVerifiableCredential().getCredentialSubject();
         MerlotParticipantMetaDto editedMetadata = participantDtoWithEdits.getMetadata();
 
-        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:example.com:participant:someorga");
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:example.com:participant:someorga");
 
         participantDtoWithEdits.setId("did:web:example.com:participant:someorga");
         MerlotParticipantDto updatedParticipantDto = participantService.updateParticipant(participantDtoWithEdits, activeRole);
@@ -493,7 +493,7 @@ class ParticipantServiceTests {
                 .getCredentialSubject();
         MerlotParticipantMetaDto editedMetadata = dtoWithEdits.getMetadata();
 
-        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:somefedorga");
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:somefedorga");
 
         dtoWithEdits.setId("did:web:example.com:participant:someorga");
         MerlotParticipantDto participantDto = participantService.updateParticipant(dtoWithEdits, activeRole);
@@ -552,7 +552,7 @@ class ParticipantServiceTests {
         dtoWithEdits.getSelfDescription().getVerifiableCredential().getCredentialSubject()
                 .setId("did:web:example.com:participant:someunknownorga");
 
-        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga");
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:someorga");
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
             () -> participantService.updateParticipant(dtoWithEdits, activeRole));
@@ -596,7 +596,7 @@ class ParticipantServiceTests {
     @Test
     void createParticipantWithValidRegistrationFormAsFederator() throws Exception {
         MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationFormContent(),
-                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:somefedorga"));
+                new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:somefedorga"));
         MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
                 participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
 
@@ -622,7 +622,7 @@ class ParticipantServiceTests {
         RegistrationFormContent registrationFormContent = getTestRegistrationFormContent();
         registrationFormContent.setDidWeb("garbage");
         OrganizationRoleGrantedAuthority role =
-                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:somefedorga");
+                new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:somefedorga");
         Exception e = assertThrows(ResponseStatusException.class,
                 () -> participantService.createParticipant(registrationFormContent, role));
         assertEquals("400 BAD_REQUEST \"Invalid registration form: Invalid did:web specified.\"", e.getMessage());
@@ -633,7 +633,7 @@ class ParticipantServiceTests {
 
         RegistrationFormContent content = new RegistrationFormContent();
         OrganizationRoleGrantedAuthority role =
-                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga");
+                new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:someorga");
         Exception e = assertThrows(ResponseStatusException.class,
             () -> participantService.createParticipant(content, role));
 
@@ -656,7 +656,7 @@ class ParticipantServiceTests {
         content.setProviderTncHash("");
 
         OrganizationRoleGrantedAuthority role =
-                new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:someorga");
+                new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:someorga");
         Exception e = assertThrows(ResponseStatusException.class,
             () -> participantService.createParticipant(content, role));
 
@@ -689,7 +689,7 @@ class ParticipantServiceTests {
         participantDtoWithEdits.setId("did:web:example.com:participant:nosignerconfig");
         participantDtoWithEdits.getMetadata().setOrganisationSignerConfigDto(null);
 
-        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("OrgLegRep_did:web:example.com:participant:nosignerconfig");
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:example.com:participant:nosignerconfig");
 
         ResponseStatusException e =
             assertThrows(ResponseStatusException.class, () -> participantService.updateParticipant(participantDtoWithEdits, activeRole));
@@ -701,7 +701,7 @@ class ParticipantServiceTests {
 
         MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
 
-        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:nosignerconfig");
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:nosignerconfig");
 
         ResponseStatusException e =
             assertThrows(ResponseStatusException.class, () -> participantService.updateParticipant(participantDtoWithEdits, activeRole));
@@ -713,7 +713,7 @@ class ParticipantServiceTests {
 
         RegistrationFormContent registrationFormContent = getTestRegistrationFormContent();
 
-        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority("FedAdmin_did:web:example.com:participant:nosignerconfig");
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:nosignerconfig");
 
         ResponseStatusException e =
             assertThrows(ResponseStatusException.class, () -> participantService.createParticipant(registrationFormContent, activeRole));

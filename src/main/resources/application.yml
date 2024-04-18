@@ -3,8 +3,6 @@ logging:
     org.springframework.security: DEBUG
 
 spring:
-  h2:
-    console.enabled: true
   profiles:
     active: default
   datasource:
@@ -25,12 +23,6 @@ spring:
         show_sql: false
         use_sql_comments: true
         format_sql: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://key-server:8080/realms/POC1
-          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   rabbitmq:
     host: localhost
     port: 5672
@@ -65,12 +57,6 @@ gxfscatalog:
 gxfswizardapi:
   base-uri: "http://localhost:8085"
 
-jwt:
-  auth:
-    converter:
-      resource-id: MARKETPLACE
-      principal-attribute: preferred_username
-
 management:
   endpoints:
     enabled-by-default: false
@@ -85,11 +71,9 @@ keycloak:
   authorization-grant-type: "password"
   base-uri: "http://key-server:8080"
   oidc-base-uri: "${keycloak.base-uri}/realms/gxfscatalog/protocol/openid-connect"
-  authorization-uri: "${keycloak.oidc-base-uri}/auth"
   token-uri: "${keycloak.oidc-base-uri}/token"
   logout-uri: "${keycloak.oidc-base-uri}/logout"
-  jwk-set-uri: "${keycloak.oidc-base-uri}/certs"
-  client-secret: "oV0GOkc0XWUoDwNV38qjqWfri6Uk7tTQ"
+  client-secret: "CScowEqRGIb6d7SLCZHVjKHIewp0ZmnO"
   gxfscatalog-user: "gxfscatalog"
   gxfscatalog-pass: "gxfscatalog"
 

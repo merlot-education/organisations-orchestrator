@@ -258,8 +258,7 @@ public class ParticipantService {
         ParticipantItem participantItem;
         try {
             participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
-                    activeRoleSignerConfig.getVerificationMethod(),
-                    activeRoleSignerConfig.getPrivateKey());
+                    activeRoleSignerConfig.getMerlotVerificationMethod());
             // clean up old SDs, remove these lines if you need the history of participant SDs
             GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
                     gxfsCatalogService.getSelfDescriptionsByIds(new String[]{participantItem.getId()},
@@ -393,8 +392,7 @@ public class ParticipantService {
         ParticipantItem participantItem = null;
         try {
             participantItem = gxfsCatalogService.addParticipant(credentialSubject,
-                    activeRoleSignerConfig.getVerificationMethod(),
-                    activeRoleSignerConfig.getPrivateKey());
+                    activeRoleSignerConfig.getMerlotVerificationMethod());
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
         } catch (WebClientResponseException e) {
@@ -468,6 +466,8 @@ public class ParticipantService {
         return signerConfig != null && signerConfig.getPrivateKey() != null
             && !signerConfig.getPrivateKey().isBlank()
             && signerConfig.getVerificationMethod() != null
-            && !signerConfig.getVerificationMethod().isBlank();
+            && !signerConfig.getVerificationMethod().isBlank()
+            && signerConfig.getMerlotVerificationMethod() != null
+            && !signerConfig.getMerlotVerificationMethod().isBlank();
     }
 }

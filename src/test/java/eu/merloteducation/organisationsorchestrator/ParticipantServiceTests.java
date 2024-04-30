@@ -203,6 +203,7 @@ class ParticipantServiceTests {
         metaDto.setActive(true);
         OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
         signerConfigDto.setPrivateKey("privateKey");
+        signerConfigDto.setMerlotVerificationMethod("did:web:example.com:participant:someorga#merlot");
         signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
         metaDto.setOrganisationSignerConfigDto(signerConfigDto);
         return metaDto;
@@ -288,9 +289,9 @@ class ParticipantServiceTests {
             .thenReturn(participantItem);
         lenient().when(gxfsCatalogService.getParticipantById(eq("did:web:example.com:participant:nosignerconfig")))
             .thenReturn(participantItem);
-        lenient().when(gxfsCatalogService.updateParticipant(any(), any(), any()))
+        lenient().when(gxfsCatalogService.updateParticipant(any(), any()))
             .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
-        lenient().when(gxfsCatalogService.addParticipant(any(), any(), any()))
+        lenient().when(gxfsCatalogService.addParticipant(any(), any()))
             .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
         lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(eq("MerlotOrganization"), any()))
             .thenReturn(new GXFSCatalogListResponse<>());
@@ -786,6 +787,7 @@ class ParticipantServiceTests {
         metaData.setConnectors(Set.of(connector));
         OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
         signerConfigDto.setPrivateKey("privateKey");
+        signerConfigDto.setMerlotVerificationMethod("did:web:example.com:participant:someorga#merlot");
         signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
         metaData.setOrganisationSignerConfigDto(signerConfigDto);
 

@@ -80,10 +80,12 @@ class OrganizationMetadataServiceTests {
         OrganisationSignerConfig signerConfig = new OrganisationSignerConfig();
         signerConfig.setPrivateKey("privateKey");
         signerConfig.setVerificationMethod(someOrgaId + "#somemethod");
+        signerConfig.setMerlotVerificationMethod(someOrgaId + "#somemerlotmethod");
         metadata1.setOrganisationSignerConfig(signerConfig);
         OrganisationSignerConfig signerConfig2 = new OrganisationSignerConfig();
         signerConfig2.setPrivateKey("privateKey2");
         signerConfig2.setVerificationMethod(otherOrgaId + "#somemethod");
+        signerConfig2.setMerlotVerificationMethod(otherOrgaId + "#somemerlotmethod");
         metadata2.setOrganisationSignerConfig(signerConfig2);
 
         metadataRepository.save(metadata1);

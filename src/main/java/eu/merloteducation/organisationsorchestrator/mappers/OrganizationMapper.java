@@ -91,6 +91,7 @@ public interface OrganizationMapper {
 
     @Mapping(target = "privateKey", source = "privateKey")
     @Mapping(target = "verificationMethod", source = "verificationMethod")
+    @Mapping(target = "merlotVerificationMethod", source = "merlotVerificationMethod")
     OrganisationSignerConfigDto getSignerConfigDtoFromDidPrivateKeyDto(ParticipantDidPrivateKeyDto prk);
 
     @BeanMapping(ignoreByDefault = true)
@@ -139,6 +140,7 @@ public interface OrganizationMapper {
 
     @Mapping(target = "privateKey", source = "privateKey")
     @Mapping(target = "verificationMethod", source = "verificationMethod")
+    @Mapping(target = "merlotVerificationMethod", source = "merlotVerificationMethod")
     OrganisationSignerConfig organisationSignerConfigDtoToOrganisationSignerConfig(OrganisationSignerConfigDto signerConfigDto);
 
     default void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source,

@@ -23,7 +23,6 @@ public class OrganisationSignerConfig {
     @NotNull
     private String verificationMethod;
 
-    @NotNull
     private String merlotVerificationMethod;
 
 }

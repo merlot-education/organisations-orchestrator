@@ -257,8 +257,14 @@ public class ParticipantService {
 
         ParticipantItem participantItem;
         try {
-            participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
+            if (activeRoleSignerConfig.getMerlotVerificationMethod() != null && !activeRoleSignerConfig.getMerlotVerificationMethod().isBlank()) {
+                // use merlot verification method if available
+                participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
                     activeRoleSignerConfig.getMerlotVerificationMethod());
+            } else {
+                participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
+                    activeRoleSignerConfig.getVerificationMethod(), activeRoleSignerConfig.getPrivateKey());
+            }
             // clean up old SDs, remove these lines if you need the history of participant SDs
             GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
                     gxfsCatalogService.getSelfDescriptionsByIds(new String[]{participantItem.getId()},
@@ -391,8 +397,14 @@ public class ParticipantService {
 
         ParticipantItem participantItem = null;
         try {
-            participantItem = gxfsCatalogService.addParticipant(credentialSubject,
+            if (activeRoleSignerConfig.getMerlotVerificationMethod() != null && !activeRoleSignerConfig.getMerlotVerificationMethod().isBlank()) {
+                // use merlot verification method if available
+                participantItem = gxfsCatalogService.addParticipant(credentialSubject,
                     activeRoleSignerConfig.getMerlotVerificationMethod());
+            } else {
+                participantItem = gxfsCatalogService.addParticipant(credentialSubject,
+                    activeRoleSignerConfig.getVerificationMethod(), activeRoleSignerConfig.getPrivateKey());
+            }
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
         } catch (WebClientResponseException e) {
@@ -462,12 +474,19 @@ public class ParticipantService {
     }
 
     private boolean isSignerConfigValid(OrganisationSignerConfigDto signerConfig) {
+        if (signerConfig == null) {
+            return false;
+        }
 
-        return signerConfig != null && signerConfig.getPrivateKey() != null
-            && !signerConfig.getPrivateKey().isBlank()
-            && signerConfig.getVerificationMethod() != null
-            && !signerConfig.getVerificationMethod().isBlank()
-            && signerConfig.getMerlotVerificationMethod() != null
+        boolean privateKeyValid = signerConfig.getPrivateKey() != null
+            && !signerConfig.getPrivateKey().isBlank();
+
+        boolean verificationMethodValid = signerConfig.getVerificationMethod() != null
+            && !signerConfig.getVerificationMethod().isBlank();
+
+        boolean merlotVerificationMethodValid = signerConfig.getMerlotVerificationMethod() != null
             && !signerConfig.getMerlotVerificationMethod().isBlank();
+
+        return privateKeyValid && verificationMethodValid || merlotVerificationMethodValid;
     }
 }

@@ -481,6 +481,8 @@ class ParticipantServiceTests {
         // following metadata of the organization should not have been updated
         assertNotEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
         assertNotEquals(updatedMetadata.isActive(), editedMetadata.isActive());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod(),
+            editedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod());
 
         verify(outgoingMessageService, times(0)).sendOrganizationMembershipRevokedMessage(any());
     }
@@ -541,6 +543,8 @@ class ParticipantServiceTests {
 
         // following metadata of the organization should not have been updated
         assertEquals(0, updatedMetadata.getConnectors().size()); // no connector was added
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod(),
+            editedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod());
 
         verify(outgoingMessageService, times(1)).sendOrganizationMembershipRevokedMessage(participantDto.getId());
     }
@@ -787,7 +791,7 @@ class ParticipantServiceTests {
         metaData.setConnectors(Set.of(connector));
         OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
         signerConfigDto.setPrivateKey("privateKey");
-        signerConfigDto.setMerlotVerificationMethod("did:web:example.com:participant:someorga#merlot");
+        signerConfigDto.setMerlotVerificationMethod("did:web:example.com:participant:someorga#changedmerlot");
         signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
         metaData.setOrganisationSignerConfigDto(signerConfigDto);
 

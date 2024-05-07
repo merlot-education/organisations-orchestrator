@@ -481,6 +481,10 @@ class ParticipantServiceTests {
         // following metadata of the organization should not have been updated
         assertNotEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
         assertNotEquals(updatedMetadata.isActive(), editedMetadata.isActive());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getVerificationMethod(),
+            editedMetadata.getOrganisationSignerConfigDto().getVerificationMethod());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getPrivateKey(),
+            editedMetadata.getOrganisationSignerConfigDto().getPrivateKey());
         assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod(),
             editedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod());
 
@@ -543,6 +547,10 @@ class ParticipantServiceTests {
 
         // following metadata of the organization should not have been updated
         assertEquals(0, updatedMetadata.getConnectors().size()); // no connector was added
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getVerificationMethod(),
+            editedMetadata.getOrganisationSignerConfigDto().getVerificationMethod());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getPrivateKey(),
+            editedMetadata.getOrganisationSignerConfigDto().getPrivateKey());
         assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod(),
             editedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod());
 
@@ -790,9 +798,9 @@ class ParticipantServiceTests {
                 new IonosS3BucketDto("bucket3", "http://example.com")));
         metaData.setConnectors(Set.of(connector));
         OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
-        signerConfigDto.setPrivateKey("privateKey");
+        signerConfigDto.setPrivateKey("changedprivateKey");
         signerConfigDto.setMerlotVerificationMethod("did:web:example.com:participant:someorga#changedmerlot");
-        signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
+        signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#changedsomemethod");
         metaData.setOrganisationSignerConfigDto(signerConfigDto);
 
         dtoWithEdits.setSelfDescription(selfDescription);

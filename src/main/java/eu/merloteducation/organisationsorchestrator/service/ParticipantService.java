@@ -257,14 +257,10 @@ public class ParticipantService {
 
         ParticipantItem participantItem;
         try {
-            if (activeRoleSignerConfig.getMerlotVerificationMethod() != null && !activeRoleSignerConfig.getMerlotVerificationMethod().isBlank()) {
-                // use merlot verification method if available
-                participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
-                    activeRoleSignerConfig.getMerlotVerificationMethod());
-            } else {
-                participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
-                    activeRoleSignerConfig.getVerificationMethod(), activeRoleSignerConfig.getPrivateKey());
-            }
+            // sign SD using verification method referencing the merlot certificate and the default/merlot private key
+            participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
+                activeRoleSignerConfig.getMerlotVerificationMethod());
+
             // clean up old SDs, remove these lines if you need the history of participant SDs
             GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
                     gxfsCatalogService.getSelfDescriptionsByIds(new String[]{participantItem.getId()},
@@ -397,14 +393,8 @@ public class ParticipantService {
 
         ParticipantItem participantItem = null;
         try {
-            if (activeRoleSignerConfig.getMerlotVerificationMethod() != null && !activeRoleSignerConfig.getMerlotVerificationMethod().isBlank()) {
-                // use merlot verification method if available
-                participantItem = gxfsCatalogService.addParticipant(credentialSubject,
-                    activeRoleSignerConfig.getMerlotVerificationMethod());
-            } else {
-                participantItem = gxfsCatalogService.addParticipant(credentialSubject,
-                    activeRoleSignerConfig.getVerificationMethod(), activeRoleSignerConfig.getPrivateKey());
-            }
+            // sign SD using verification method referencing the merlot certificate and the default/merlot private key
+            participantItem = gxfsCatalogService.addParticipant(credentialSubject, activeRoleSignerConfig.getMerlotVerificationMethod());
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
         } catch (WebClientResponseException e) {
@@ -487,6 +477,6 @@ public class ParticipantService {
         boolean merlotVerificationMethodValid = signerConfig.getMerlotVerificationMethod() != null
             && !signerConfig.getMerlotVerificationMethod().isBlank();
 
-        return privateKeyValid && verificationMethodValid || merlotVerificationMethodValid;
+        return privateKeyValid && verificationMethodValid && merlotVerificationMethodValid;
     }
 }

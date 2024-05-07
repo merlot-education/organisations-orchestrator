@@ -162,7 +162,6 @@ public interface OrganizationMapper {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "connectors", source = "connectors")
-    @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfigDto", qualifiedByName = "updateOrgaSignerConfig")
     void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source,
         @MappingTarget MerlotParticipantMetaDto target);
 
@@ -172,13 +171,6 @@ public interface OrganizationMapper {
     @Mapping(target = "active", source = "active")
     void updateMerlotParticipantMetaDtoAsFedAdmin(MerlotParticipantMetaDto source,
         @MappingTarget MerlotParticipantMetaDto target);
-
-    @Named("updateOrgaSignerConfig")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "privateKey", source = "privateKey")
-    @Mapping(target = "verificationMethod", source = "verificationMethod")
-    void updateOrganisationSignerConfigDtoAsParticipant(OrganisationSignerConfigDto source,
-        @MappingTarget OrganisationSignerConfigDto target);
 
     OrganizationConnectorDto connectorExtensionToOrganizationConnectorDto(OrganisationConnectorExtension extension);
 

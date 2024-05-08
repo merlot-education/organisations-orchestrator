@@ -14,5 +14,4 @@ public class RegistrationFormContent {
     private String providerTncLink;
     private String providerTncHash;
     private String registrationNumberLocal;
-    private String didWeb;
 }

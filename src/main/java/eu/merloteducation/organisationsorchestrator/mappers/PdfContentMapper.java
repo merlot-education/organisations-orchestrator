@@ -18,15 +18,5 @@ public interface PdfContentMapper {
     @Mapping(target = "city", expression = "java(pDAcroForm.getField(DocumentField.CITY.getValue()).getValueAsString())")
     @Mapping(target = "postalCode", expression = "java(pDAcroForm.getField(DocumentField.POSTALCODE.getValue()).getValueAsString())")
     @Mapping(target = "street", expression = "java(pDAcroForm.getField(DocumentField.STREET.getValue()).getValueAsString())")
-    @Mapping(target = "didWeb", source = "pDAcroForm", qualifiedByName = "didWebFromForm")
     RegistrationFormContent getRegistrationFormContentFromRegistrationForm(PDAcroForm pDAcroForm);
-
-    @Named("didWebFromForm")
-    default String getDidWebFromRegistrationForm(PDAcroForm pDAcroForm) {
-        try {
-            return pDAcroForm.getField(DocumentField.DIDWEB.getValue()).getValueAsString();
-        } catch (Exception ignored) { // in case the form doesn't have the field
-            return "";
-        }
-    }
 }

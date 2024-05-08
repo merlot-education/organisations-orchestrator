@@ -84,7 +84,6 @@ public interface OrganizationMapper {
     MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "mailAddress", source = "content.mailAddress")
-    @Mapping(target = "orgaId", source = "content.didWeb", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE )
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
     @Mapping(target = "active", constant = "true")
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);

@@ -179,7 +179,6 @@ class ParticipantServiceTests {
         content.setStreet(street);
         content.setProviderTncLink(providerTncLink);
         content.setProviderTncHash(providerTncHash);
-        content.setDidWeb("");
 
         return content;
     }
@@ -628,17 +627,6 @@ class ParticipantServiceTests {
         assertEquals(metadataExpected.getMailAddress(), varArgs.getValue().getMailAddress());
         assertEquals(metadataExpected.getMembershipClass(), varArgs.getValue().getMembershipClass());
         assertEquals(0,  varArgs.getValue().getConnectors().size());
-    }
-
-    @Test
-    void createParticipantWithInvalidDid() throws Exception {
-        RegistrationFormContent registrationFormContent = getTestRegistrationFormContent();
-        registrationFormContent.setDidWeb("garbage");
-        OrganizationRoleGrantedAuthority role =
-                new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:somefedorga");
-        Exception e = assertThrows(ResponseStatusException.class,
-                () -> participantService.createParticipant(registrationFormContent, role));
-        assertEquals("400 BAD_REQUEST \"Invalid registration form: Invalid did:web specified.\"", e.getMessage());
     }
 
     @Test

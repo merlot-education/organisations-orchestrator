@@ -339,21 +339,17 @@ public class ParticipantService {
             credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(registrationFormContent);
             metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(registrationFormContent);
 
-            // if the user did not specify a did, we can generate the private key and did for them
-            if (metaData.getOrgaId().isBlank()) {
+            // request did and private key
+            ParticipantDidPrivateKeyDto didPrivateKeyDto =
+                    outgoingMessageService.requestNewDidPrivateKey(
+                            new ParticipantDidPrivateKeyCreateRequest(credentialSubject.getLegalName()));
 
-                // request did and private key
-                ParticipantDidPrivateKeyDto didPrivateKeyDto =
-                        outgoingMessageService.requestNewDidPrivateKey(
-                                new ParticipantDidPrivateKeyCreateRequest(credentialSubject.getLegalName()));
+           // update metadata signer config
+            metaData.setOrganisationSignerConfigDto(
+                    organizationMapper.getSignerConfigDtoFromDidPrivateKeyDto(didPrivateKeyDto));
 
-               // update metadata signer config
-                metaData.setOrganisationSignerConfigDto(
-                        organizationMapper.getSignerConfigDtoFromDidPrivateKeyDto(didPrivateKeyDto));
-
-                // update orga id with received did
-                metaData.setOrgaId(didPrivateKeyDto.getDid());
-            }
+            // update orga id with received did
+            metaData.setOrgaId(didPrivateKeyDto.getDid());
 
             // request a new DAPS certificate for organization and store it
             OmejdnConnectorCertificateDto omejdnCertificate
@@ -444,9 +440,6 @@ public class ParticipantService {
         String city = registrationFormContent.getCity();
         String postalCode = registrationFormContent.getPostalCode();
         String street = registrationFormContent.getStreet();
-        String didWeb = registrationFormContent.getDidWeb();
-
-        boolean invalidDidWeb = (didWeb != null && !didWeb.isBlank() && !didWeb.startsWith("did:web:"));
 
         boolean anyFieldEmptyOrBlank =
                 orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
@@ -456,10 +449,6 @@ public class ParticipantService {
         if (anyFieldEmptyOrBlank) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Invalid registration form: Empty or blank fields.");
-        }
-        if (invalidDidWeb) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Invalid registration form: Invalid did:web specified.");
         }
     }
 

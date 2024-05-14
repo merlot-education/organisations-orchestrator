@@ -257,9 +257,10 @@ public class ParticipantService {
 
         ParticipantItem participantItem;
         try {
+            // sign SD using verification method referencing the merlot certificate and the default/merlot private key
             participantItem = gxfsCatalogService.updateParticipant(targetCredentialSubject,
-                    activeRoleSignerConfig.getVerificationMethod(),
-                    activeRoleSignerConfig.getPrivateKey());
+                activeRoleSignerConfig.getMerlotVerificationMethod());
+
             // clean up old SDs, remove these lines if you need the history of participant SDs
             GXFSCatalogListResponse<SelfDescriptionItem> deprecatedParticipantSds =
                     gxfsCatalogService.getSelfDescriptionsByIds(new String[]{participantItem.getId()},
@@ -338,21 +339,17 @@ public class ParticipantService {
             credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(registrationFormContent);
             metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(registrationFormContent);
 
-            // if the user did not specify a did, we can generate the private key and did for them
-            if (metaData.getOrgaId().isBlank()) {
+            // request did and private key
+            ParticipantDidPrivateKeyDto didPrivateKeyDto =
+                    outgoingMessageService.requestNewDidPrivateKey(
+                            new ParticipantDidPrivateKeyCreateRequest(credentialSubject.getLegalName()));
 
-                // request did and private key
-                ParticipantDidPrivateKeyDto didPrivateKeyDto =
-                        outgoingMessageService.requestNewDidPrivateKey(
-                                new ParticipantDidPrivateKeyCreateRequest(credentialSubject.getLegalName()));
+           // update metadata signer config
+            metaData.setOrganisationSignerConfigDto(
+                    organizationMapper.getSignerConfigDtoFromDidPrivateKeyDto(didPrivateKeyDto));
 
-               // update metadata signer config
-                metaData.setOrganisationSignerConfigDto(
-                        organizationMapper.getSignerConfigDtoFromDidPrivateKeyDto(didPrivateKeyDto));
-
-                // update orga id with received did
-                metaData.setOrgaId(didPrivateKeyDto.getDid());
-            }
+            // update orga id with received did
+            metaData.setOrgaId(didPrivateKeyDto.getDid());
 
             // request a new DAPS certificate for organization and store it
             OmejdnConnectorCertificateDto omejdnCertificate
@@ -392,9 +389,8 @@ public class ParticipantService {
 
         ParticipantItem participantItem = null;
         try {
-            participantItem = gxfsCatalogService.addParticipant(credentialSubject,
-                    activeRoleSignerConfig.getVerificationMethod(),
-                    activeRoleSignerConfig.getPrivateKey());
+            // sign SD using verification method referencing the merlot certificate and the default/merlot private key
+            participantItem = gxfsCatalogService.addParticipant(credentialSubject, activeRoleSignerConfig.getMerlotVerificationMethod());
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
         } catch (WebClientResponseException e) {
@@ -444,9 +440,6 @@ public class ParticipantService {
         String city = registrationFormContent.getCity();
         String postalCode = registrationFormContent.getPostalCode();
         String street = registrationFormContent.getStreet();
-        String didWeb = registrationFormContent.getDidWeb();
-
-        boolean invalidDidWeb = (didWeb != null && !didWeb.isBlank() && !didWeb.startsWith("did:web:"));
 
         boolean anyFieldEmptyOrBlank =
                 orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
@@ -457,17 +450,22 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Invalid registration form: Empty or blank fields.");
         }
-        if (invalidDidWeb) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Invalid registration form: Invalid did:web specified.");
-        }
     }
 
     private boolean isSignerConfigValid(OrganisationSignerConfigDto signerConfig) {
+        if (signerConfig == null) {
+            return false;
+        }
 
-        return signerConfig != null && signerConfig.getPrivateKey() != null
-            && !signerConfig.getPrivateKey().isBlank()
-            && signerConfig.getVerificationMethod() != null
+        boolean privateKeyValid = signerConfig.getPrivateKey() != null
+            && !signerConfig.getPrivateKey().isBlank();
+
+        boolean verificationMethodValid = signerConfig.getVerificationMethod() != null
             && !signerConfig.getVerificationMethod().isBlank();
+
+        boolean merlotVerificationMethodValid = signerConfig.getMerlotVerificationMethod() != null
+            && !signerConfig.getMerlotVerificationMethod().isBlank();
+
+        return privateKeyValid && verificationMethodValid && merlotVerificationMethodValid;
     }
 }

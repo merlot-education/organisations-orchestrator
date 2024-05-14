@@ -84,13 +84,13 @@ public interface OrganizationMapper {
     MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "mailAddress", source = "content.mailAddress")
-    @Mapping(target = "orgaId", source = "content.didWeb", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE )
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
     @Mapping(target = "active", constant = "true")
     MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "privateKey", source = "privateKey")
     @Mapping(target = "verificationMethod", source = "verificationMethod")
+    @Mapping(target = "merlotVerificationMethod", source = "merlotVerificationMethod")
     OrganisationSignerConfigDto getSignerConfigDtoFromDidPrivateKeyDto(ParticipantDidPrivateKeyDto prk);
 
     @BeanMapping(ignoreByDefault = true)
@@ -139,6 +139,7 @@ public interface OrganizationMapper {
 
     @Mapping(target = "privateKey", source = "privateKey")
     @Mapping(target = "verificationMethod", source = "verificationMethod")
+    @Mapping(target = "merlotVerificationMethod", source = "merlotVerificationMethod")
     OrganisationSignerConfig organisationSignerConfigDtoToOrganisationSignerConfig(OrganisationSignerConfigDto signerConfigDto);
 
     default void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source,
@@ -160,7 +161,6 @@ public interface OrganizationMapper {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "connectors", source = "connectors")
-    @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfigDto")
     void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source,
         @MappingTarget MerlotParticipantMetaDto target);
 

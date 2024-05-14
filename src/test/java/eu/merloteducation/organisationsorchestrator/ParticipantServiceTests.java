@@ -179,7 +179,6 @@ class ParticipantServiceTests {
         content.setStreet(street);
         content.setProviderTncLink(providerTncLink);
         content.setProviderTncHash(providerTncHash);
-        content.setDidWeb("");
 
         return content;
     }
@@ -203,6 +202,7 @@ class ParticipantServiceTests {
         metaDto.setActive(true);
         OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
         signerConfigDto.setPrivateKey("privateKey");
+        signerConfigDto.setMerlotVerificationMethod("did:web:example.com:participant:someorga#merlot");
         signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
         metaDto.setOrganisationSignerConfigDto(signerConfigDto);
         return metaDto;
@@ -288,9 +288,11 @@ class ParticipantServiceTests {
             .thenReturn(participantItem);
         lenient().when(gxfsCatalogService.getParticipantById(eq("did:web:example.com:participant:nosignerconfig")))
             .thenReturn(participantItem);
-        lenient().when(gxfsCatalogService.updateParticipant(any(), any(), any()))
+        lenient().when(gxfsCatalogService.getParticipantById(eq("did:web:example.com:participant:emptysignerconfig")))
+            .thenReturn(participantItem);
+        lenient().when(gxfsCatalogService.updateParticipant(any(), any()))
             .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
-        lenient().when(gxfsCatalogService.addParticipant(any(), any(), any()))
+        lenient().when(gxfsCatalogService.addParticipant(any(), any()))
             .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
         lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(eq("MerlotOrganization"), any()))
             .thenReturn(new GXFSCatalogListResponse<>());
@@ -298,9 +300,13 @@ class ParticipantServiceTests {
         MerlotParticipantMetaDto metaDto = getTestMerlotParticipantMetaDto();
 
         MerlotParticipantMetaDto metaDtoNoSignerConfig = getTestMerlotParticipantMetaDto();
-        metaDtoNoSignerConfig.setOrganisationSignerConfigDto(new OrganisationSignerConfigDto());
+        metaDtoNoSignerConfig.setOrganisationSignerConfigDto(null);
+
+        MerlotParticipantMetaDto metaDtoEmptySignerConfig = getTestMerlotParticipantMetaDto();
+        metaDtoEmptySignerConfig.setOrganisationSignerConfigDto(new OrganisationSignerConfigDto());
 
         lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:nosignerconfig"))).thenReturn(metaDtoNoSignerConfig);
+        lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:emptysignerconfig"))).thenReturn(metaDtoEmptySignerConfig);
         lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:someorga"))).thenReturn(metaDto);
         lenient().when(organizationMetadataService.getMerlotParticipantMetaDto(eq("did:web:example.com:participant:somefedorga"))).thenReturn(metaDto);
         lenient().when(organizationMetadataService.getParticipantsByMembershipClass(eq(MembershipClass.FEDERATOR))).thenReturn(new ArrayList<>());
@@ -480,6 +486,12 @@ class ParticipantServiceTests {
         // following metadata of the organization should not have been updated
         assertNotEquals(updatedMetadata.getMembershipClass(), editedMetadata.getMembershipClass());
         assertNotEquals(updatedMetadata.isActive(), editedMetadata.isActive());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getVerificationMethod(),
+            editedMetadata.getOrganisationSignerConfigDto().getVerificationMethod());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getPrivateKey(),
+            editedMetadata.getOrganisationSignerConfigDto().getPrivateKey());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod(),
+            editedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod());
 
         verify(outgoingMessageService, times(0)).sendOrganizationMembershipRevokedMessage(any());
     }
@@ -540,6 +552,12 @@ class ParticipantServiceTests {
 
         // following metadata of the organization should not have been updated
         assertEquals(0, updatedMetadata.getConnectors().size()); // no connector was added
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getVerificationMethod(),
+            editedMetadata.getOrganisationSignerConfigDto().getVerificationMethod());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getPrivateKey(),
+            editedMetadata.getOrganisationSignerConfigDto().getPrivateKey());
+        assertNotEquals(updatedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod(),
+            editedMetadata.getOrganisationSignerConfigDto().getMerlotVerificationMethod());
 
         verify(outgoingMessageService, times(1)).sendOrganizationMembershipRevokedMessage(participantDto.getId());
     }
@@ -618,17 +636,6 @@ class ParticipantServiceTests {
     }
 
     @Test
-    void createParticipantWithInvalidDid() throws Exception {
-        RegistrationFormContent registrationFormContent = getTestRegistrationFormContent();
-        registrationFormContent.setDidWeb("garbage");
-        OrganizationRoleGrantedAuthority role =
-                new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:somefedorga");
-        Exception e = assertThrows(ResponseStatusException.class,
-                () -> participantService.createParticipant(registrationFormContent, role));
-        assertEquals("400 BAD_REQUEST \"Invalid registration form: Invalid did:web specified.\"", e.getMessage());
-    }
-
-    @Test
     void createParticipantWithInvalidRegistrationForm() {
 
         RegistrationFormContent content = new RegistrationFormContent();
@@ -694,6 +701,8 @@ class ParticipantServiceTests {
         ResponseStatusException e =
             assertThrows(ResponseStatusException.class, () -> participantService.updateParticipant(participantDtoWithEdits, activeRole));
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
+
+
     }
 
     @Test
@@ -720,6 +729,45 @@ class ParticipantServiceTests {
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
     }
 
+    @Test
+    void updateParticipantAsParticipantEmptySignerConfig() throws Exception {
+
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+        participantDtoWithEdits.setId("did:web:example.com:participant:emptysignerconfig");
+        participantDtoWithEdits.getMetadata().setOrganisationSignerConfigDto(null);
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:example.com:participant:emptysignerconfig");
+
+        ResponseStatusException e =
+            assertThrows(ResponseStatusException.class, () -> participantService.updateParticipant(participantDtoWithEdits, activeRole));
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
+
+
+    }
+
+    @Test
+    void updateParticipantAsFedAdminEmptySignerConfig() throws Exception {
+
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:emptysignerconfig");
+
+        ResponseStatusException e =
+            assertThrows(ResponseStatusException.class, () -> participantService.updateParticipant(participantDtoWithEdits, activeRole));
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
+    }
+
+    @Test
+    void createParticipantAsFederatorEmptySignerConfig() throws Exception {
+
+        RegistrationFormContent registrationFormContent = getTestRegistrationFormContent();
+
+        OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:emptysignerconfig");
+
+        ResponseStatusException e =
+            assertThrows(ResponseStatusException.class, () -> participantService.createParticipant(registrationFormContent, activeRole));
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
+    }
 
     private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {
 
@@ -785,8 +833,9 @@ class ParticipantServiceTests {
                 new IonosS3BucketDto("bucket3", "http://example.com")));
         metaData.setConnectors(Set.of(connector));
         OrganisationSignerConfigDto signerConfigDto = new OrganisationSignerConfigDto();
-        signerConfigDto.setPrivateKey("privateKey");
-        signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
+        signerConfigDto.setPrivateKey("changedprivateKey");
+        signerConfigDto.setMerlotVerificationMethod("did:web:example.com:participant:someorga#changedmerlot");
+        signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#changedsomemethod");
         metaData.setOrganisationSignerConfigDto(signerConfigDto);
 
         dtoWithEdits.setSelfDescription(selfDescription);

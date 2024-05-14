@@ -13,8 +13,7 @@ public enum DocumentField {
     COUNTRYCODE("CountryCode"),
     TNCLINK("ProviderTncLink"),
     TNCHASH("ProviderTncHash"),
-    REGISTRATIONNUMBER("RegistrationNumber"),
-    DIDWEB("DidWeb");
+    REGISTRATIONNUMBER("RegistrationNumber");
 
     private final String value;
 

@@ -91,5 +91,23 @@ merlot-did-service:
 gxfscatalog-library:
   ignore-ssl: true
 
+gxdch-services:
+  compliance-base-uris:
+    "https://compliance.lab.gaia-x.eu" #,
+    #"https://gx-compliance.aruba.it",
+  #"https://gx-compliance.gxdch.dih.telekom.com",
+  #"https://gx-compliance.airenetworks.es"
+  registry-base-uris:
+    "https://registry.lab.gaia-x.eu" #,
+    #"https://gx-registry.aruba.it",
+  #"https://gx-registry.gxdch.dih.telekom.com",
+  #"https://gx-registry.airenetworks.es"
+  notary-base-uris:
+    "https://registrationnumber.notary.lab.gaia-x.eu" #,
+    #"https://gx-notary.aruba.it",
+  #"https://gx-notary.gxdch.dih.telekom.com",
+  #"https://gx-notary.airenetworks.es"
+  version: "v1-staging"
+
 daps-server:
   base-uri: http://example.com

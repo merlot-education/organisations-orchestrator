@@ -18,8 +18,18 @@ public class ParticipantShapeController {
      *
      * @return merlot participant shape
      */
-    @GetMapping("/merlotParticipant")
-    public String getShapeJson() {
-        return gxfsWizardApiService.getShapeByName("Merlot Organization.json");
+    @GetMapping("/merlot/participant")
+    public String getMerlotParticipantShape() {
+        return gxfsWizardApiService.getShapeByName("merlot", "Merlotlegalparticipant.json");
+    }
+
+    @GetMapping("/gx/participant")
+    public String getGxParticipantShape() {
+        return gxfsWizardApiService.getShapeByName("gx", "Legalparticipant.json");
+    }
+
+    @GetMapping("/gx/registrationnumber")
+    public String getGxRegistrationNumberShape() {
+        return gxfsWizardApiService.getShapeByName("gx", "Legalregistrationnumber.json");
     }
 }

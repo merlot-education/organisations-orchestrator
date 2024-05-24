@@ -29,9 +29,10 @@ public class OrganizationMetadataService {
      */
     public MerlotParticipantMetaDto getMerlotParticipantMetaDto(String orgaId) {
 
-        OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
+        /*OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
 
-        return mapper.organizationMetadataToMerlotParticipantMetaDto(dbMeta);
+        return mapper.organizationMetadataToMerlotParticipantMetaDto(dbMeta);*/
+        return null;
     }
 
     /**
@@ -42,13 +43,14 @@ public class OrganizationMetadataService {
      */
     public MerlotParticipantMetaDto saveMerlotParticipantMeta(MerlotParticipantMetaDto metaDto) {
 
-        OrganizationMetadata dbMeta = repository.findById(metaDto.getOrgaId()).orElse(null);
+        /*OrganizationMetadata dbMeta = repository.findById(metaDto.getOrgaId()).orElse(null);
         if (dbMeta != null) {
             throw new ParticipantConflictException("Participant with this id already exists");
         }
         OrganizationMetadata metadata = mapper.merlotParticipantMetaDtoToOrganizationMetadata(metaDto);
 
-        return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));
+        return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));*/
+        return null;
     }
 
     /**
@@ -59,7 +61,7 @@ public class OrganizationMetadataService {
      */
     public MerlotParticipantMetaDto updateMerlotParticipantMeta(MerlotParticipantMetaDto metaDtoWithEdits) {
 
-        String orgaId = metaDtoWithEdits.getOrgaId();
+        /*String orgaId = metaDtoWithEdits.getOrgaId();
 
         OrganizationMetadata dbMetadata = repository.findById(orgaId).orElse(null);
 
@@ -69,7 +71,8 @@ public class OrganizationMetadataService {
 
         mapper.updateOrganizationMetadataWithMerlotParticipantMetaDto(metaDtoWithEdits, dbMetadata);
 
-        return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(dbMetadata));
+        return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(dbMetadata));*/
+        return null;
     }
 
     /**
@@ -80,9 +83,10 @@ public class OrganizationMetadataService {
      */
     public List<MerlotParticipantMetaDto> getParticipantsByMembershipClass(MembershipClass membershipClass) {
 
-        List<OrganizationMetadata> orgaMetadataList = repository.findByMembershipClass(membershipClass);
+        /*List<OrganizationMetadata> orgaMetadataList = repository.findByMembershipClass(membershipClass);
         return orgaMetadataList.stream()
-            .map(orgaMetadata -> mapper.organizationMetadataToMerlotParticipantMetaDto(orgaMetadata)).toList();
+            .map(orgaMetadata -> mapper.organizationMetadataToMerlotParticipantMetaDto(orgaMetadata)).toList();*/
+        return null;
     }
 
     /**
@@ -92,7 +96,8 @@ public class OrganizationMetadataService {
      */
     public List<String> getInactiveParticipantsIds() {
 
-        return repository.getOrgaIdByActive(false);
+        //return repository.getOrgaIdByActive(false);
+        return null;
     }
 
     /**
@@ -104,7 +109,7 @@ public class OrganizationMetadataService {
      */
     public OrganizationConnectorTransferDto getConnectorForParticipant(String orgaId, String connectorId) {
 
-        OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
+        /*OrganizationMetadata dbMeta = repository.findById(orgaId).orElse(null);
         OrganisationConnectorExtension connector = null;
 
         if (dbMeta != null) {
@@ -113,7 +118,8 @@ public class OrganizationMetadataService {
                 .findFirst().orElse(null);
         }
 
-        return connector != null ? mapper.connectorExtensionToOrganizationConnectorTransferDto(connector) : null;
+        return connector != null ? mapper.connectorExtensionToOrganizationConnectorTransferDto(connector) : null;*/
+        return null;
     }
 
     /**
@@ -124,7 +130,8 @@ public class OrganizationMetadataService {
      */
     public List<String> getParticipantIdsByMembershipClass(MembershipClass membershipClass) {
 
-        return repository.getOrgaIdByMembershipClass(membershipClass);
+        //return repository.getOrgaIdByMembershipClass(membershipClass);
+        return null;
     }
 
 }

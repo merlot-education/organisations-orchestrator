@@ -12,7 +12,12 @@ import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.GxVcard;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.NodeKindIRITypeId;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalParticipantCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalRegistrationNumberCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.datatypes.ParticipantTermsAndConditions;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
@@ -74,7 +79,7 @@ public class ParticipantService {
      * @return organization data
      */
     public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
-        // input sanitization, must be a did:web
+        /*// input sanitization, must be a did:web
         String regex = "did:web:[-.A-Za-z0-9:%#]*";
         if (!id.matches(regex)) {
             throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did:web.");
@@ -102,7 +107,8 @@ public class ParticipantService {
         SelfDescription selfDescription = response.getSelfDescription();
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription,
-            metaDto);
+            metaDto);*/
+        return new MerlotParticipantDto();
     }
 
     /**
@@ -111,7 +117,7 @@ public class ParticipantService {
      * @return page of organizations
      */
     public Page<MerlotParticipantDto> getParticipants(Pageable pageable, OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
-        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
+        /*GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
 
         if (activeRole != null && activeRole.isFedAdmin()) {
             uriResponse = getAllParticipantsUris(pageable);
@@ -160,7 +166,8 @@ public class ParticipantService {
             handleCatalogError(e);
         }
         // wrap result into page
-        return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());
+        return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());*/
+        return new PageImpl<>(Collections.emptyList(), pageable, 0);
     }
 
     private GXFSCatalogListResponse<GXFSQueryUriItem> getActiveParticipantsUris(Pageable pageable) throws JsonProcessingException {
@@ -211,7 +218,7 @@ public class ParticipantService {
     @Transactional(rollbackOn = { ResponseStatusException.class })
     public MerlotParticipantDto updateParticipant(MerlotParticipantDto participantDtoWithEdits,
         OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
-        MerlotParticipantDto participantDto = getParticipantById(participantDtoWithEdits.getId());
+        /*MerlotParticipantDto participantDto = getParticipantById(participantDtoWithEdits.getId());
         MerlotOrganizationCredentialSubject targetCredentialSubject =
             (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription()
                     .getVerifiableCredential().getCredentialSubject();
@@ -279,7 +286,8 @@ public class ParticipantService {
         }
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
-            participantMetadata);
+            participantMetadata);*/
+        return new MerlotParticipantDto();
     }
 
     /**
@@ -288,7 +296,7 @@ public class ParticipantService {
      * @return list of organizations that are federators
      */
     public List<MerlotParticipantDto> getFederators() {
-        List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
+        /*List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
 
         Map<String, MerlotParticipantMetaDto> metadataMap = new HashMap<>();
 
@@ -316,7 +324,8 @@ public class ParticipantService {
             MerlotParticipantMetaDto metadata = metadataMap.get(participantId);
 
             return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(sd, metadata);
-        }).toList();
+        }).toList();*/
+        return Collections.emptyList();
     }
 
     /**
@@ -332,8 +341,70 @@ public class ParticipantService {
                                                   OrganizationRoleGrantedAuthority activeRole)
             throws JsonProcessingException {
 
-        MerlotOrganizationCredentialSubject credentialSubject;
-        MerlotParticipantMetaDto metaData;
+        LegalParticipantCredentialSubject participantCs = new LegalParticipantCredentialSubject();
+        participantCs.setContext(Map.of(
+                "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#",
+                "gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#",
+                "gax-validation", "http://w3id.org/gaia-x/validation#",
+                "rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                "sh", "http://www.w3.org/ns/shacl#",
+                "skos", "http://www.w3.org/2004/02/skos/core#",
+                "vcard", "http://www.w3.org/2006/vcard/ns#",
+                "xsd", "http://www.w3.org/2001/XMLSchema#",
+                "merlot", "http://w3id.org/gaia-x/merlot#"));
+        participantCs.setId("did:web:marketplace.dev.merlot-education.eu");
+        participantCs.setName("Some Orga");
+        participantCs.setLegalRegistrationNumber(
+                List.of(new NodeKindIRITypeId("did:web:marketplace.dev.merlot-education.eu#registrationNumber")));
+        GxVcard participantAddress = new GxVcard();
+        participantAddress.setCountrySubdivisionCode("DE-BE");
+        participantAddress.setCountryCode("DE");
+        participantCs.setLegalAddress(participantAddress);
+        participantCs.setHeadquarterAddress(participantAddress);
+
+        LegalRegistrationNumberCredentialSubject registrationNumberCs = new LegalRegistrationNumberCredentialSubject();
+        registrationNumberCs.setContext(Map.of(
+                "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#",
+                "gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#",
+                "gax-validation", "http://w3id.org/gaia-x/validation#",
+                "rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                "sh", "http://www.w3.org/ns/shacl#",
+                "skos", "http://www.w3.org/2004/02/skos/core#",
+                "vcard", "http://www.w3.org/2006/vcard/ns#",
+                "xsd", "http://www.w3.org/2001/XMLSchema#",
+                "merlot", "http://w3id.org/gaia-x/merlot#"));
+        registrationNumberCs.setId("did:web:marketplace.dev.merlot-education.eu#registrationNumber");
+        registrationNumberCs.setLeiCode(List.of("894500MQZ65CN32S9A66"));
+
+        MerlotLegalParticipantCredentialSubject merlotParticipantCs = new MerlotLegalParticipantCredentialSubject();
+        merlotParticipantCs.setContext(Map.of(
+                "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#",
+                "gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#",
+                "gax-validation", "http://w3id.org/gaia-x/validation#",
+                "rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                "sh", "http://www.w3.org/ns/shacl#",
+                "skos", "http://www.w3.org/2004/02/skos/core#",
+                "vcard", "http://www.w3.org/2006/vcard/ns#",
+                "xsd", "http://www.w3.org/2001/XMLSchema#",
+                "merlot", "http://w3id.org/gaia-x/merlot#"));
+        merlotParticipantCs.setId("did:web:marketplace.dev.merlot-education.eu");
+        merlotParticipantCs.setLegalName("Some Orga LLC");
+        merlotParticipantCs.setLegalForm("LLC");
+        ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
+        termsAndConditions.setUrl("http://example.com");
+        termsAndConditions.setHash("hash1234");
+        merlotParticipantCs.setTermsAndConditions(termsAndConditions);
+
+        try {
+            ParticipantItem participantItem =
+                    gxfsCatalogService.addParticipant(List.of(participantCs, registrationNumberCs, merlotParticipantCs),
+                            "did:web:marketplace.dev.merlot-education.eu#MERLOTJWK2020");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+
+        /*MerlotParticipantMetaDto metaData;
         try {
             validateMandatoryFields(registrationFormContent);
             credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(registrationFormContent);
@@ -402,7 +473,8 @@ public class ParticipantService {
         }
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
-            metaDataDto);
+            metaDataDto);*/
+        return new MerlotParticipantDto();
     }
 
     /**
@@ -411,7 +483,8 @@ public class ParticipantService {
      * @return list of trusted dids
      */
     public List<String> getTrustedDids() {
-        return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
+        return Collections.emptyList();
+        //return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
     }
 
     private Map<String, String> getContext() {

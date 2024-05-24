@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.modelslib.daps.OmejdnConnectorCertificateDto;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface OrganizationMapper {
 
-    @Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
+    /*@Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
     @Mapping(target = "metadata", source = "metaData")
     @Mapping(target = "selfDescription", source = "selfDescription")
     MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(SelfDescription selfDescription,
@@ -35,8 +35,8 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.locality", source = "legalAddress.locality")
     @Mapping(target = "headquarterAddress.postalCode", source = "legalAddress.postalCode")
     @Mapping(target = "headquarterAddress.streetAddress", source = "legalAddress.streetAddress")
-    void updateSelfDescriptionAsParticipant(MerlotOrganizationCredentialSubject source,
-        @MappingTarget MerlotOrganizationCredentialSubject target);
+    void updateSelfDescriptionAsParticipant(MerlotLegalParticipantCredentialSubject source,
+        @MappingTarget MerlotLegalParticipantCredentialSubject target);
 
     @BeanMapping(ignoreByDefault = true)
     // allow to edit name (orga and legal)
@@ -61,8 +61,8 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.locality", source = "legalAddress.locality")
     @Mapping(target = "headquarterAddress.postalCode", source = "legalAddress.postalCode")
     @Mapping(target = "headquarterAddress.streetAddress", source = "legalAddress.streetAddress")
-    void updateSelfDescriptionAsFedAdmin(MerlotOrganizationCredentialSubject source,
-        @MappingTarget MerlotOrganizationCredentialSubject target);
+    void updateSelfDescriptionAsFedAdmin(MerlotLegalParticipantCredentialSubject source,
+        @MappingTarget MerlotLegalParticipantCredentialSubject target);
 
     @Mapping(target = "orgaName", source = "content.organizationName")
     @Mapping(target = "legalName", source = "content.organizationLegalName")
@@ -81,7 +81,7 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.postalCode", source = "content.postalCode")
     @Mapping(target = "headquarterAddress.streetAddress", source = "content.street")
     @Mapping(target = "headquarterAddress.type", constant = "vcard:Address")
-    MerlotOrganizationCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
+    MerlotLegalParticipantCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "mailAddress", source = "content.mailAddress")
     @Mapping(target = "membershipClass", constant = "PARTICIPANT")
@@ -210,5 +210,5 @@ public interface OrganizationMapper {
         return connectorDtos.stream()
             .map(connectorDto -> organizationConnectorDtoToConnectorExtension(connectorDto, orgaId))
             .collect(Collectors.toSet());
-    }
+    }*/
 }

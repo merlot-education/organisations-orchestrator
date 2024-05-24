@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRole;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.participants.GaxTrustLegalPersonCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
@@ -121,8 +121,8 @@ public class InitialDataLoader implements CommandLineRunner {
                 .createOrganization(new MultipartFile[]{orgaPdf}, merlotFederationRole);
 
         // add initial connectors as well
-        String orgaLegalName = ((GaxTrustLegalPersonCredentialSubject) participant.getSelfDescription()
-                .getVerifiableCredential().getCredentialSubject()).getLegalName();
+        String orgaLegalName = ((MerlotLegalParticipantCredentialSubject) participant.getSelfDescription()
+                .getVerifiableCredential().get(0).getCredentialSubject()).getLegalName();
         Set<OrganizationConnectorDto> connectors = connectorMap.getOrDefault(orgaLegalName, Collections.emptySet());
 
         // if connectors exist, add them on behalf of the participant

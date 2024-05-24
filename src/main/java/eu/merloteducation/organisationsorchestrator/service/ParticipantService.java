@@ -341,6 +341,21 @@ public class ParticipantService {
                                                   OrganizationRoleGrantedAuthority activeRole)
             throws JsonProcessingException {
 
+        /*LegalParticipantCredentialSubject participantCs = organizationMapper
+                .getLegalParticipantCsFromRegistrationForm(registrationFormContent);
+        participantCs.setId("did:web:marketplace.dev.merlot-education.eu");
+        participantCs.setLegalRegistrationNumber(
+                List.of(new NodeKindIRITypeId("did:web:marketplace.dev.merlot-education.eu#registrationNumber")));
+        participantCs.getLegalAddress().setCountrySubdivisionCode("DE-BE"); // TODO remove
+        participantCs.getHeadquarterAddress().setCountrySubdivisionCode("DE-BE"); // TODO remove
+        LegalRegistrationNumberCredentialSubject registrationNumberCs = organizationMapper
+                .getLegalRegistrationNumberFromRegistrationForm(registrationFormContent);
+        registrationNumberCs.setId("did:web:marketplace.dev.merlot-education.eu#registrationNumber");
+        registrationNumberCs.setLeiCode(List.of("894500MQZ65CN32S9A66")); // TODO remove
+        MerlotLegalParticipantCredentialSubject merlotParticipantCs = organizationMapper
+                .getMerlotParticipantCsFromRegistrationForm(registrationFormContent);
+        merlotParticipantCs.setId("did:web:marketplace.dev.merlot-education.eu");*/
+
         LegalParticipantCredentialSubject participantCs = new LegalParticipantCredentialSubject();
         participantCs.setContext(Map.of(
                 "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#",
@@ -364,17 +379,9 @@ public class ParticipantService {
 
         LegalRegistrationNumberCredentialSubject registrationNumberCs = new LegalRegistrationNumberCredentialSubject();
         registrationNumberCs.setContext(Map.of(
-                "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#",
-                "gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#",
-                "gax-validation", "http://w3id.org/gaia-x/validation#",
-                "rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                "sh", "http://www.w3.org/ns/shacl#",
-                "skos", "http://www.w3.org/2004/02/skos/core#",
-                "vcard", "http://www.w3.org/2006/vcard/ns#",
-                "xsd", "http://www.w3.org/2001/XMLSchema#",
-                "merlot", "http://w3id.org/gaia-x/merlot#"));
+                "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"));
         registrationNumberCs.setId("did:web:marketplace.dev.merlot-education.eu#registrationNumber");
-        registrationNumberCs.setLeiCode(List.of("894500MQZ65CN32S9A66"));
+        registrationNumberCs.setLeiCode("894500MQZ65CN32S9A66");
 
         MerlotLegalParticipantCredentialSubject merlotParticipantCs = new MerlotLegalParticipantCredentialSubject();
         merlotParticipantCs.setContext(Map.of(

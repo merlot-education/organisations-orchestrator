@@ -1,6 +1,8 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalParticipantCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalRegistrationNumberCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.*;
@@ -9,11 +11,37 @@ import eu.merloteducation.organisationsorchestrator.models.RegistrationFormConte
 import eu.merloteducation.organisationsorchestrator.models.entities.*;
 import org.mapstruct.*;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", imports = {
+        List.class
+})
 public interface OrganizationMapper {
+
+    @Mapping(target = "name", source = "content.organizationName")
+    @Mapping(target = "legalAddress.countryCode", source = "content.countryCode")
+    @Mapping(target = "legalAddress.countrySubdivisionCode", source = "content.countryCode")
+    @Mapping(target = "legalAddress.streetAddress", source = "content.street")
+    @Mapping(target = "legalAddress.locality", source = "content.city")
+    @Mapping(target = "legalAddress.postalCode", source = "content.postalCode")
+    @Mapping(target = "headquarterAddress.countryCode", source = "content.countryCode")
+    @Mapping(target = "headquarterAddress.countrySubdivisionCode", source = "content.countryCode")
+    @Mapping(target = "headquarterAddress.streetAddress", source = "content.street")
+    @Mapping(target = "headquarterAddress.locality", source = "content.city")
+    @Mapping(target = "headquarterAddress.postalCode", source = "content.postalCode")
+    LegalParticipantCredentialSubject getLegalParticipantCsFromRegistrationForm(RegistrationFormContent content);
+
+    // TODO support more registration number types
+    @Mapping(target = "leiCode", expression = "java(List.of(content.getRegistrationNumberLocal()))")
+    LegalRegistrationNumberCredentialSubject getLegalRegistrationNumberFromRegistrationForm(RegistrationFormContent content);
+
+    @Mapping(target = "legalName", source = "content.organizationLegalName")
+    @Mapping(target = "legalForm", constant = "LLC") // TODO add to registration form
+    @Mapping(target = "termsAndConditions.url", source = "content.providerTncLink")
+    @Mapping(target = "termsAndConditions.hash", source = "content.providerTncHash")
+    MerlotLegalParticipantCredentialSubject getMerlotParticipantCsFromRegistrationForm(RegistrationFormContent content);
 
     /*@Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
     @Mapping(target = "metadata", source = "metaData")

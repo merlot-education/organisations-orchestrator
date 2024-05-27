@@ -55,7 +55,7 @@ public class ParticipantService {
     private final OutgoingMessageService outgoingMessageService;
     private final OmejdnConnectorApiClient omejdnConnectorApiClient;
 
-    public static final String PARTICIPANTTYPE = "MerlotOrganization";
+    public static final String PARTICIPANTTYPE = "LegalParticipant";
 
     public ParticipantService(@Autowired OrganizationMapper organizationMapper,
                               @Autowired ParticipantCredentialMapper participantCredentialMapper,
@@ -94,7 +94,7 @@ public class ParticipantService {
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
         ParticipantItem response = null;
         try {
-            response = gxfsCatalogService.getParticipantById(id);
+            response = gxfsCatalogService.getParticipantById(id);  // TODO pass whole VP instead of wrapped objects
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         }
@@ -115,7 +115,7 @@ public class ParticipantService {
      * @return page of organizations
      */
     public Page<MerlotParticipantDto> getParticipants(Pageable pageable, OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
-        /*GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
 
         if (activeRole != null && activeRole.isFedAdmin()) {
             uriResponse = getAllParticipantsUris(pageable);
@@ -148,7 +148,7 @@ public class ParticipantService {
                 .map(item -> {
                     SelfDescription selfDescription = item.getMeta().getContent();
 
-                    String id = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
+                    String id = selfDescription.getId();
                     MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(id);
 
                     if (metaDto == null) {
@@ -157,15 +157,16 @@ public class ParticipantService {
                     }
 
                     return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription, metaDto);
-                }).sorted(Comparator.comparing(
+                })
+                    /*.sorted(Comparator.comparing(
                     p -> ((MerlotOrganizationCredentialSubject) p.getSelfDescription().getVerifiableCredential()
-                        .getCredentialSubject()).getOrgaName().toLowerCase())).toList();
+                        .getCredentialSubject()).getOrgaName().toLowerCase()))*/ // TODO sort again
+                    .toList();
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         }
         // wrap result into page
-        return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());*/
-        return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        return new PageImpl<>(selfDescriptions, pageable, uriResponse.getTotalCount());
     }
 
     private GXFSCatalogListResponse<GXFSQueryUriItem> getActiveParticipantsUris(Pageable pageable) throws JsonProcessingException {
@@ -186,7 +187,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(PARTICIPANTTYPE, "orgaName",
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(PARTICIPANTTYPE, "name",
                     pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);

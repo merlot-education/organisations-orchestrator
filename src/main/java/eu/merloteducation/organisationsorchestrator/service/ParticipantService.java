@@ -17,6 +17,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
+import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganisationSignerConfigDto;
 import eu.merloteducation.modelslib.daps.OmejdnConnectorCertificateDto;
@@ -311,7 +312,7 @@ public class ParticipantService {
      * @return list of organizations that are federators
      */
     public List<MerlotParticipantDto> getFederators() {
-        /*List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
+        List<MerlotParticipantMetaDto> metadataList = organizationMetadataService.getParticipantsByMembershipClass(MembershipClass.FEDERATOR);
 
         Map<String, MerlotParticipantMetaDto> metadataMap = new HashMap<>();
 
@@ -329,7 +330,7 @@ public class ParticipantService {
 
         selfDescriptionItems.forEach(sdItem -> {
             SelfDescription selfDescription = sdItem.getMeta().getContent();
-            String orgaId = selfDescription.getVerifiableCredential().getCredentialSubject().getId();
+            String orgaId = selfDescription.getId();
 
             sdMap.put(orgaId, selfDescription);
         });
@@ -339,8 +340,7 @@ public class ParticipantService {
             MerlotParticipantMetaDto metadata = metadataMap.get(participantId);
 
             return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(sd, metadata);
-        }).toList();*/
-        return Collections.emptyList();
+        }).toList();
     }
 
     /**

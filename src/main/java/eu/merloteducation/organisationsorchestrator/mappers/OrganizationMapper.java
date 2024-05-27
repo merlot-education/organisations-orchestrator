@@ -15,9 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", imports = {
-        List.class
-})
+@Mapper(componentModel = "spring")
 public interface OrganizationMapper {
 
     @Mapping(target = "name", source = "content.organizationName")
@@ -34,7 +32,7 @@ public interface OrganizationMapper {
     LegalParticipantCredentialSubject getLegalParticipantCsFromRegistrationForm(RegistrationFormContent content);
 
     // TODO support more registration number types
-    @Mapping(target = "leiCode", expression = "java(List.of(content.getRegistrationNumberLocal()))")
+    @Mapping(target = "leiCode", source = "content.registrationNumberLocal")
     LegalRegistrationNumberCredentialSubject getLegalRegistrationNumberFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "legalName", source = "content.organizationLegalName")
@@ -43,11 +41,86 @@ public interface OrganizationMapper {
     @Mapping(target = "termsAndConditions.hash", source = "content.providerTncHash")
     MerlotLegalParticipantCredentialSubject getMerlotParticipantCsFromRegistrationForm(RegistrationFormContent content);
 
-    /*@Mapping(target = "id", source = "selfDescription.verifiableCredential.credentialSubject.id")
+    @Mapping(target = "mailAddress", source = "content.mailAddress")
+    @Mapping(target = "membershipClass", constant = "PARTICIPANT")
+    @Mapping(target = "active", constant = "true")
+    MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
+
+    @Mapping(target = "privateKey", source = "privateKey")
+    @Mapping(target = "verificationMethod", source = "verificationMethod")
+    @Mapping(target = "merlotVerificationMethod", source = "merlotVerificationMethod")
+    OrganisationSignerConfigDto getSignerConfigDtoFromDidPrivateKeyDto(ParticipantDidPrivateKeyDto prk);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "clientName", source = "clientName")
+    @Mapping(target = "clientId", source = "clientId")
+    @Mapping(target = "keystore", source = "keystore")
+    @Mapping(target = "password", source = "password")
+    @Mapping(target = "scope", source = "scope")
+    DapsCertificateDto omejdnCertificateToDapsCertificateDto(OmejdnConnectorCertificateDto dto);
+
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "orgaId", source = "orgaId")
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    @Mapping(target = "active", source = "active")
+    @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(metadataDto.getConnectors(), metadataDto.getOrgaId()))")
+    @Mapping(target = "organisationSignerConfig", source = "organisationSignerConfigDto")
+    @Mapping(target = "dapsCertificates", source = "dapsCertificates")
+    OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "orgaId", source = "orgaId")
+    @Mapping(target = "mailAddress", source = "mailAddress")
+    @Mapping(target = "membershipClass", source = "membershipClass")
+    @Mapping(target = "active", source = "active")
+    @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsForDto")
+    @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfig")
+    @Mapping(target = "dapsCertificates", source = "dapsCertificates")
+    MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
+
+    @Named("connectorsForDto")
+    default Set<OrganizationConnectorDto> connectorsDtoMapper(Set<OrganisationConnectorExtension> connectors) {
+
+        return connectors.stream().map(this::connectorExtensionToOrganizationConnectorDto).collect(Collectors.toSet());
+    }
+
+    OrganizationConnectorDto connectorExtensionToOrganizationConnectorDto(OrganisationConnectorExtension extension);
+
+    default Set<OrganisationConnectorExtension> connectorsEntityMapper(Set<OrganizationConnectorDto> connectorDtos,
+                                                                       String orgaId) {
+
+        return connectorDtos.stream()
+                .map(connectorDto -> organizationConnectorDtoToConnectorExtension(connectorDto, orgaId))
+                .collect(Collectors.toSet());
+    }
+
+    default OrganisationConnectorExtension organizationConnectorDtoToConnectorExtension(OrganizationConnectorDto dto,
+                                                                                        String orgaId) {
+
+        OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
+        connector.setOrgaId(orgaId);
+        connector.setConnectorId(dto.getConnectorId());
+        connector.setConnectorEndpoint(dto.getConnectorEndpoint());
+        connector.setConnectorAccessToken(dto.getConnectorAccessToken());
+        connector.setIonosS3ExtensionConfig(
+                ionosS3ExtensionConfigDtoToIonosS3ExtensionConfig(dto.getIonosS3ExtensionConfig()));
+
+        return connector;
+    }
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "buckets", source = "buckets")
+    IonosS3ExtensionConfig ionosS3ExtensionConfigDtoToIonosS3ExtensionConfig(IonosS3ExtensionConfigDto dto);
+
+    @Mapping(target = "id", source = "metaData.orgaId")
     @Mapping(target = "metadata", source = "metaData")
     @Mapping(target = "selfDescription", source = "selfDescription")
     MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(SelfDescription selfDescription,
-        MerlotParticipantMetaDto metaData);
+                                                                          MerlotParticipantMetaDto metaData);
+
+    /*
 
     @BeanMapping(ignoreByDefault = true)
     // allow to edit tnc
@@ -111,35 +184,7 @@ public interface OrganizationMapper {
     @Mapping(target = "headquarterAddress.type", constant = "vcard:Address")
     MerlotLegalParticipantCredentialSubject getSelfDescriptionFromRegistrationForm(RegistrationFormContent content);
 
-    @Mapping(target = "mailAddress", source = "content.mailAddress")
-    @Mapping(target = "membershipClass", constant = "PARTICIPANT")
-    @Mapping(target = "active", constant = "true")
-    MerlotParticipantMetaDto getOrganizationMetadataFromRegistrationForm(RegistrationFormContent content);
 
-    @Mapping(target = "privateKey", source = "privateKey")
-    @Mapping(target = "verificationMethod", source = "verificationMethod")
-    @Mapping(target = "merlotVerificationMethod", source = "merlotVerificationMethod")
-    OrganisationSignerConfigDto getSignerConfigDtoFromDidPrivateKeyDto(ParticipantDidPrivateKeyDto prk);
-
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "orgaId", source = "orgaId")
-    @Mapping(target = "mailAddress", source = "mailAddress")
-    @Mapping(target = "membershipClass", source = "membershipClass")
-    @Mapping(target = "active", source = "active")
-    @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsForDto")
-    @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfig")
-    @Mapping(target = "dapsCertificates", source = "dapsCertificates")
-    MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
-
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "orgaId", source = "orgaId")
-    @Mapping(target = "mailAddress", source = "mailAddress")
-    @Mapping(target = "membershipClass", source = "membershipClass")
-    @Mapping(target = "active", source = "active")
-    @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(metadataDto.getConnectors(), metadataDto.getOrgaId()))")
-    @Mapping(target = "organisationSignerConfig", source = "organisationSignerConfigDto")
-    @Mapping(target = "dapsCertificates", source = "dapsCertificates")
-    OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "clientName", source = "clientName")
@@ -156,14 +201,6 @@ public interface OrganizationMapper {
     @Mapping(target = "password", source = "password")
     @Mapping(target = "scope", source = "scope")
     DapsCertificateDto certificateToCertificateDto(DapsCertificate cert);
-
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "clientName", source = "clientName")
-    @Mapping(target = "clientId", source = "clientId")
-    @Mapping(target = "keystore", source = "keystore")
-    @Mapping(target = "password", source = "password")
-    @Mapping(target = "scope", source = "scope")
-    DapsCertificateDto omejdnCertificateToDapsCertificateDto(OmejdnConnectorCertificateDto dto);
 
     @Mapping(target = "privateKey", source = "privateKey")
     @Mapping(target = "verificationMethod", source = "verificationMethod")
@@ -199,44 +236,11 @@ public interface OrganizationMapper {
     void updateMerlotParticipantMetaDtoAsFedAdmin(MerlotParticipantMetaDto source,
         @MappingTarget MerlotParticipantMetaDto target);
 
-    OrganizationConnectorDto connectorExtensionToOrganizationConnectorDto(OrganisationConnectorExtension extension);
-
     OrganizationConnectorTransferDto connectorExtensionToOrganizationConnectorTransferDto(OrganisationConnectorExtension extension);
-
-    default OrganisationConnectorExtension organizationConnectorDtoToConnectorExtension(OrganizationConnectorDto dto,
-        String orgaId) {
-
-        OrganisationConnectorExtension connector = new OrganisationConnectorExtension();
-        connector.setOrgaId(orgaId);
-        connector.setConnectorId(dto.getConnectorId());
-        connector.setConnectorEndpoint(dto.getConnectorEndpoint());
-        connector.setConnectorAccessToken(dto.getConnectorAccessToken());
-        connector.setIonosS3ExtensionConfig(
-                ionosS3ExtensionConfigDtoToIonosS3ExtensionConfig(dto.getIonosS3ExtensionConfig()));
-
-        return connector;
-    }
-
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "buckets", source = "buckets")
-    IonosS3ExtensionConfig ionosS3ExtensionConfigDtoToIonosS3ExtensionConfig(IonosS3ExtensionConfigDto dto);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "name", source = "name")
     @Mapping(target = "storageEndpoint", source = "storageEndpoint")
     IonosS3Bucket ionosS3BucketDtoToIonosS3Bucket(IonosS3BucketDto dto);
-
-    @Named("connectorsForDto")
-    default Set<OrganizationConnectorDto> connectorsDtoMapper(Set<OrganisationConnectorExtension> connectors) {
-
-        return connectors.stream().map(this::connectorExtensionToOrganizationConnectorDto).collect(Collectors.toSet());
-    }
-
-    default Set<OrganisationConnectorExtension> connectorsEntityMapper(Set<OrganizationConnectorDto> connectorDtos,
-        String orgaId) {
-
-        return connectorDtos.stream()
-            .map(connectorDto -> organizationConnectorDtoToConnectorExtension(connectorDto, orgaId))
-            .collect(Collectors.toSet());
-    }*/
+*/
 }

@@ -43,14 +43,13 @@ public class OrganizationMetadataService {
      */
     public MerlotParticipantMetaDto saveMerlotParticipantMeta(MerlotParticipantMetaDto metaDto) {
 
-        /*OrganizationMetadata dbMeta = repository.findById(metaDto.getOrgaId()).orElse(null);
+        OrganizationMetadata dbMeta = repository.findById(metaDto.getOrgaId()).orElse(null);
         if (dbMeta != null) {
             throw new ParticipantConflictException("Participant with this id already exists");
         }
         OrganizationMetadata metadata = mapper.merlotParticipantMetaDtoToOrganizationMetadata(metaDto);
 
-        return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));*/
-        return null;
+        return mapper.organizationMetadataToMerlotParticipantMetaDto(repository.save(metadata));
     }
 
     /**

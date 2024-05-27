@@ -341,86 +341,28 @@ public class ParticipantService {
                                                   OrganizationRoleGrantedAuthority activeRole)
             throws JsonProcessingException {
 
-        /*LegalParticipantCredentialSubject participantCs = organizationMapper
-                .getLegalParticipantCsFromRegistrationForm(registrationFormContent);
-        participantCs.setId("did:web:marketplace.dev.merlot-education.eu");
-        participantCs.setLegalRegistrationNumber(
-                List.of(new NodeKindIRITypeId("did:web:marketplace.dev.merlot-education.eu#registrationNumber")));
-        participantCs.getLegalAddress().setCountrySubdivisionCode("DE-BE"); // TODO remove
-        participantCs.getHeadquarterAddress().setCountrySubdivisionCode("DE-BE"); // TODO remove
-        LegalRegistrationNumberCredentialSubject registrationNumberCs = organizationMapper
-                .getLegalRegistrationNumberFromRegistrationForm(registrationFormContent);
-        registrationNumberCs.setId("did:web:marketplace.dev.merlot-education.eu#registrationNumber");
-        registrationNumberCs.setLeiCode(List.of("894500MQZ65CN32S9A66")); // TODO remove
-        MerlotLegalParticipantCredentialSubject merlotParticipantCs = organizationMapper
-                .getMerlotParticipantCsFromRegistrationForm(registrationFormContent);
-        merlotParticipantCs.setId("did:web:marketplace.dev.merlot-education.eu");*/
 
-        LegalParticipantCredentialSubject participantCs = new LegalParticipantCredentialSubject();
-        participantCs.setContext(Map.of(
-                "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#",
-                "gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#",
-                "gax-validation", "http://w3id.org/gaia-x/validation#",
-                "rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                "sh", "http://www.w3.org/ns/shacl#",
-                "skos", "http://www.w3.org/2004/02/skos/core#",
-                "vcard", "http://www.w3.org/2006/vcard/ns#",
-                "xsd", "http://www.w3.org/2001/XMLSchema#",
-                "merlot", "http://w3id.org/gaia-x/merlot#"));
-        participantCs.setId("did:web:marketplace.dev.merlot-education.eu");
-        participantCs.setName("Some Orga");
-        participantCs.setLegalRegistrationNumber(
-                List.of(new NodeKindIRITypeId("did:web:marketplace.dev.merlot-education.eu#registrationNumber")));
-        GxVcard participantAddress = new GxVcard();
-        participantAddress.setCountrySubdivisionCode("DE-BE");
-        participantAddress.setCountryCode("DE");
-        participantCs.setLegalAddress(participantAddress);
-        participantCs.setHeadquarterAddress(participantAddress);
-
-        LegalRegistrationNumberCredentialSubject registrationNumberCs = new LegalRegistrationNumberCredentialSubject();
-        registrationNumberCs.setContext(Map.of(
-                "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"));
-        registrationNumberCs.setId("did:web:marketplace.dev.merlot-education.eu#registrationNumber");
-        registrationNumberCs.setLeiCode("894500MQZ65CN32S9A66");
-
-        MerlotLegalParticipantCredentialSubject merlotParticipantCs = new MerlotLegalParticipantCredentialSubject();
-        merlotParticipantCs.setContext(Map.of(
-                "gx", "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#",
-                "gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#",
-                "gax-validation", "http://w3id.org/gaia-x/validation#",
-                "rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                "sh", "http://www.w3.org/ns/shacl#",
-                "skos", "http://www.w3.org/2004/02/skos/core#",
-                "vcard", "http://www.w3.org/2006/vcard/ns#",
-                "xsd", "http://www.w3.org/2001/XMLSchema#",
-                "merlot", "http://w3id.org/gaia-x/merlot#"));
-        merlotParticipantCs.setId("did:web:marketplace.dev.merlot-education.eu");
-        merlotParticipantCs.setLegalName("Some Orga LLC");
-        merlotParticipantCs.setLegalForm("LLC");
-        ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
-        termsAndConditions.setUrl("http://example.com");
-        termsAndConditions.setHash("hash1234");
-        merlotParticipantCs.setTermsAndConditions(termsAndConditions);
-
-        try {
-            ParticipantItem participantItem =
-                    gxfsCatalogService.addParticipant(List.of(participantCs, registrationNumberCs, merlotParticipantCs),
-                            "did:web:marketplace.dev.merlot-education.eu#MERLOTJWK2020");
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-
-        /*MerlotParticipantMetaDto metaData;
+        MerlotParticipantMetaDto metaData;
+        LegalParticipantCredentialSubject participantCs;
+        LegalRegistrationNumberCredentialSubject registrationNumberCs;
+        MerlotLegalParticipantCredentialSubject merlotParticipantCs;
         try {
             validateMandatoryFields(registrationFormContent);
-            credentialSubject = organizationMapper.getSelfDescriptionFromRegistrationForm(registrationFormContent);
+            participantCs = organizationMapper
+                    .getLegalParticipantCsFromRegistrationForm(registrationFormContent);
+            participantCs.getLegalAddress().setCountrySubdivisionCode("DE-BE"); // TODO remove
+            participantCs.getHeadquarterAddress().setCountrySubdivisionCode("DE-BE"); // TODO remove
+            registrationNumberCs = organizationMapper
+                    .getLegalRegistrationNumberFromRegistrationForm(registrationFormContent);
+            registrationNumberCs.setLeiCode("894500MQZ65CN32S9A66"); // TODO remove
+            merlotParticipantCs = organizationMapper
+                    .getMerlotParticipantCsFromRegistrationForm(registrationFormContent);
             metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(registrationFormContent);
 
             // request did and private key
             ParticipantDidPrivateKeyDto didPrivateKeyDto =
                     outgoingMessageService.requestNewDidPrivateKey(
-                            new ParticipantDidPrivateKeyCreateRequest(credentialSubject.getLegalName()));
+                            new ParticipantDidPrivateKeyCreateRequest(merlotParticipantCs.getLegalName()));
 
            // update metadata signer config
             metaData.setOrganisationSignerConfigDto(
@@ -449,9 +391,11 @@ public class ParticipantService {
         }
 
         // set credential subject id to did from metadata (self-assigned or received from did service)
-        credentialSubject.setId(metaDataDto.getOrgaId());
-        credentialSubject.setContext(getContext());
-        credentialSubject.setType("merlot:MerlotOrganization");
+        merlotParticipantCs.setId(metaDataDto.getOrgaId());
+        participantCs.setId(metaDataDto.getOrgaId());
+        registrationNumberCs.setId(metaDataDto.getOrgaId() + "#registrationNumber");
+        participantCs.setLegalRegistrationNumber(
+                List.of(new NodeKindIRITypeId(metaDataDto.getOrgaId() + "#registrationNumber")));
 
         // fetch the corresponding signer config for the performing role
         OrganisationSignerConfigDto activeRoleSignerConfig =
@@ -468,7 +412,9 @@ public class ParticipantService {
         ParticipantItem participantItem = null;
         try {
             // sign SD using verification method referencing the merlot certificate and the default/merlot private key
-            participantItem = gxfsCatalogService.addParticipant(credentialSubject, activeRoleSignerConfig.getMerlotVerificationMethod());
+            participantItem = gxfsCatalogService.addParticipant(
+                    List.of(participantCs, registrationNumberCs, merlotParticipantCs),
+                    activeRoleSignerConfig.getMerlotVerificationMethod());
         } catch (CredentialPresentationException | CredentialSignatureException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
         } catch (WebClientResponseException e) {
@@ -480,8 +426,7 @@ public class ParticipantService {
         }
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(participantItem.getSelfDescription(),
-            metaDataDto);*/
-        return new MerlotParticipantDto();
+                metaDataDto);
     }
 
     /**
@@ -492,20 +437,6 @@ public class ParticipantService {
     public List<String> getTrustedDids() {
         return Collections.emptyList();
         //return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
-    }
-
-    private Map<String, String> getContext() {
-
-        Map<String, String> context = new HashMap<>();
-        context.put("gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#");
-        context.put("gax-validation", "http://w3id.org/gaia-x/validation#");
-        context.put("merlot", "http://w3id.org/gaia-x/merlot#");
-        context.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-        context.put("sh", "http://www.w3.org/ns/shacl#");
-        context.put("skos", "http://www.w3.org/2004/02/skos/core#");
-        context.put("vcard", "http://www.w3.org/2006/vcard/ns#");
-        context.put("xsd", "http://www.w3.org/2001/XMLSchema#");
-        return context;
     }
 
     private void validateMandatoryFields(RegistrationFormContent registrationFormContent) {

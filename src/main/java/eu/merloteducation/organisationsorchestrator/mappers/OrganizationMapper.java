@@ -1,5 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
+import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiablePresentation;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalRegistrationNumberCredentialSubject;
@@ -93,7 +94,7 @@ public interface OrganizationMapper {
     @Mapping(target = "id", source = "metaData.orgaId")
     @Mapping(target = "metadata", source = "metaData")
     @Mapping(target = "selfDescription", source = "selfDescription")
-    MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(SelfDescription selfDescription,
+    MerlotParticipantDto selfDescriptionAndMetadataToMerlotParticipantDto(ExtendedVerifiablePresentation selfDescription,
                                                                           MerlotParticipantMetaDto metaData);
 
     default void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source,

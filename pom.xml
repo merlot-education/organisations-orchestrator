@@ -130,7 +130,7 @@
 		<dependency>
 			<groupId>eu.merloteducation.modelslib</groupId>
 			<artifactId>modelslib</artifactId>
-			<version>0.3.21</version>
+			<version>0.3.22</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.merlot-education</groupId>

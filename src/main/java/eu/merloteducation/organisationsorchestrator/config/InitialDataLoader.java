@@ -121,12 +121,10 @@ public class InitialDataLoader implements CommandLineRunner {
         MerlotParticipantDto participant = organizationQueryController
                 .createOrganization(new MultipartFile[]{orgaPdf}, merlotFederationRole);
 
+        MerlotLegalParticipantCredentialSubject cs = participant.getSelfDescription()
+                .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
         // add initial connectors as well
-        String orgaLegalName = participant.getSelfDescription()
-                .getVerifiableCredential().stream()
-                .filter(vc -> vc.getCredentialSubject() instanceof MerlotLegalParticipantCredentialSubject)
-                .map(vc -> ((MerlotLegalParticipantCredentialSubject) vc.getCredentialSubject()).getLegalName())
-                .findFirst().orElse("");
+        String orgaLegalName = cs == null ? "" : cs.getLegalName();
         Set<OrganizationConnectorDto> connectors = connectorMap.getOrDefault(orgaLegalName, Collections.emptySet());
 
         // if connectors exist, add them on behalf of the participant

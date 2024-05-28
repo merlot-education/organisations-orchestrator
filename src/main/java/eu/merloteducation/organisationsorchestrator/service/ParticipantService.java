@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.gxfscataloglibrary.models.client.SelfDescriptionStatus;
+import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiablePresentation;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
@@ -56,8 +57,6 @@ public class ParticipantService {
     private final OutgoingMessageService outgoingMessageService;
     private final OmejdnConnectorApiClient omejdnConnectorApiClient;
 
-    public static final String PARTICIPANTTYPE = "LegalParticipant";
-
     public ParticipantService(@Autowired OrganizationMapper organizationMapper,
                               @Autowired ParticipantCredentialMapper participantCredentialMapper,
                               @Autowired GxfsCatalogService gxfsCatalogService,
@@ -104,7 +103,7 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found.");
         }
 
-        SelfDescription selfDescription = response.getSelfDescription();
+        ExtendedVerifiablePresentation selfDescription = response.getSelfDescription();
 
         return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription,
             metaDto);
@@ -147,9 +146,9 @@ public class ParticipantService {
         try {
             selfDescriptions = sdResponse.getItems().stream()
                 .map(item -> {
-                    SelfDescription selfDescription = item.getMeta().getContent();
+                    ExtendedVerifiablePresentation selfDescription = item.getMeta().getContent();
 
-                    String id = selfDescription.getId();
+                    String id = selfDescription.getId().toString();
                     MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(id);
 
                     if (metaDto == null) {
@@ -176,7 +175,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of active participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(PARTICIPANTTYPE, "orgaName", inactiveOrgasIds,
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(LegalParticipantCredentialSubject.getTypeNoPrefix(), "name", inactiveOrgasIds,
                 pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
@@ -188,7 +187,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(PARTICIPANTTYPE, "name",
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(LegalParticipantCredentialSubject.getTypeNoPrefix(), "name",
                     pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
@@ -219,23 +218,26 @@ public class ParticipantService {
     public MerlotParticipantDto updateParticipant(MerlotParticipantDto participantDtoWithEdits,
         OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
         MerlotParticipantDto participantDto = getParticipantById(participantDtoWithEdits.getId());
-        List<VCCredentialSubject> targetSubjects = participantDto.getSelfDescription()
-                .getVerifiableCredential().stream()
-                .map(SelfDescriptionVerifiableCredential::getCredentialSubject).toList();
-        LegalParticipantCredentialSubject targetLegalParticipantCs = getLegalParticipantCs(targetSubjects);
-        LegalRegistrationNumberCredentialSubject targetRegistrationNumberCs = getRegistrationNumberCs(targetSubjects);
-        MerlotLegalParticipantCredentialSubject targetMerlotLegalParticipantCs = getMerlotLegalParticipantCs(targetSubjects);
+        ExtendedVerifiablePresentation targetVp = participantDto.getSelfDescription();
+
+        LegalParticipantCredentialSubject targetLegalParticipantCs =
+                targetVp.findFirstCredentialSubjectByType(LegalParticipantCredentialSubject.class);
+        LegalRegistrationNumberCredentialSubject targetRegistrationNumberCs =
+                targetVp.findFirstCredentialSubjectByType(LegalRegistrationNumberCredentialSubject.class);
+        MerlotLegalParticipantCredentialSubject targetMerlotLegalParticipantCs =
+                targetVp.findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
 
         MerlotParticipantMetaDto targetMetadata = participantDto.getMetadata();
 
         boolean initialOrgaActiveValue = targetMetadata.isActive();
 
-        List<VCCredentialSubject> editedSubjects = participantDtoWithEdits.getSelfDescription()
-                    .getVerifiableCredential().stream()
-                    .map(SelfDescriptionVerifiableCredential::getCredentialSubject).toList();
-        LegalParticipantCredentialSubject editedLegalParticipantCs = getLegalParticipantCs(editedSubjects);
-        LegalRegistrationNumberCredentialSubject editedRegistrationNumberCs = getRegistrationNumberCs(editedSubjects);
-        MerlotLegalParticipantCredentialSubject editedMerlotLegalParticipantCs = getMerlotLegalParticipantCs(editedSubjects);
+        ExtendedVerifiablePresentation editedVp = participantDtoWithEdits.getSelfDescription();
+        LegalParticipantCredentialSubject editedLegalParticipantCs =
+                editedVp.findFirstCredentialSubjectByType(LegalParticipantCredentialSubject.class);
+        LegalRegistrationNumberCredentialSubject editedRegistrationNumberCs =
+                editedVp.findFirstCredentialSubjectByType(LegalRegistrationNumberCredentialSubject.class);
+        MerlotLegalParticipantCredentialSubject editedMerlotLegalParticipantCs =
+                editedVp.findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
 
         MerlotParticipantMetaDto editedMetadata = participantDtoWithEdits.getMetadata();
 
@@ -326,17 +328,17 @@ public class ParticipantService {
         List<SelfDescriptionItem> selfDescriptionItems = gxfsCatalogService.getSelfDescriptionsByIds(participantIds.toArray(String[]::new))
             .getItems();
 
-        Map<String, SelfDescription> sdMap = new HashMap<>();
+        Map<String, ExtendedVerifiablePresentation> sdMap = new HashMap<>();
 
         selfDescriptionItems.forEach(sdItem -> {
-            SelfDescription selfDescription = sdItem.getMeta().getContent();
-            String orgaId = selfDescription.getId();
+            ExtendedVerifiablePresentation selfDescription = sdItem.getMeta().getContent();
+            String orgaId = selfDescription.getId().toString();
 
             sdMap.put(orgaId, selfDescription);
         });
 
         return participantIds.stream().map(participantId -> {
-            SelfDescription sd = sdMap.get(participantId);
+            ExtendedVerifiablePresentation sd = sdMap.get(participantId);
             MerlotParticipantMetaDto metadata = metadataMap.get(participantId);
 
             return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(sd, metadata);
@@ -493,26 +495,5 @@ public class ParticipantService {
             && !signerConfig.getMerlotVerificationMethod().isBlank();
 
         return privateKeyValid && verificationMethodValid && merlotVerificationMethodValid;
-    }
-
-    private LegalParticipantCredentialSubject getLegalParticipantCs(List<VCCredentialSubject> subjects) {
-        return subjects.stream()
-                .filter(LegalParticipantCredentialSubject.class::isInstance)
-                .map(s -> (LegalParticipantCredentialSubject) s)
-                .findFirst().orElse(null);
-    }
-
-    private MerlotLegalParticipantCredentialSubject getMerlotLegalParticipantCs(List<VCCredentialSubject> subjects) {
-        return subjects.stream()
-                .filter(MerlotLegalParticipantCredentialSubject.class::isInstance)
-                .map(s -> (MerlotLegalParticipantCredentialSubject) s)
-                .findFirst().orElse(null);
-    }
-
-    private LegalRegistrationNumberCredentialSubject getRegistrationNumberCs(List<VCCredentialSubject> subjects) {
-        return subjects.stream()
-                .filter(LegalRegistrationNumberCredentialSubject.class::isInstance)
-                .map(s -> (LegalRegistrationNumberCredentialSubject) s)
-                .findFirst().orElse(null);
     }
 }

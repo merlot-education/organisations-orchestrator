@@ -4,6 +4,8 @@ import eu.merloteducation.authorizationlibrary.authorization.AuthorityChecker;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalParticipantCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
@@ -20,8 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJacksonResponseBodyAdvice;
-
-import static eu.merloteducation.organisationsorchestrator.service.ParticipantService.PARTICIPANTTYPE;
 
 @ControllerAdvice(assignableTypes = OrganizationQueryController.class)
 public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonResponseBodyAdvice {
@@ -96,12 +96,12 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
 
     private void setSignerLegalNameFromCatalog(MerlotParticipantDto dto) {
         try {
-            String proofVerificationMethod = dto.getSelfDescription().getProof().getVerificationMethod();
+            String proofVerificationMethod = dto.getSelfDescription().getLdProof().getVerificationMethod().toString();
 
             String signerId = proofVerificationMethod.replaceFirst("#.*", "");
 
             GXFSCatalogListResponse<GXFSQueryLegalNameItem>
-                    response = gxfsCatalogService.getParticipantLegalNameByUri(PARTICIPANTTYPE, signerId);
+                    response = gxfsCatalogService.getParticipantLegalNameByUri(MerlotLegalParticipantCredentialSubject.getTypeNoPrefix(), signerId);
 
 
             // if we do not get exactly one item, we did not find the signer participant and the corresponding legal name

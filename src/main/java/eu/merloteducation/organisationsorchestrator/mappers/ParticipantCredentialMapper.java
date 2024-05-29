@@ -39,7 +39,7 @@ public interface ParticipantCredentialMapper {
     // participant
     @Mapping(target = "description", source = "description")
     @Mapping(target = "legalAddress", source = "legalAddress")
-    @Mapping(target = "headquarterAddress", source = "legalAddress")
+    @Mapping(target = "headquarterAddress", source = "headquarterAddress")
     void updateCredentialSubjectAsParticipant(LegalParticipantCredentialSubject source,
                                               @MappingTarget LegalParticipantCredentialSubject target);
 
@@ -58,7 +58,7 @@ public interface ParticipantCredentialMapper {
     // participant
     @Mapping(target = "description", source = "description")
     @Mapping(target = "legalAddress", source = "legalAddress")
-    @Mapping(target = "headquarterAddress", source = "legalAddress")
+    @Mapping(target = "headquarterAddress", source = "headquarterAddress")
     void updateCredentialSubjectAsFedAdmin(LegalParticipantCredentialSubject source,
                                            @MappingTarget LegalParticipantCredentialSubject target);
 

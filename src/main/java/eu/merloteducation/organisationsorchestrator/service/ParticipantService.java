@@ -11,9 +11,11 @@ import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatur
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.*;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.GxVcard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.NodeKindIRITypeId;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalRegistrationNumberCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.datatypes.ParticipantTermsAndConditions;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
@@ -94,7 +96,7 @@ public class ParticipantService {
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
         ParticipantItem response = null;
         try {
-            response = gxfsCatalogService.getParticipantById(id);  // TODO pass whole VP instead of wrapped objects
+            response = gxfsCatalogService.getParticipantById(id);
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         }
@@ -158,9 +160,16 @@ public class ParticipantService {
 
                     return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription, metaDto);
                 })
-                    /*.sorted(Comparator.comparing(
-                    p -> ((MerlotOrganizationCredentialSubject) p.getSelfDescription().getVerifiableCredential()
-                        .getCredentialSubject()).getOrgaName().toLowerCase()))*/ // TODO sort again
+                    .sorted(Comparator.comparing(
+                    p ->  {
+                        LegalParticipantCredentialSubject legalParticipant =
+                                p.getSelfDescription()
+                                        .findFirstCredentialSubjectByType(LegalParticipantCredentialSubject.class);
+                        if (legalParticipant != null) {
+                            return legalParticipant.getName();
+                        }
+                        return "";
+                    }))
                     .toList();
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
@@ -217,6 +226,41 @@ public class ParticipantService {
     @Transactional(rollbackOn = { ResponseStatusException.class })
     public MerlotParticipantDto updateParticipant(MerlotParticipantDto participantDtoWithEdits,
         OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
+
+        /*LegalParticipantCredentialSubject participantCs = new LegalParticipantCredentialSubject();
+        participantCs.setId("did:web:marketplace.dev.merlot-education.eu");
+        participantCs.setName("Some Orga");
+        participantCs.setLegalRegistrationNumber(
+                List.of(new NodeKindIRITypeId("did:web:marketplace.dev.merlot-education.eu#registrationNumber")));
+        GxVcard participantAddress = new GxVcard();
+        participantAddress.setCountrySubdivisionCode("DE-BE");
+        participantAddress.setCountryCode("DE");
+        participantCs.setLegalAddress(participantAddress);
+        participantCs.setHeadquarterAddress(participantAddress);
+
+        LegalRegistrationNumberCredentialSubject registrationNumberCs = new LegalRegistrationNumberCredentialSubject();
+        registrationNumberCs.setId("did:web:marketplace.dev.merlot-education.eu#registrationNumber");
+        registrationNumberCs.setLeiCode("894500MQZ65CN32S9A66");
+
+        MerlotLegalParticipantCredentialSubject merlotParticipantCs = new MerlotLegalParticipantCredentialSubject();
+        merlotParticipantCs.setId("did:web:marketplace.dev.merlot-education.eu");
+        merlotParticipantCs.setLegalName("Some Orga LLC");
+        merlotParticipantCs.setLegalForm("LLC");
+        ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
+        termsAndConditions.setUrl("http://example.com");
+        termsAndConditions.setHash("hash1234");
+        merlotParticipantCs.setTermsAndConditions(termsAndConditions);
+
+        try {
+            // sign SD using verification method referencing the merlot certificate and the default/merlot private key
+            ParticipantItem participantItem = gxfsCatalogService.updateParticipant(List.of(participantCs,
+                            registrationNumberCs, merlotParticipantCs), "did:web:marketplace.dev.merlot-education.eu#JWK2020"
+                    );
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }*/
+
+
         MerlotParticipantDto participantDto = getParticipantById(participantDtoWithEdits.getId());
         ExtendedVerifiablePresentation targetVp = participantDto.getSelfDescription();
 

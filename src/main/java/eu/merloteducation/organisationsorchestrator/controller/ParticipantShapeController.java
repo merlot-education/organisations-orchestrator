@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/shapes")
 public class ParticipantShapeController {
 
+    private static final String ECOSYSTEM_MERLOT = "merlot";
+    private static final String ECOSYSTEM_GAIAX = "gx";
+
     @Autowired
     private GxfsWizardApiService gxfsWizardApiService;
 
@@ -20,16 +23,16 @@ public class ParticipantShapeController {
      */
     @GetMapping("/merlot/participant")
     public String getMerlotParticipantShape() {
-        return gxfsWizardApiService.getShapeByName("merlot", "Merlotlegalparticipant.json");
+        return gxfsWizardApiService.getShapeByName(ECOSYSTEM_MERLOT, "Merlotlegalparticipant.json");
     }
 
     @GetMapping("/gx/participant")
     public String getGxParticipantShape() {
-        return gxfsWizardApiService.getShapeByName("gx", "Legalparticipant.json");
+        return gxfsWizardApiService.getShapeByName(ECOSYSTEM_GAIAX, "Legalparticipant.json");
     }
 
     @GetMapping("/gx/registrationnumber")
     public String getGxRegistrationNumberShape() {
-        return gxfsWizardApiService.getShapeByName("gx", "Legalregistrationnumber.json");
+        return gxfsWizardApiService.getShapeByName(ECOSYSTEM_GAIAX, "Legalregistrationnumber.json");
     }
 }

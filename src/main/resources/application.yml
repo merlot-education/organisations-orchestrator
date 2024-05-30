@@ -97,21 +97,14 @@ gxfscatalog-library:
   ignore-ssl: true
 
 gxdch-services:
+  # for local development skip te compliance check as it will inevitably fail
+  enforce-compliance: false
+  enforce-notary: true
   compliance-base-uris:
-    "https://compliance.lab.gaia-x.eu/v1-staging" #,
-    #"https://gx-compliance.aruba.it",
-    #"https://gx-compliance.gxdch.dih.telekom.com",
-  #"https://gx-compliance.airenetworks.es"
   registry-base-uris:
-    "https://registry.lab.gaia-x.eu/v1-staging" #,
-    #"https://gx-registry.aruba.it",
-    #"https://gx-registry.gxdch.dih.telekom.com",
-  #"https://gx-registry.airenetworks.es"
+    "https://registry.lab.gaia-x.eu/v1-staging"
   notary-base-uris:
-    "https://registrationnumber.notary.lab.gaia-x.eu/development" #,
-    #"https://gx-notary.aruba.it",
-    #"https://gx-notary.gxdch.dih.telekom.com",
-  #"https://gx-notary.airenetworks.es"
+    "https://registrationnumber.notary.lab.gaia-x.eu/development"
 
 daps-server:
   base-uri: http://localhost:4567

@@ -11,11 +11,9 @@ import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatur
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.*;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.GxVcard;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.NodeKindIRITypeId;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalParticipantCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalRegistrationNumberCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.datatypes.ParticipantTermsAndConditions;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalParticipantCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalRegistrationNumberCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
@@ -162,9 +160,9 @@ public class ParticipantService {
                 })
                     .sorted(Comparator.comparing(
                     p ->  {
-                        LegalParticipantCredentialSubject legalParticipant =
+                        GxLegalParticipantCredentialSubject legalParticipant =
                                 p.getSelfDescription()
-                                        .findFirstCredentialSubjectByType(LegalParticipantCredentialSubject.class);
+                                        .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
                         if (legalParticipant != null) {
                             return legalParticipant.getName();
                         }
@@ -184,7 +182,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of active participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(LegalParticipantCredentialSubject.getTypeNoPrefix(), "name", inactiveOrgasIds,
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(GxLegalParticipantCredentialSubject.getTypeNoPrefix(), "name", inactiveOrgasIds,
                 pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
@@ -196,7 +194,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(LegalParticipantCredentialSubject.getTypeNoPrefix(), "name",
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(GxLegalParticipantCredentialSubject.getTypeNoPrefix(), "name",
                     pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
@@ -230,10 +228,10 @@ public class ParticipantService {
         MerlotParticipantDto participantDto = getParticipantById(participantDtoWithEdits.getId());
         ExtendedVerifiablePresentation targetVp = participantDto.getSelfDescription();
 
-        LegalParticipantCredentialSubject targetLegalParticipantCs =
-                targetVp.findFirstCredentialSubjectByType(LegalParticipantCredentialSubject.class);
-        LegalRegistrationNumberCredentialSubject targetRegistrationNumberCs =
-                targetVp.findFirstCredentialSubjectByType(LegalRegistrationNumberCredentialSubject.class);
+        GxLegalParticipantCredentialSubject targetLegalParticipantCs =
+                targetVp.findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
+        GxLegalRegistrationNumberCredentialSubject targetRegistrationNumberCs =
+                targetVp.findFirstCredentialSubjectByType(GxLegalRegistrationNumberCredentialSubject.class);
         MerlotLegalParticipantCredentialSubject targetMerlotLegalParticipantCs =
                 targetVp.findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
 
@@ -242,10 +240,10 @@ public class ParticipantService {
         boolean initialOrgaActiveValue = targetMetadata.isActive();
 
         ExtendedVerifiablePresentation editedVp = participantDtoWithEdits.getSelfDescription();
-        LegalParticipantCredentialSubject editedLegalParticipantCs =
-                editedVp.findFirstCredentialSubjectByType(LegalParticipantCredentialSubject.class);
-        LegalRegistrationNumberCredentialSubject editedRegistrationNumberCs =
-                editedVp.findFirstCredentialSubjectByType(LegalRegistrationNumberCredentialSubject.class);
+        GxLegalParticipantCredentialSubject editedLegalParticipantCs =
+                editedVp.findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
+        GxLegalRegistrationNumberCredentialSubject editedRegistrationNumberCs =
+                editedVp.findFirstCredentialSubjectByType(GxLegalRegistrationNumberCredentialSubject.class);
         MerlotLegalParticipantCredentialSubject editedMerlotLegalParticipantCs =
                 editedVp.findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
 
@@ -406,8 +404,8 @@ public class ParticipantService {
 
 
         MerlotParticipantMetaDto metaData;
-        LegalParticipantCredentialSubject participantCs;
-        LegalRegistrationNumberCredentialSubject registrationNumberCs;
+        GxLegalParticipantCredentialSubject participantCs;
+        GxLegalRegistrationNumberCredentialSubject registrationNumberCs;
         MerlotLegalParticipantCredentialSubject merlotParticipantCs;
         try {
             validateMandatoryFields(registrationFormContent);

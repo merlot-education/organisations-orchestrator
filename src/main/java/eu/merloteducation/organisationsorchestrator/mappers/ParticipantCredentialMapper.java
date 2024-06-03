@@ -1,7 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalParticipantCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalRegistrationNumberCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalParticipantCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalRegistrationNumberCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import org.mapstruct.BeanMapping;
@@ -23,11 +23,11 @@ public interface ParticipantCredentialMapper {
     @Mapping(target = "headquarterAddress.streetAddress", source = "content.street")
     @Mapping(target = "headquarterAddress.locality", source = "content.city")
     @Mapping(target = "headquarterAddress.postalCode", source = "content.postalCode")
-    LegalParticipantCredentialSubject getLegalParticipantCsFromRegistrationForm(RegistrationFormContent content);
+    GxLegalParticipantCredentialSubject getLegalParticipantCsFromRegistrationForm(RegistrationFormContent content);
 
     // TODO support more registration number types
     @Mapping(target = "leiCode", source = "content.registrationNumberLocal")
-    LegalRegistrationNumberCredentialSubject getLegalRegistrationNumberFromRegistrationForm(RegistrationFormContent content);
+    GxLegalRegistrationNumberCredentialSubject getLegalRegistrationNumberFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "legalName", source = "content.organizationLegalName")
     @Mapping(target = "legalForm", constant = "LLC") // TODO add to registration form
@@ -40,8 +40,8 @@ public interface ParticipantCredentialMapper {
     @Mapping(target = "description", source = "description")
     @Mapping(target = "legalAddress", source = "legalAddress")
     @Mapping(target = "headquarterAddress", source = "headquarterAddress")
-    void updateCredentialSubjectAsParticipant(LegalParticipantCredentialSubject source,
-                                              @MappingTarget LegalParticipantCredentialSubject target);
+    void updateCredentialSubjectAsParticipant(GxLegalParticipantCredentialSubject source,
+                                              @MappingTarget GxLegalParticipantCredentialSubject target);
 
     @BeanMapping(ignoreByDefault = true)
     // participant
@@ -59,8 +59,8 @@ public interface ParticipantCredentialMapper {
     @Mapping(target = "description", source = "description")
     @Mapping(target = "legalAddress", source = "legalAddress")
     @Mapping(target = "headquarterAddress", source = "headquarterAddress")
-    void updateCredentialSubjectAsFedAdmin(LegalParticipantCredentialSubject source,
-                                           @MappingTarget LegalParticipantCredentialSubject target);
+    void updateCredentialSubjectAsFedAdmin(GxLegalParticipantCredentialSubject source,
+                                           @MappingTarget GxLegalParticipantCredentialSubject target);
 
     @BeanMapping(ignoreByDefault = true)
     // fedadmin
@@ -69,8 +69,8 @@ public interface ParticipantCredentialMapper {
     @Mapping(target = "eori", source = "eori")
     @Mapping(target = "vatID", source = "vatID")
     @Mapping(target = "leiCode", source = "leiCode")
-    void updateCredentialSubjectAsFedAdmin(LegalRegistrationNumberCredentialSubject source,
-                                           @MappingTarget LegalRegistrationNumberCredentialSubject target);
+    void updateCredentialSubjectAsFedAdmin(GxLegalRegistrationNumberCredentialSubject source,
+                                           @MappingTarget GxLegalRegistrationNumberCredentialSubject target);
 
     @BeanMapping(ignoreByDefault = true)
     // fedadmin

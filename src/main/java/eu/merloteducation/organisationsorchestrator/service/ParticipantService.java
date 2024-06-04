@@ -411,11 +411,8 @@ public class ParticipantService {
             validateMandatoryFields(registrationFormContent);
             participantCs = participantCredentialMapper
                     .getLegalParticipantCsFromRegistrationForm(registrationFormContent);
-            participantCs.getLegalAddress().setCountrySubdivisionCode("DE-BE"); // TODO remove
-            participantCs.getHeadquarterAddress().setCountrySubdivisionCode("DE-BE"); // TODO remove
             registrationNumberCs = participantCredentialMapper
                     .getLegalRegistrationNumberFromRegistrationForm(registrationFormContent);
-            registrationNumberCs.setLeiCode("894500MQZ65CN32S9A66"); // TODO remove
             merlotParticipantCs = participantCredentialMapper
                     .getMerlotParticipantCsFromRegistrationForm(registrationFormContent);
             metaData = organizationMapper.getOrganizationMetadataFromRegistrationForm(registrationFormContent);
@@ -504,7 +501,6 @@ public class ParticipantService {
 
         String orgaName = registrationFormContent.getOrganizationName();
         String orgaLegalName = registrationFormContent.getOrganizationLegalName();
-        String registrationNumber = registrationFormContent.getRegistrationNumberLocal();
         String mailAddress = registrationFormContent.getMailAddress();
         String tncLink = registrationFormContent.getProviderTncLink();
         String tncHash = registrationFormContent.getProviderTncHash();
@@ -514,11 +510,24 @@ public class ParticipantService {
         String street = registrationFormContent.getStreet();
 
         boolean anyFieldEmptyOrBlank =
-                orgaName.isBlank() || orgaLegalName.isBlank() || registrationNumber.isBlank() || mailAddress.isBlank()
+                orgaName.isBlank() || orgaLegalName.isBlank() || mailAddress.isBlank()
                 || tncLink.isBlank() || tncHash.isBlank() || countryCode.isBlank()
                 || city.isBlank() || postalCode.isBlank() || street.isBlank();
 
-        if (anyFieldEmptyOrBlank) {
+        String leiCode = registrationFormContent.getRegistrationNumberLeiCode();
+        String eori = registrationFormContent.getRegistrationNumberEori();
+        String euid = registrationFormContent.getRegistrationNumberEuid();
+        String vatId = registrationFormContent.getRegistrationNumberVatID();
+        String taxId = registrationFormContent.getRegistrationNumberTaxID();
+
+        boolean registrationNumberMissing =
+                (leiCode == null || leiCode.isBlank())
+                && (eori == null || eori.isBlank())
+                && (euid == null || euid.isBlank())
+                && (vatId == null || vatId.isBlank())
+                && (taxId == null || taxId.isBlank());
+
+        if (anyFieldEmptyOrBlank || registrationNumberMissing) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Invalid registration form: Empty or blank fields.");
         }

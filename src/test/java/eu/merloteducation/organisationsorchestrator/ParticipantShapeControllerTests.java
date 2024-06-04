@@ -50,13 +50,13 @@ class ParticipantShapeControllerTests {
 
     @BeforeEach
     public void beforeEach()  {
-        lenient().when(gxfsWizardApiService.getShapeByName(any())).thenReturn("shape");
+        lenient().when(gxfsWizardApiService.getShapeByName(any(), any())).thenReturn("shape");
     }
 
     @Test
     void getParticipantShapeUnauthenticated() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                        .get("/shapes/merlotParticipant")
+                        .get("/shapes/merlot/participant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf()))
@@ -65,9 +65,37 @@ class ParticipantShapeControllerTests {
     }
 
     @Test
-    void getParticipantShapeAuthenticated() throws Exception {
+    void getGxParticipantShapeAuthenticated() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                        .get("/shapes/merlotParticipant")
+                        .get("/shapes/gx/participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                        )))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getGxRegistrationNumberShapeAuthenticated() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/shapes/gx/registrationnumber")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                        )))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getMerlotParticipantShapeAuthenticated() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/shapes/merlot/participant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf())

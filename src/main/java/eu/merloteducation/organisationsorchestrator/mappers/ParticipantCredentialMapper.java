@@ -14,23 +14,26 @@ public interface ParticipantCredentialMapper {
 
     @Mapping(target = "name", source = "content.organizationName")
     @Mapping(target = "legalAddress.countryCode", source = "content.countryCode")
-    @Mapping(target = "legalAddress.countrySubdivisionCode", source = "content.countryCode")
+    @Mapping(target = "legalAddress.countrySubdivisionCode", source = "content.countrySubdivisionCode")
     @Mapping(target = "legalAddress.streetAddress", source = "content.street")
     @Mapping(target = "legalAddress.locality", source = "content.city")
     @Mapping(target = "legalAddress.postalCode", source = "content.postalCode")
     @Mapping(target = "headquarterAddress.countryCode", source = "content.countryCode")
-    @Mapping(target = "headquarterAddress.countrySubdivisionCode", source = "content.countryCode")
+    @Mapping(target = "headquarterAddress.countrySubdivisionCode", source = "content.countrySubdivisionCode")
     @Mapping(target = "headquarterAddress.streetAddress", source = "content.street")
     @Mapping(target = "headquarterAddress.locality", source = "content.city")
     @Mapping(target = "headquarterAddress.postalCode", source = "content.postalCode")
     GxLegalParticipantCredentialSubject getLegalParticipantCsFromRegistrationForm(RegistrationFormContent content);
 
-    // TODO support more registration number types
-    @Mapping(target = "leiCode", source = "content.registrationNumberLocal")
+    @Mapping(target = "taxID", source = "content.registrationNumberTaxID")
+    @Mapping(target = "euid", source = "content.registrationNumberEuid")
+    @Mapping(target = "eori", source = "content.registrationNumberEori")
+    @Mapping(target = "vatID", source = "content.registrationNumberVatID")
+    @Mapping(target = "leiCode", source = "content.registrationNumberLeiCode")
     GxLegalRegistrationNumberCredentialSubject getLegalRegistrationNumberFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "legalName", source = "content.organizationLegalName")
-    @Mapping(target = "legalForm", constant = "LLC") // TODO add to registration form
+    @Mapping(target = "legalForm", source = "content.legalForm")
     @Mapping(target = "termsAndConditions.url", source = "content.providerTncLink")
     @Mapping(target = "termsAndConditions.hash", source = "content.providerTncHash")
     MerlotLegalParticipantCredentialSubject getMerlotParticipantCsFromRegistrationForm(RegistrationFormContent content);

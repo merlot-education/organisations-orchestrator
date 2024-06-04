@@ -11,13 +11,7 @@ import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
 import eu.merloteducation.modelslib.api.organization.*;
@@ -33,7 +27,6 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

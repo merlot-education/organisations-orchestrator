@@ -1,10 +1,6 @@
 package eu.merloteducation.organisationsorchestrator.mappers;
 
 import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiablePresentation;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalParticipantCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.LegalRegistrationNumberCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.modelslib.daps.OmejdnConnectorCertificateDto;

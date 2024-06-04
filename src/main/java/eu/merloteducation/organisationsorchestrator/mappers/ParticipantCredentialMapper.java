@@ -4,13 +4,18 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.particip
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalRegistrationNumberCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface ParticipantCredentialMapper {
+
+    @Named("emptyStringToNullMapper")
+    default String emptyStringToNullMapper(String s) {
+        if (s.isBlank()) {
+            return null;
+        }
+        return s;
+    }
 
     @Mapping(target = "name", source = "content.organizationName")
     @Mapping(target = "legalAddress.countryCode", source = "content.countryCode")
@@ -25,11 +30,11 @@ public interface ParticipantCredentialMapper {
     @Mapping(target = "headquarterAddress.postalCode", source = "content.postalCode")
     GxLegalParticipantCredentialSubject getLegalParticipantCsFromRegistrationForm(RegistrationFormContent content);
 
-    @Mapping(target = "taxID", source = "content.registrationNumberTaxID")
-    @Mapping(target = "euid", source = "content.registrationNumberEuid")
-    @Mapping(target = "eori", source = "content.registrationNumberEori")
-    @Mapping(target = "vatID", source = "content.registrationNumberVatID")
-    @Mapping(target = "leiCode", source = "content.registrationNumberLeiCode")
+    @Mapping(target = "taxID", source = "content.registrationNumberTaxID", qualifiedByName = "emptyStringToNullMapper")
+    @Mapping(target = "euid", source = "content.registrationNumberEuid", qualifiedByName = "emptyStringToNullMapper")
+    @Mapping(target = "eori", source = "content.registrationNumberEori", qualifiedByName = "emptyStringToNullMapper")
+    @Mapping(target = "vatID", source = "content.registrationNumberVatID", qualifiedByName = "emptyStringToNullMapper")
+    @Mapping(target = "leiCode", source = "content.registrationNumberLeiCode", qualifiedByName = "emptyStringToNullMapper")
     GxLegalRegistrationNumberCredentialSubject getLegalRegistrationNumberFromRegistrationForm(RegistrationFormContent content);
 
     @Mapping(target = "legalName", source = "content.organizationLegalName")

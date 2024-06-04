@@ -147,8 +147,8 @@ public class ParticipantService {
             selfDescriptions = sdResponse.getItems().stream()
                 .map(item -> {
                     ExtendedVerifiablePresentation selfDescription = item.getMeta().getContent();
-
-                    String id = selfDescription.getId().toString();
+                    String id = selfDescription
+                            .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class).getId();
                     MerlotParticipantMetaDto metaDto = organizationMetadataService.getMerlotParticipantMetaDto(id);
 
                     if (metaDto == null) {
@@ -340,7 +340,8 @@ public class ParticipantService {
 
         selfDescriptionItems.forEach(sdItem -> {
             ExtendedVerifiablePresentation selfDescription = sdItem.getMeta().getContent();
-            String orgaId = selfDescription.getId().toString();
+            String orgaId = selfDescription
+                    .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class).getId();
 
             sdMap.put(orgaId, selfDescription);
         });
@@ -451,9 +452,9 @@ public class ParticipantService {
         // set credential subject id to did from metadata (self-assigned or received from did service)
         merlotParticipantCs.setId(metaDataDto.getOrgaId());
         participantCs.setId(metaDataDto.getOrgaId());
-        registrationNumberCs.setId(metaDataDto.getOrgaId() + "#registrationNumber");
+        registrationNumberCs.setId(metaDataDto.getOrgaId() + "-registrationNumber");
         participantCs.setLegalRegistrationNumber(
-                List.of(new NodeKindIRITypeId(metaDataDto.getOrgaId() + "#registrationNumber")));
+                List.of(new NodeKindIRITypeId(metaDataDto.getOrgaId() + "-registrationNumber")));
 
         // fetch the corresponding signer config for the performing role
         OrganisationSignerConfigDto activeRoleSignerConfig =
@@ -493,8 +494,7 @@ public class ParticipantService {
      * @return list of trusted dids
      */
     public List<String> getTrustedDids() {
-        return Collections.emptyList();
-        //return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
+        return organizationMetadataService.getParticipantIdsByMembershipClass(MembershipClass.FEDERATOR);
     }
 
     private void validateMandatoryFields(RegistrationFormContent registrationFormContent) {

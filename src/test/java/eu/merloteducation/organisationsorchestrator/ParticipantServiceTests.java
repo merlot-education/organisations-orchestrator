@@ -37,6 +37,7 @@ import eu.merloteducation.organisationsorchestrator.service.OutgoingMessageServi
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.apache.commons.text.StringEscapeUtils;
 
+import static eu.merloteducation.organisationsorchestrator.SelfDescriptionDemoData.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -77,9 +78,6 @@ class ParticipantServiceTests {
     @Autowired
     private OrganizationMapper organizationMapper;
 
-    @Value("${merlot-domain}")
-    private String merlotDomain;
-
     @Autowired
     private ParticipantService participantService;
 
@@ -102,70 +100,30 @@ class ParticipantServiceTests {
 
     String mailAddress = "test@test.de";
 
-    String organizationLegalName = "Organization Legal Name";
+    String organizationLegalName = "MyOrga";
 
-    String registrationNumber = "DE123456789";
+    String registrationNumber = "0110";
 
     String countryCode = "DE";
 
     String countrySubdivisionCode = "DE-BE";
 
-    String street = "Street 123";
+    String street = "Some Street 3";
 
-    String providerTncHash = "hash1234567890";
+    String providerTncHash = "1234";
 
-    String providerTncLink = "abc.de";
+    String providerTncLink = "http://example.com";
 
-    String city = "City";
+    String city = "Berlin";
 
-    String organizationName = "Organization Name";
+    String organizationName = "MyOrga";
 
     String postalCode = "12345";
 
-    String id = "12345";
+    private final String merlotDomain = "example.com";
+    String id = "did:web:" + merlotDomain + ":participant:someorga";
 
     ParticipantServiceTests() throws IOException {
-    }
-
-    MerlotLegalParticipantCredentialSubject getExpectedMerlotParticipantCs() {
-        MerlotLegalParticipantCredentialSubject expected = new MerlotLegalParticipantCredentialSubject();
-        expected.setId("did:web:" + merlotDomain + ":participant:someorga");
-        expected.setLegalName(organizationLegalName);
-
-        ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
-        termsAndConditions.setUrl(providerTncLink);
-        termsAndConditions.setHash(providerTncHash);
-        expected.setTermsAndConditions(termsAndConditions);
-
-        return expected;
-    }
-
-    GxLegalParticipantCredentialSubject getExpectedGxParticipantCs() {
-
-        GxLegalParticipantCredentialSubject expected = new GxLegalParticipantCredentialSubject();
-        expected.setId("did:web:" + merlotDomain + ":participant:someorga");
-        expected.setName(organizationName);
-
-        GxVcard vCard = new GxVcard();
-        vCard.setLocality(city);
-        vCard.setPostalCode(postalCode);
-        vCard.setCountryCode(countryCode);
-        vCard.setCountrySubdivisionCode(countrySubdivisionCode);
-        vCard.setStreetAddress(street);
-        expected.setLegalAddress(vCard);
-        expected.setHeadquarterAddress(vCard);
-        expected.setLegalRegistrationNumber(List.of(new NodeKindIRITypeId("did:web:" + merlotDomain + ":participant:someorga-regId")));
-
-        return expected;
-    }
-
-    GxLegalRegistrationNumberCredentialSubject getExpectedGxRegistrationNumberCs() {
-
-        GxLegalRegistrationNumberCredentialSubject expected = new GxLegalRegistrationNumberCredentialSubject();
-        expected.setId("did:web:" + merlotDomain + ":participant:someorga-regId");
-        expected.setLeiCode(registrationNumber);
-
-        return expected;
     }
 
     RegistrationFormContent getTestRegistrationFormContent() throws IOException {
@@ -191,17 +149,17 @@ class ParticipantServiceTests {
     }
 
     private ParticipantItem createMockParticipantItem() throws JsonProcessingException {
-        GxLegalParticipantCredentialSubject gxParticipantCs = getExpectedGxParticipantCs();
-        GxLegalRegistrationNumberCredentialSubject gxRegistrationNumberCs = getExpectedGxRegistrationNumberCs();
-        MerlotLegalParticipantCredentialSubject merlotParticipantCs = getExpectedMerlotParticipantCs();
+        GxLegalParticipantCredentialSubject gxParticipantCs = getGxParticipantCs(id);
+        GxLegalRegistrationNumberCredentialSubject gxRegistrationNumberCs = getGxRegistrationNumberCs(id);
+        MerlotLegalParticipantCredentialSubject merlotParticipantCs = getMerlotParticipantCs(id);
 
         return wrapCredentialSubjectInItem(List.of(gxParticipantCs, gxRegistrationNumberCs, merlotParticipantCs));
     }
 
     private GXFSCatalogListResponse<SelfDescriptionItem> createMockSdItems() throws JsonProcessingException {
-        GxLegalParticipantCredentialSubject gxParticipantCs = getExpectedGxParticipantCs();
-        GxLegalRegistrationNumberCredentialSubject gxRegistrationNumberCs = getExpectedGxRegistrationNumberCs();
-        MerlotLegalParticipantCredentialSubject merlotParticipantCs = getExpectedMerlotParticipantCs();
+        GxLegalParticipantCredentialSubject gxParticipantCs = getGxParticipantCs(id);
+        GxLegalRegistrationNumberCredentialSubject gxRegistrationNumberCs = getGxRegistrationNumberCs(id);
+        MerlotLegalParticipantCredentialSubject merlotParticipantCs = getMerlotParticipantCs(id);
 
         return wrapCredentialSubjectInSdResponse(List.of(gxParticipantCs, gxRegistrationNumberCs, merlotParticipantCs));
     }
@@ -209,7 +167,7 @@ class ParticipantServiceTests {
     private GXFSCatalogListResponse<SelfDescriptionItem> wrapCredentialSubjectInSdResponse(List<PojoCredentialSubject> csList) throws JsonProcessingException {
         SelfDescriptionItem item = new SelfDescriptionItem();
         SelfDescriptionMeta meta = new SelfDescriptionMeta();
-        meta.setContent(createVpFromCsList(csList));
+        meta.setContent(createVpFromCsList(csList, "did:web:someorga"));
         meta.setId("did:web:example.com:participant:someorga");
         meta.setSubjectId("did:web:example.com:participant:someorga");
         meta.setSdHash("8b143ff8e0cf8f22c366cea9e1d31d97f79aa29eee5741f048637a43b7f059b0");
@@ -225,31 +183,13 @@ class ParticipantServiceTests {
 
     private ParticipantItem wrapCredentialSubjectInItem(List<PojoCredentialSubject> csList) throws JsonProcessingException {
         ParticipantItem item = new ParticipantItem();
-        ExtendedVerifiablePresentation vp = createVpFromCsList(csList);
+        ExtendedVerifiablePresentation vp = createVpFromCsList(csList, "did:web:someorga");
         MerlotLegalParticipantCredentialSubject merlotCs = vp
                 .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
         item.setSelfDescription(vp);
         item.setId(merlotCs.getId());
         item.setName(merlotCs.getLegalName());
         return item;
-    }
-
-    private ExtendedVerifiablePresentation createVpFromCsList(List<PojoCredentialSubject> csList) throws JsonProcessingException {
-        ExtendedVerifiablePresentation vp = new ExtendedVerifiablePresentation();
-        List<ExtendedVerifiableCredential> vcList = new ArrayList<>();
-        for (PojoCredentialSubject cs : csList) {
-            CastableCredentialSubject ccs = CastableCredentialSubject.fromPojo(cs);
-            VerifiableCredential vc = VerifiableCredential
-                    .builder()
-                    .id(URI.create(cs.getId() + "#" + cs.getType()))
-                    .issuanceDate(Date.from(Instant.now()))
-                    .credentialSubject(ccs)
-                    .issuer(URI.create("did:web:some-issuer"))
-                    .build();
-            vcList.add(ExtendedVerifiableCredential.fromMap(vc.getJsonObject()));
-        }
-        vp.setVerifiableCredentials(vcList);
-        return vp;
     }
 
     private MerlotParticipantMetaDto getTestMerlotParticipantMetaDto() {
@@ -612,8 +552,7 @@ class ParticipantServiceTests {
     void getAllFederators() {
 
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
-        String orgaId = "did:web:" + merlotDomain + ":participant:someorga";
-        metaDto.setOrgaId(orgaId);
+        metaDto.setOrgaId(id);
         metaDto.setMailAddress("mymail@example.com");
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
         List<MerlotParticipantMetaDto> list = new ArrayList<>();
@@ -626,7 +565,7 @@ class ParticipantServiceTests {
         assertEquals(1, organizations.size());
         String resultId = organizations.get(0).getSelfDescription()
                 .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class).getId();
-        assertEquals(orgaId, resultId);
+        assertEquals(id, resultId);
     }
 
     @Test
@@ -641,11 +580,11 @@ class ParticipantServiceTests {
                 .findFirstCredentialSubjectByType(GxLegalRegistrationNumberCredentialSubject.class);
 
         assertThat(resultMerlotParticipantCs).usingRecursiveComparison().ignoringFields("id")
-                .isEqualTo(getExpectedMerlotParticipantCs());
+                .isEqualTo(getMerlotParticipantCs(id));
         assertThat(resultGxParticipantCs).usingRecursiveComparison().ignoringFields("id", "legalRegistrationNumber")
-                .isEqualTo(getExpectedGxParticipantCs());
+                .isEqualTo(getGxParticipantCs(id));
         assertThat(resultGxRegistrationNumberCs).usingRecursiveComparison().ignoringFields("id")
-                .isEqualTo(getExpectedGxRegistrationNumberCs());
+                .isEqualTo(getGxRegistrationNumberCs(id));
 
         String id = resultGxParticipantCs.getId();
         assertThat(id).isNotNull().isNotBlank();
@@ -856,7 +795,7 @@ class ParticipantServiceTests {
         GxLegalRegistrationNumberCredentialSubject editedGxRegistrationNumberCs = getTestEditedGxRegistrationNumberCs();
 
         ExtendedVerifiablePresentation vp = createVpFromCsList(
-                List.of(editedGxParticipantCs, editedGxRegistrationNumberCs, editedMerlotParticipantCs));
+                List.of(editedGxParticipantCs, editedGxRegistrationNumberCs, editedMerlotParticipantCs), "did:web:someorga");
 
         String someOrgaId = "did:web:example.com:participant:someorga";
         MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();

@@ -54,6 +54,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
+import static eu.merloteducation.organisationsorchestrator.SelfDescriptionDemoData.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.mockito.Mockito.lenient;
@@ -346,63 +347,12 @@ class OrganizationQueryControllerTests {
     @Test
     void getTrustedDidsUnauthenticatedTest() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                .get("/trustedDids")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-            .andDo(print())
-            .andExpect(status().isOk());
-    }
-
-    private MerlotLegalParticipantCredentialSubject getTestEditedMerlotParticipantCs(String id) {
-        MerlotLegalParticipantCredentialSubject credentialSubject = new MerlotLegalParticipantCredentialSubject();
-        credentialSubject.setId(id);
-        ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
-        termsAndConditions.setUrl("http://example.com");
-        termsAndConditions.setHash("1234");
-        credentialSubject.setTermsAndConditions(termsAndConditions);
-        return credentialSubject;
-    }
-
-    private GxLegalParticipantCredentialSubject getTestEditedGxParticipantCs(String id) {
-        GxLegalParticipantCredentialSubject credentialSubject = new GxLegalParticipantCredentialSubject();
-        credentialSubject.setId(id);
-        credentialSubject.setLegalRegistrationNumber(List.of(new NodeKindIRITypeId(id + "-regId")));
-        GxVcard address = new GxVcard();
-        address.setStreetAddress("address");
-        address.setLocality("Berlin");
-        address.setCountryCode("DE");
-        address.setCountrySubdivisionCode("DE-BE");
-        address.setPostalCode("12345");
-        credentialSubject.setLegalAddress(address);
-        credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setName("MyOrga");
-        return credentialSubject;
-    }
-    private GxLegalRegistrationNumberCredentialSubject getTestEditedGxRegistrationNumberCs(String id) {
-        GxLegalRegistrationNumberCredentialSubject credentialSubject = new GxLegalRegistrationNumberCredentialSubject();
-        credentialSubject.setId(id + "-regId");
-        credentialSubject.setLeiCode("1234567");
-        return credentialSubject;
-    }
-
-    private ExtendedVerifiablePresentation createVpFromCsList(List<PojoCredentialSubject> csList) throws JsonProcessingException {
-        ExtendedVerifiablePresentation vp = new ExtendedVerifiablePresentation();
-        List<ExtendedVerifiableCredential> vcList = new ArrayList<>();
-        for (PojoCredentialSubject cs : csList) {
-            CastableCredentialSubject ccs = CastableCredentialSubject.fromPojo(cs);
-            VerifiableCredential vc = VerifiableCredential
-                    .builder()
-                    .id(URI.create(cs.getId() + "#" + cs.getType()))
-                    .issuanceDate(Date.from(Instant.now()))
-                    .credentialSubject(ccs)
-                    .issuer(URI.create("did:web:some-issuer"))
-                    .build();
-            vcList.add(ExtendedVerifiableCredential.fromMap(vc.getJsonObject()));
-        }
-        vp.setVerifiableCredentials(vcList);
-        vp.setJsonObjectKeyValue("id", csList.get(0).getId() + "#sd");
-        return vp;
+                        .get("/trustedDids")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
 
@@ -412,10 +362,11 @@ class OrganizationQueryControllerTests {
 
         ExtendedVerifiablePresentation vp = createVpFromCsList(
                 List.of(
-                        getTestEditedGxParticipantCs(id),
-                        getTestEditedGxRegistrationNumberCs(id),
-                        getTestEditedMerlotParticipantCs(id)
-                )
+                        getGxParticipantCs(id),
+                        getGxRegistrationNumberCs(id),
+                        getMerlotParticipantCs(id)
+                ),
+                "did:web:someorga"
         );
 
         MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();

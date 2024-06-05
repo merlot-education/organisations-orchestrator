@@ -19,9 +19,9 @@ public interface PdfContentMapper {
     @Mapping(target = "countrySubdivisionCode", constant = "DE-BE") // TODO add to form and remove constant
     @Mapping(target = "legalForm", constant = "LLC") // TODO add to form and remove constant
     @Mapping(target = "registrationNumberLeiCode", constant = "894500MQZ65CN32S9A66") // TODO add to form and remove constant
-    /*@Mapping(target = "registrationNumberTaxID", constant = "") // TODO add to form and remove constant
+    @Mapping(target = "registrationNumberTaxID", constant = "") // TODO add to form and remove constant
     @Mapping(target = "registrationNumberEuid", constant = "") // TODO add to form and remove constant
     @Mapping(target = "registrationNumberEori", constant = "") // TODO add to form and remove constant
-    @Mapping(target = "registrationNumberVatID", constant = "") // TODO add to form and remove constant*/
+    @Mapping(target = "registrationNumberVatID", constant = "") // TODO add to form and remove constant
     RegistrationFormContent getRegistrationFormContentFromRegistrationForm(PDAcroForm pDAcroForm);
 }

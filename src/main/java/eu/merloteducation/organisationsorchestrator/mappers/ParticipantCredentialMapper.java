@@ -11,7 +11,7 @@ public interface ParticipantCredentialMapper {
 
     @Named("emptyStringToNullMapper")
     default String emptyStringToNullMapper(String s) {
-        if (s.isBlank()) {
+        if (s == null || s.isBlank()) {
             return null;
         }
         return s;

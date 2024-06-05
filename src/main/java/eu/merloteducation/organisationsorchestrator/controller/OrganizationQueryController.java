@@ -3,6 +3,7 @@ package eu.merloteducation.organisationsorchestrator.controller;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalParticipantCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
@@ -84,10 +85,8 @@ public class OrganizationQueryController {
      */
     @PutMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
-    @PreAuthorize("((#activeRole.getOrganizationId() ==" +
-            "#participantDtoWithEdits.selfDescription.getId().toString()) " +
-            "and (#activeRole.getOrganizationId() == #participantDtoWithEdits.id)) " +
-            "or #activeRole.isFedAdmin()")
+    @PreAuthorize("@participantAuthorityChecker.representsParticipantFromDto(#activeRole, #participantDtoWithEdits)" +
+            " or #activeRole.isFedAdmin()")
     public MerlotParticipantDto updateOrganization(
         @Valid @RequestBody MerlotParticipantDto participantDtoWithEdits,
         @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole)

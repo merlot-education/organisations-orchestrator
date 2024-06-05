@@ -1,20 +1,34 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import com.danubetech.verifiablecredentials.VerifiableCredential;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
 import eu.merloteducation.authorizationlibrary.config.MerlotSecurityConfig;
+import eu.merloteducation.gxfscataloglibrary.models.credentials.CastableCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiableCredential;
+import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiablePresentation;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.PojoCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.GxVcard;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.NodeKindIRITypeId;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalParticipantCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalRegistrationNumberCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.datatypes.ParticipantTermsAndConditions;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.organisationsorchestrator.auth.ParticipantAuthorityChecker;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
+import info.weboftrust.ldsignatures.LdProof;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +46,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -48,7 +65,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest({OrganizationQueryController.class, WebSecurityConfig.class, PdfContentMapper.class})
 @Import({JwtAuthConverter.class, AuthorityChecker.class, InterceptorConfig.class, ActiveRoleHeaderHandlerInterceptor.class,
-        AuthorityChecker.class, MerlotSecurityConfig.class})
+        AuthorityChecker.class, MerlotSecurityConfig.class, ParticipantAuthorityChecker.class})
 @AutoConfigureMockMvc()
 class OrganizationQueryControllerTests {
 
@@ -88,9 +105,12 @@ class OrganizationQueryControllerTests {
         participantDto.setId("did:web:example.com:participant:someid");
         participantDto.setMetadata(new MerlotParticipantMetaDto());
         participantDto.getMetadata().setMembershipClass(MembershipClass.PARTICIPANT);
-        participantDto.setSelfDescription(new SelfDescription());
-        participantDto.getSelfDescription().setProof(new SDProof());
-        participantDto.getSelfDescription().getProof().setVerificationMethod("did:web:somemethod.com#1234");
+        participantDto.setSelfDescription(new ExtendedVerifiablePresentation());
+        ExtendedVerifiablePresentation vp = new ExtendedVerifiablePresentation();
+        LdProof proof = new LdProof();
+        proof.setJsonObjectKeyValue("verificationMethod", "did:web:somemethod.com#1234");
+        vp.setJsonObjectKeyValue("proof", proof);
+        participantDto.setSelfDescription(vp);
         participants.add(participantDto);
 
         Page<MerlotParticipantDto> participantsPage = new PageImpl<>(participants);
@@ -148,7 +168,7 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedExistent() throws Exception {
 
-        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits("did:web:someorga.example.com");
         mvc.perform(MockMvcRequestBuilders
                         .put("/organization")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -167,7 +187,7 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedAsFedAdminExistent() throws Exception {
 
-        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits("did:web:someorga.example.com");
         mvc.perform(MockMvcRequestBuilders
                 .put("/organization")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -187,11 +207,8 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedAsFedAdminExistentInconsistentId() throws Exception {
 
-        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
-        MerlotOrganizationCredentialSubject credentialSubject =
-            (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription().getVerifiableCredential()
-                .getCredentialSubject();
-        credentialSubject.setId("Participant:did:web:somethirdorga.example.com");
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits("did:web:someorga.example.com");
+        participantDtoWithEdits.setId("did:web:somethirdorga.example.com");
 
         mvc.perform(MockMvcRequestBuilders
                 .put("/organization")
@@ -212,7 +229,7 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationUnauthorizedExistent() throws Exception {
 
-        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits("did:web:someorga.example.com");
         mvc.perform(MockMvcRequestBuilders
                         .put("/organization")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -337,46 +354,77 @@ class OrganizationQueryControllerTests {
             .andExpect(status().isOk());
     }
 
-    private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {
-
-        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
-        credentialSubject.setId("did:web:someorga.example.com");
-        RegistrationNumber registrationNumber = new RegistrationNumber();
-        registrationNumber.setLocal("localRegNum");
-        credentialSubject.setRegistrationNumber(registrationNumber);
-        VCard address = new VCard();
-        address.setStreetAddress("address");
-        address.setLocality("Berlin");
-        address.setCountryName("DE");
-        address.setPostalCode("12345");
-        credentialSubject.setLegalAddress(address);
-        credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setOrgaName("MyOrga");
-        TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent("http://example.com");
+    private MerlotLegalParticipantCredentialSubject getTestEditedMerlotParticipantCs(String id) {
+        MerlotLegalParticipantCredentialSubject credentialSubject = new MerlotLegalParticipantCredentialSubject();
+        credentialSubject.setId(id);
+        ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
+        termsAndConditions.setUrl("http://example.com");
         termsAndConditions.setHash("1234");
         credentialSubject.setTermsAndConditions(termsAndConditions);
         return credentialSubject;
     }
 
-    private MerlotParticipantDto getMerlotParticipantDtoWithEdits() {
+    private GxLegalParticipantCredentialSubject getTestEditedGxParticipantCs(String id) {
+        GxLegalParticipantCredentialSubject credentialSubject = new GxLegalParticipantCredentialSubject();
+        credentialSubject.setId(id);
+        credentialSubject.setLegalRegistrationNumber(List.of(new NodeKindIRITypeId(id + "-regId")));
+        GxVcard address = new GxVcard();
+        address.setStreetAddress("address");
+        address.setLocality("Berlin");
+        address.setCountryCode("DE");
+        address.setCountrySubdivisionCode("DE-BE");
+        address.setPostalCode("12345");
+        credentialSubject.setLegalAddress(address);
+        credentialSubject.setHeadquarterAddress(address);
+        credentialSubject.setName("MyOrga");
+        return credentialSubject;
+    }
+    private GxLegalRegistrationNumberCredentialSubject getTestEditedGxRegistrationNumberCs(String id) {
+        GxLegalRegistrationNumberCredentialSubject credentialSubject = new GxLegalRegistrationNumberCredentialSubject();
+        credentialSubject.setId(id + "-regId");
+        credentialSubject.setLeiCode("1234567");
+        return credentialSubject;
+    }
+
+    private ExtendedVerifiablePresentation createVpFromCsList(List<PojoCredentialSubject> csList) throws JsonProcessingException {
+        ExtendedVerifiablePresentation vp = new ExtendedVerifiablePresentation();
+        List<ExtendedVerifiableCredential> vcList = new ArrayList<>();
+        for (PojoCredentialSubject cs : csList) {
+            CastableCredentialSubject ccs = CastableCredentialSubject.fromPojo(cs);
+            VerifiableCredential vc = VerifiableCredential
+                    .builder()
+                    .id(URI.create(cs.getId() + "#" + cs.getType()))
+                    .issuanceDate(Date.from(Instant.now()))
+                    .credentialSubject(ccs)
+                    .issuer(URI.create("did:web:some-issuer"))
+                    .build();
+            vcList.add(ExtendedVerifiableCredential.fromMap(vc.getJsonObject()));
+        }
+        vp.setVerifiableCredentials(vcList);
+        vp.setJsonObjectKeyValue("id", csList.get(0).getId() + "#sd");
+        return vp;
+    }
+
+
+    private MerlotParticipantDto getMerlotParticipantDtoWithEdits(String id) throws JsonProcessingException {
 
         MerlotParticipantDto dtoWithEdits = new MerlotParticipantDto();
 
-        SelfDescription selfDescription = new SelfDescription();
-        SelfDescriptionVerifiableCredential verifiableCredential = new SelfDescriptionVerifiableCredential();
-        MerlotOrganizationCredentialSubject editedCredentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
-
-        verifiableCredential.setCredentialSubject(editedCredentialSubject);
-        selfDescription.setVerifiableCredential(verifiableCredential);
+        ExtendedVerifiablePresentation vp = createVpFromCsList(
+                List.of(
+                        getTestEditedGxParticipantCs(id),
+                        getTestEditedGxRegistrationNumberCs(id),
+                        getTestEditedMerlotParticipantCs(id)
+                )
+        );
 
         MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();
         metaData.setOrgaId("did:web:someorga.example.com");
         metaData.setMailAddress("me@mail.me");
         metaData.setMembershipClass(MembershipClass.FEDERATOR);
 
-        dtoWithEdits.setSelfDescription(selfDescription);
-        dtoWithEdits.setId(editedCredentialSubject.getId());
+        dtoWithEdits.setSelfDescription(vp);
+        dtoWithEdits.setId(id);
         dtoWithEdits.setMetadata(metaData);
         return dtoWithEdits;
     }

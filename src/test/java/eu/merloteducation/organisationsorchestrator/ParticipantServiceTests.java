@@ -168,20 +168,6 @@ class ParticipantServiceTests {
         return expected;
     }
 
-    Map<String, String> getContext() {
-
-        Map<String, String> context = new HashMap<>();
-        context.put("gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#");
-        context.put("gax-validation", "http://w3id.org/gaia-x/validation#");
-        context.put("merlot", "http://w3id.org/gaia-x/merlot#");
-        context.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-        context.put("sh", "http://www.w3.org/ns/shacl#");
-        context.put("skos", "http://www.w3.org/2004/02/skos/core#");
-        context.put("vcard", "http://www.w3.org/2006/vcard/ns#");
-        context.put("xsd", "http://www.w3.org/2001/XMLSchema#");
-        return context;
-    }
-
     RegistrationFormContent getTestRegistrationFormContent() throws IOException {
 
         RegistrationFormContent content = new RegistrationFormContent();

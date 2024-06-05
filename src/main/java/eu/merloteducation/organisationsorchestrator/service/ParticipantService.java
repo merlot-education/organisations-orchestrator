@@ -182,7 +182,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of active participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(GxLegalParticipantCredentialSubject.getTypeNoPrefix(), "name", inactiveOrgasIds,
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPageWithExcludedUris(GxLegalParticipantCredentialSubject.TYPE_CLASS, "name", inactiveOrgasIds,
                 pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
@@ -194,7 +194,7 @@ public class ParticipantService {
         // post a query to get a paginated and sorted list of participants
         GXFSCatalogListResponse<GXFSQueryUriItem> uriResponse = null;
         try {
-            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(GxLegalParticipantCredentialSubject.getTypeNoPrefix(), "name",
+            uriResponse = gxfsCatalogService.getSortedParticipantUriPage(GxLegalParticipantCredentialSubject.TYPE_CLASS, "name",
                     pageable.getOffset(), pageable.getPageSize());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);

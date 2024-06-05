@@ -100,7 +100,7 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
             String signerId = proofVerificationMethod.replaceFirst("#.*", "");
 
             GXFSCatalogListResponse<GXFSQueryLegalNameItem>
-                    response = gxfsCatalogService.getParticipantLegalNameByUri(MerlotLegalParticipantCredentialSubject.getTypeNoPrefix(), signerId);
+                    response = gxfsCatalogService.getParticipantLegalNameByUri(MerlotLegalParticipantCredentialSubject.TYPE_CLASS, signerId);
 
 
             // if we do not get exactly one item, we did not find the signer participant and the corresponding legal name

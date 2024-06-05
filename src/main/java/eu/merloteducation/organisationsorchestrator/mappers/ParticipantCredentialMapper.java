@@ -46,8 +46,16 @@ public interface ParticipantCredentialMapper {
     @BeanMapping(ignoreByDefault = true)
     // participant
     @Mapping(target = "description", source = "description")
-    @Mapping(target = "legalAddress", source = "legalAddress")
-    @Mapping(target = "headquarterAddress", source = "headquarterAddress")
+    @Mapping(target = "legalAddress.countryCode", source = "legalAddress.countryCode")
+    @Mapping(target = "legalAddress.countrySubdivisionCode", source = "legalAddress.countrySubdivisionCode")
+    @Mapping(target = "legalAddress.streetAddress", source = "legalAddress.streetAddress")
+    @Mapping(target = "legalAddress.locality", source = "legalAddress.locality")
+    @Mapping(target = "legalAddress.postalCode", source = "legalAddress.postalCode")
+    @Mapping(target = "headquarterAddress.countryCode", source = "headquarterAddress.countryCode")
+    @Mapping(target = "headquarterAddress.countrySubdivisionCode", source = "headquarterAddress.countrySubdivisionCode")
+    @Mapping(target = "headquarterAddress.streetAddress", source = "headquarterAddress.streetAddress")
+    @Mapping(target = "headquarterAddress.locality", source = "headquarterAddress.locality")
+    @Mapping(target = "headquarterAddress.postalCode", source = "headquarterAddress.postalCode")
     void updateCredentialSubjectAsParticipant(GxLegalParticipantCredentialSubject source,
                                               @MappingTarget GxLegalParticipantCredentialSubject target);
 
@@ -65,8 +73,16 @@ public interface ParticipantCredentialMapper {
     @Mapping(target = "name", source = "name")
     // participant
     @Mapping(target = "description", source = "description")
-    @Mapping(target = "legalAddress", source = "legalAddress")
-    @Mapping(target = "headquarterAddress", source = "headquarterAddress")
+    @Mapping(target = "legalAddress.countryCode", source = "legalAddress.countryCode")
+    @Mapping(target = "legalAddress.countrySubdivisionCode", source = "legalAddress.countrySubdivisionCode")
+    @Mapping(target = "legalAddress.streetAddress", source = "legalAddress.streetAddress")
+    @Mapping(target = "legalAddress.locality", source = "legalAddress.locality")
+    @Mapping(target = "legalAddress.postalCode", source = "legalAddress.postalCode")
+    @Mapping(target = "headquarterAddress.countryCode", source = "headquarterAddress.countryCode")
+    @Mapping(target = "headquarterAddress.countrySubdivisionCode", source = "headquarterAddress.countrySubdivisionCode")
+    @Mapping(target = "headquarterAddress.streetAddress", source = "headquarterAddress.streetAddress")
+    @Mapping(target = "headquarterAddress.locality", source = "headquarterAddress.locality")
+    @Mapping(target = "headquarterAddress.postalCode", source = "headquarterAddress.postalCode")
     void updateCredentialSubjectAsFedAdmin(GxLegalParticipantCredentialSubject source,
                                            @MappingTarget GxLegalParticipantCredentialSubject target);
 

@@ -104,7 +104,7 @@ gxdch-services:
   registry-base-uris:
     "https://registry.lab.gaia-x.eu/v1-staging"
   notary-base-uris:
-    "https://registrationnumber.notary.lab.gaia-x.eu/development"
+    "https://registrationnumber.notary.lab.gaia-x.eu/main"
 
 daps-server:
   base-uri: http://localhost:4567

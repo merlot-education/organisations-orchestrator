@@ -1,5 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import eu.merloteducation.gxfscataloglibrary.service.GxdchService;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsWizardApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +15,15 @@ public class ParticipantShapeController {
     private static final String ECOSYSTEM_MERLOT = "merlot";
     private static final String ECOSYSTEM_GAIAX = "gx";
 
-    @Autowired
-    private GxfsWizardApiService gxfsWizardApiService;
+    private final GxfsWizardApiService gxfsWizardApiService;
+
+    private final GxdchService gxdchService;
+
+    public ParticipantShapeController(@Autowired GxfsWizardApiService gxfsWizardApiService,
+                                      @Autowired GxdchService gxdchService) {
+        this.gxfsWizardApiService = gxfsWizardApiService;
+        this.gxdchService = gxdchService;
+    }
 
     /**
      * GET request for retrieving the merlot participant shape for the catalog.
@@ -34,5 +43,10 @@ public class ParticipantShapeController {
     @GetMapping("/gx/registrationnumber")
     public String getGxRegistrationNumberShape() {
         return gxfsWizardApiService.getShapeByName(ECOSYSTEM_GAIAX, "Legalregistrationnumber.json");
+    }
+
+    @GetMapping("/gx/tnc")
+    public JsonNode getGxTermsAndConditions() {
+        return gxdchService.getGxTnCs();
     }
 }

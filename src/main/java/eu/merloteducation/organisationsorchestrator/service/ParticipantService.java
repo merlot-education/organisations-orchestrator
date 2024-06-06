@@ -367,43 +367,6 @@ public class ParticipantService {
                                                   OrganizationRoleGrantedAuthority activeRole)
             throws JsonProcessingException {
 
-        /*LegalParticipantCredentialSubject testParticipantCs = new LegalParticipantCredentialSubject();
-        testParticipantCs.setId("did:web:marketplace.dev.merlot-education.eu");
-        testParticipantCs.setName("Some Orga");
-        testParticipantCs.setLegalRegistrationNumber(
-                List.of(new NodeKindIRITypeId("did:web:marketplace.dev.merlot-education.eu#registrationNumber")));
-        GxVcard testParticipantAddress = new GxVcard();
-        testParticipantAddress.setCountrySubdivisionCode("DE-BE");
-        testParticipantAddress.setCountryCode("DE");
-        testParticipantCs.setLegalAddress(testParticipantAddress);
-        testParticipantCs.setHeadquarterAddress(testParticipantAddress);
-
-        LegalRegistrationNumberCredentialSubject testRegistrationNumberCs = new LegalRegistrationNumberCredentialSubject();
-        testRegistrationNumberCs.setId("did:web:marketplace.dev.merlot-education.eu#registrationNumber");
-        testRegistrationNumberCs.setLeiCode("894500MQZ65CN32S9A66");
-
-        MerlotLegalParticipantCredentialSubject testMerlotParticipantCs = new MerlotLegalParticipantCredentialSubject();
-        testMerlotParticipantCs.setId("did:web:marketplace.dev.merlot-education.eu");
-        testMerlotParticipantCs.setLegalName("Some Orga LLC");
-        testMerlotParticipantCs.setLegalForm("LLC");
-        ParticipantTermsAndConditions testTermsAndConditions = new ParticipantTermsAndConditions();
-        testTermsAndConditions.setUrl("http://example.com");
-        testTermsAndConditions.setHash("hash1234");
-        testMerlotParticipantCs.setTermsAndConditions(testTermsAndConditions);
-
-        ParticipantItem participantItemTest = null;
-        try {
-            // sign SD using verification method referencing the merlot certificate and the default/merlot private key
-            participantItemTest = gxfsCatalogService.addParticipant(List.of(testParticipantCs,
-                    testRegistrationNumberCs, testMerlotParticipantCs), "did:web:marketplace.dev.merlot-education.eu#JWK2020"
-            );
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        System.out.println(participantItemTest);*/
-
-
         MerlotParticipantMetaDto metaData;
         GxLegalParticipantCredentialSubject participantCs;
         GxLegalRegistrationNumberCredentialSubject registrationNumberCs;

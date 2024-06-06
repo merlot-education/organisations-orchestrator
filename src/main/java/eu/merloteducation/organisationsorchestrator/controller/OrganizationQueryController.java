@@ -3,7 +3,6 @@ package eu.merloteducation.organisationsorchestrator.controller;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalParticipantCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;

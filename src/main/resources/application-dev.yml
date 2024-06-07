@@ -46,7 +46,7 @@ gxdch-services:
   #"https://gx-registry.gxdch.dih.telekom.com",
   #"https://gx-registry.airenetworks.es"
   notary-base-uris:
-    "https://registrationnumber.notary.lab.gaia-x.eu/main" #,
+    "https://registrationnumber.notary.lab.gaia-x.eu/v1-staging" #,
     #"https://gx-notary.aruba.it",
   #"https://gx-notary.gxdch.dih.telekom.com",
   #"https://gx-notary.airenetworks.es"

@@ -34,6 +34,7 @@ daps-server:
 
 gxdch-services:
   max-retries: 3
+  retry-delay: 3000
   enforce-compliance: true
   enforce-notary: true
   compliance-base-uris:

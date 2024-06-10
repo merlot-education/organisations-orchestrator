@@ -415,9 +415,9 @@ public class ParticipantService {
         // set credential subject id to did from metadata (self-assigned or received from did service)
         merlotParticipantCs.setId(metaDataDto.getOrgaId());
         participantCs.setId(metaDataDto.getOrgaId());
-        registrationNumberCs.setId(metaDataDto.getOrgaId() + "-registrationNumber");
+        registrationNumberCs.setId(metaDataDto.getOrgaId() + "#registrationNumber");
         participantCs.setLegalRegistrationNumber(
-                List.of(new NodeKindIRITypeId(metaDataDto.getOrgaId() + "-registrationNumber")));
+                List.of(new NodeKindIRITypeId(metaDataDto.getOrgaId() + "#registrationNumber")));
 
         // fetch the corresponding signer config for the performing role
         OrganisationSignerConfigDto activeRoleSignerConfig =

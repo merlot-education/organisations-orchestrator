@@ -37,6 +37,9 @@ public class InitialDataLoader implements CommandLineRunner {
     private final File initialOrgaConnectorsResource;
     private final String merlotDomain;
 
+    private static final String DELAY_UPDATE_MSG = "Delaying update to avoid clearing house rate limiting...";
+    private static final int DELAY_UPDATE_TIME = 15000;
+
 
     public InitialDataLoader(@Autowired OrganizationQueryController organizationQueryController,
                              @Autowired ObjectMapper objectMapper,
@@ -90,7 +93,22 @@ public class InitialDataLoader implements CommandLineRunner {
                 .createOrganization(new MultipartFile[]{merlotFederationPdf}, merlotFederationRole);
         // set federator role for MERLOT federation
         participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
+
+        try {
+            logger.info(DELAY_UPDATE_MSG);
+            Thread.sleep(DELAY_UPDATE_TIME);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
+
         organizationQueryController.updateOrganization(participant, merlotFederationRole);
+
+        try {
+            logger.info(DELAY_UPDATE_MSG);
+            Thread.sleep(DELAY_UPDATE_TIME);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void onboardOtherOrganisations(OrganizationRoleGrantedAuthority merlotFederationRole) throws Exception {
@@ -130,6 +148,14 @@ public class InitialDataLoader implements CommandLineRunner {
         participant.getMetadata().getConnectors().addAll(connectors);
         OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
                 OrganizationRole.ORG_LEG_REP, participant.getId());
+
+        try {
+            logger.info(DELAY_UPDATE_MSG);
+            Thread.sleep(DELAY_UPDATE_TIME);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
+
         // update with the role of the participant in order to update the connector data
         organizationQueryController.updateOrganization(participant, internalRoleOrgLegRep);
 
@@ -138,8 +164,22 @@ public class InitialDataLoader implements CommandLineRunner {
             participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
         }
 
+        try {
+            logger.info(DELAY_UPDATE_MSG);
+            Thread.sleep(DELAY_UPDATE_TIME);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
+
         // reset signature to MERLOT Federation again
         organizationQueryController.updateOrganization(participant, merlotFederationRole);
+
+        try {
+            logger.info(DELAY_UPDATE_MSG);
+            Thread.sleep(DELAY_UPDATE_TIME);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private MultipartFile getMerlotFederationDocument() {

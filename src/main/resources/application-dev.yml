@@ -33,6 +33,7 @@ daps-server:
   base-uri: http://daps-server.merlot.svc.cluster.local:4567
 
 gxdch-services:
+  max-retries: 3
   enforce-compliance: true
   enforce-notary: true
   compliance-base-uris:

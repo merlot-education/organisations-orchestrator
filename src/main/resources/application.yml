@@ -98,7 +98,7 @@ gxfscatalog-library:
 
 gxdch-services:
   # for local development skip te compliance check as it will inevitably fail
-  max-retries: 3
+  max-retries: 0
   enforce-compliance: false
   enforce-notary: true
   compliance-base-uris:

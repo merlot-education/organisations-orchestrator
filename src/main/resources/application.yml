@@ -37,6 +37,8 @@ spring:
   servlet:
     multipart:
       max-file-size: 2MB
+  codec:
+    max-in-memory-size: 20MB
 
 server:
   port: '8082'

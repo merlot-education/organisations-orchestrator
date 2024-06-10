@@ -9,6 +9,7 @@ import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -23,12 +24,14 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @RequestMapping("/")
+@Slf4j
 public class OrganizationQueryController {
 
     @Autowired
@@ -72,6 +75,9 @@ public class OrganizationQueryController {
                     pdfContentMapper.getRegistrationFormContentFromRegistrationForm(pdAcroForm);
             return participantService.createParticipant(content, activeRole);
         } catch (Exception e) {
+            log.error("Message: {}", e.getMessage());
+            log.error("Stack Trace: {}",Arrays.toString(e.getStackTrace()));
+            log.error("Class: {}", e.getClass());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file. " + e.getMessage());
         }
     }

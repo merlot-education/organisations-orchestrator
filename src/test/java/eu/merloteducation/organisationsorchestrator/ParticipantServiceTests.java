@@ -1,23 +1,29 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import com.danubetech.verifiablecredentials.VerifiableCredential;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRole;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
+import eu.merloteducation.gxfscataloglibrary.models.credentials.CastableCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiableCredential;
+import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiablePresentation;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialPresentationException;
 import eu.merloteducation.gxfscataloglibrary.models.exception.CredentialSignatureException;
 import eu.merloteducation.gxfscataloglibrary.models.participants.ParticipantItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryUriItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescription;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.PojoCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionItem;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionVerifiableCredential;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.SelfDescriptionMeta;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.GxVcard;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.NodeKindIRITypeId;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalParticipantCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalRegistrationNumberCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.datatypes.ParticipantTermsAndConditions;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
 import eu.merloteducation.modelslib.api.organization.*;
@@ -31,9 +37,9 @@ import eu.merloteducation.organisationsorchestrator.service.OutgoingMessageServi
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.apache.commons.text.StringEscapeUtils;
 
+import static eu.merloteducation.organisationsorchestrator.SelfDescriptionDemoData.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +58,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.net.URI;
+import java.time.Instant;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -69,9 +77,6 @@ class ParticipantServiceTests {
 
     @Autowired
     private OrganizationMapper organizationMapper;
-
-    @Value("${merlot-domain}")
-    private String merlotDomain;
 
     @Autowired
     private ParticipantService participantService;
@@ -95,75 +100,30 @@ class ParticipantServiceTests {
 
     String mailAddress = "test@test.de";
 
-    String organizationLegalName = "Organization Legal Name";
+    String organizationLegalName = "MyOrga";
 
-    String registrationNumber = "DE123456789";
+    String registrationNumber = "0110";
 
     String countryCode = "DE";
 
-    String street = "Street 123";
+    String countrySubdivisionCode = "DE-BE";
 
-    String providerTncHash = "hash1234567890";
+    String street = "Some Street 3";
 
-    String providerTncLink = "abc.de";
+    String providerTncHash = "1234";
 
-    String city = "City";
+    String providerTncLink = "http://example.com";
 
-    String organizationName = "Organization Name";
+    String city = "Berlin";
+
+    String organizationName = "MyOrga";
 
     String postalCode = "12345";
 
-    String id = "12345";
+    private final String merlotDomain = "example.com";
+    String id = "did:web:" + merlotDomain + ":participant:someorga";
 
     ParticipantServiceTests() throws IOException {
-    }
-
-    MerlotOrganizationCredentialSubject getExpectedCredentialSubject() {
-
-        Map<String, String> context = getContext();
-
-        MerlotOrganizationCredentialSubject expected = new MerlotOrganizationCredentialSubject();
-        expected.setOrgaName(organizationName);
-        expected.setLegalName(organizationLegalName);
-
-        RegistrationNumber registrationNumberObj = new RegistrationNumber();
-        registrationNumberObj.setType("gax-trust-framework:RegistrationNumber");
-        registrationNumberObj.setLocal(registrationNumber);
-        expected.setRegistrationNumber(registrationNumberObj);
-
-        VCard vCard = new VCard();
-        vCard.setLocality(city);
-        vCard.setPostalCode(postalCode);
-        vCard.setCountryName(countryCode);
-        vCard.setStreetAddress(street);
-        vCard.setType("vcard:Address");
-        expected.setLegalAddress(vCard);
-        expected.setHeadquarterAddress(vCard);
-
-        TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(providerTncLink);
-        termsAndConditions.setHash(providerTncHash);
-        termsAndConditions.setType("gax-trust-framework:TermsAndConditions");
-        expected.setTermsAndConditions(termsAndConditions);
-
-        expected.setContext(context);
-        expected.setType("merlot:MerlotOrganization");
-
-        return expected;
-    }
-
-    Map<String, String> getContext() {
-
-        Map<String, String> context = new HashMap<>();
-        context.put("gax-trust-framework", "http://w3id.org/gaia-x/gax-trust-framework#");
-        context.put("gax-validation", "http://w3id.org/gaia-x/validation#");
-        context.put("merlot", "http://w3id.org/gaia-x/merlot#");
-        context.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-        context.put("sh", "http://www.w3.org/ns/shacl#");
-        context.put("skos", "http://www.w3.org/2004/02/skos/core#");
-        context.put("vcard", "http://www.w3.org/2006/vcard/ns#");
-        context.put("xsd", "http://www.w3.org/2001/XMLSchema#");
-        return context;
     }
 
     RegistrationFormContent getTestRegistrationFormContent() throws IOException {
@@ -172,8 +132,13 @@ class ParticipantServiceTests {
         content.setOrganizationName(organizationName);
         content.setOrganizationLegalName(organizationLegalName);
         content.setMailAddress(mailAddress);
-        content.setRegistrationNumberLocal(registrationNumber);
+        content.setRegistrationNumberLeiCode(registrationNumber);
+        content.setRegistrationNumberVatID("");
+        content.setRegistrationNumberTaxID("");
+        content.setRegistrationNumberEori("");
+        content.setRegistrationNumberEuid("");
         content.setCountryCode(countryCode);
+        content.setCountrySubdivisionCode(countrySubdivisionCode);
         content.setPostalCode(postalCode);
         content.setCity(city);
         content.setStreet(street);
@@ -183,13 +148,47 @@ class ParticipantServiceTests {
         return content;
     }
 
-    private ParticipantItem wrapCredentialSubjectInItem(MerlotOrganizationCredentialSubject credentialSubject) {
+    private ParticipantItem createMockParticipantItem() throws JsonProcessingException {
+        GxLegalParticipantCredentialSubject gxParticipantCs = getGxParticipantCs(id);
+        GxLegalRegistrationNumberCredentialSubject gxRegistrationNumberCs = getGxRegistrationNumberCs(id);
+        MerlotLegalParticipantCredentialSubject merlotParticipantCs = getMerlotParticipantCs(id);
+
+        return wrapCredentialSubjectInItem(List.of(gxParticipantCs, gxRegistrationNumberCs, merlotParticipantCs));
+    }
+
+    private GXFSCatalogListResponse<SelfDescriptionItem> createMockSdItems() throws JsonProcessingException {
+        GxLegalParticipantCredentialSubject gxParticipantCs = getGxParticipantCs(id);
+        GxLegalRegistrationNumberCredentialSubject gxRegistrationNumberCs = getGxRegistrationNumberCs(id);
+        MerlotLegalParticipantCredentialSubject merlotParticipantCs = getMerlotParticipantCs(id);
+
+        return wrapCredentialSubjectInSdResponse(List.of(gxParticipantCs, gxRegistrationNumberCs, merlotParticipantCs));
+    }
+
+    private GXFSCatalogListResponse<SelfDescriptionItem> wrapCredentialSubjectInSdResponse(List<PojoCredentialSubject> csList) throws JsonProcessingException {
+        SelfDescriptionItem item = new SelfDescriptionItem();
+        SelfDescriptionMeta meta = new SelfDescriptionMeta();
+        meta.setContent(createVpFromCsList(csList, "did:web:someorga"));
+        meta.setId("did:web:example.com:participant:someorga");
+        meta.setSubjectId("did:web:example.com:participant:someorga");
+        meta.setSdHash("8b143ff8e0cf8f22c366cea9e1d31d97f79aa29eee5741f048637a43b7f059b0");
+        meta.setStatus("active");
+        meta.setIssuer("did:web:example.com:participant:someorga");
+        item.setMeta(meta);
+
+        GXFSCatalogListResponse<SelfDescriptionItem> response = new GXFSCatalogListResponse<>();
+        response.setTotalCount(1);
+        response.setItems(List.of(item));
+        return response;
+    }
+
+    private ParticipantItem wrapCredentialSubjectInItem(List<PojoCredentialSubject> csList) throws JsonProcessingException {
         ParticipantItem item = new ParticipantItem();
-        item.setSelfDescription(new SelfDescription());
-        item.getSelfDescription().setVerifiableCredential(new SelfDescriptionVerifiableCredential());
-        item.getSelfDescription().getVerifiableCredential().setCredentialSubject(credentialSubject);
-        item.setId(credentialSubject.getId());
-        item.setName(credentialSubject.getLegalName());
+        ExtendedVerifiablePresentation vp = createVpFromCsList(csList, "did:web:someorga");
+        MerlotLegalParticipantCredentialSubject merlotCs = vp
+                .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
+        item.setSelfDescription(vp);
+        item.setId(merlotCs.getId());
+        item.setName(merlotCs.getLegalName());
         return item;
     }
 
@@ -217,66 +216,15 @@ class ParticipantServiceTests {
         ReflectionTestUtils.setField(participantService, "outgoingMessageService", outgoingMessageService);
         ReflectionTestUtils.setField(participantService, "omejdnConnectorApiClient", new OmejdnConnectorApiClientFake());
 
-        String mockParticipant = """
-            {
-                "id": "did:web:example.com:participant:someorga",
-                "name": "did:web:example.com:participant:someorga",
-                "publicKey": "{\\"kty\\":\\"RSA\\",\\"e\\":\\"AQAB\\",\\"alg\\":\\"PS256\\",\\"n\\":\\"dummy\\"}",
-                "selfDescription":"{\\"id\\": \\"http://example.edu/verifiablePresentation/self-description1\\", \\"proof\\": {\\"created\\": \\"2023-04-27T13:48:11Z\\", \\"jws\\": \\"dummy\\", \\"proofPurpose\\": \\"assertionMethod\\", \\"type\\": \\"JsonWebSignature2020\\", \\"verificationMethod\\": \\"did:web:compliance.lab.gaia-x.eu\\"}, \\"type\\": [\\"VerifiablePresentation\\"], \\"@context\\": [\\"https://www.w3.org/2018/credentials/v1\\"], \\"verifiableCredential\\": {\\"credentialSubject\\": {\\"gax-trust-framework:registrationNumber\\": {\\"gax-trust-framework:local\\": {\\"@value\\": \\"0762747721\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"gax-trust-framework:RegistrationNumber\\"}, \\"gax-trust-framework:legalName\\": {\\"@value\\": \\"Gaia-X European Association for Data and Cloud AISBL\\", \\"@type\\": \\"xsd:string\\"}, \\"gax-trust-framework:headquarterAddress\\": {\\"vcard:country-name\\": {\\"@value\\": \\"BE\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"vcard:Address\\", \\"vcard:street-address\\": {\\"@value\\": \\"Avenue des Arts 6-9\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:locality\\": {\\"@value\\": \\"Brüssel\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:postal-code\\": {\\"@value\\": \\"1210\\", \\"@type\\": \\"xsd:string\\"}}, \\"merlot:termsAndConditions\\": {\\"gax-trust-framework:content\\": {\\"@value\\": \\"http://example.com\\", \\"@type\\": \\"xsd:anyURI\\"}, \\"gax-trust-framework:hash\\": {\\"@value\\": \\"hash1234\\", \\"@type\\": \\"xsd:string\\"}}, \\"type\\": \\"merlot:MerlotOrganization\\", \\"gax-trust-framework:legalAddress\\": {\\"vcard:country-name\\": {\\"@value\\": \\"BE\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"vcard:Address\\", \\"vcard:street-address\\": {\\"@value\\": \\"Avenue des Arts 6-9\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:locality\\": {\\"@value\\": \\"Brüssel\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:postal-code\\": {\\"@value\\": \\"1210\\", \\"@type\\": \\"xsd:string\\"}}, \\"merlot:orgaName\\": {\\"@value\\": \\"Gaia-X AISBL\\", \\"@type\\": \\"xsd:string\\"}, \\"id\\": \\"did:web:example.com:participant:someorga\\", \\"@context\\": {\\"merlot\\": \\"http://w3id.org/gaia-x/merlot#\\", \\"gax-trust-framework\\": \\"http://w3id.org/gaia-x/gax-trust-framework#\\", \\"rdf\\": \\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\\", \\"sh\\": \\"http://www.w3.org/ns/shacl#\\", \\"xsd\\": \\"http://www.w3.org/2001/XMLSchema#\\", \\"gax-validation\\": \\"http://w3id.org/gaia-x/validation#\\", \\"skos\\": \\"http://www.w3.org/2004/02/skos/core#\\", \\"vcard\\": \\"http://www.w3.org/2006/vcard/ns#\\"}}, \\"issuanceDate\\": \\"2022-10-19T18:48:09Z\\", \\"type\\": [\\"VerifiableCredential\\"], \\"id\\": \\"https://www.example.org/legalPerson.json\\", \\"proof\\": {\\"created\\": \\"2023-04-27T13:48:10Z\\", \\"jws\\": \\"dummy\\", \\"proofPurpose\\": \\"assertionMethod\\", \\"type\\": \\"JsonWebSignature2020\\", \\"verificationMethod\\": \\"did:web:compliance.lab.gaia-x.eu\\"}, \\"@context\\": [\\"https://www.w3.org/2018/credentials/v1\\"], \\"issuer\\": \\"did:web:example.com:participant:someorga\\"}}"
-            }
-            """;
-        mockParticipant = StringEscapeUtils.unescapeJson(mockParticipant);
-        if (mockParticipant != null)
-            mockParticipant = mockParticipant.replace("\"{", "{").replace("}\"", "}");
-        ParticipantItem participantItem = mapper.readValue(mockParticipant, new TypeReference<>() {});
+        ParticipantItem participantItem = createMockParticipantItem();
 
-        String mockUserResponse = """
-            {
-                "totalCount": 1,
-                "items": [
-                    {
-                         "meta": {
-                             "expirationTime": null,
-                             "content": "{\\"id\\": \\"http://example.edu/verifiablePresentation/self-description1\\", \\"proof\\": {\\"created\\": \\"2023-08-30T08:58:35Z\\", \\"jws\\": \\"eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..JENTxPd26Ke05vIjtCzMESUvla_iYqP00ppsJfKagE06-XegrCbgRFoty20Tf40tPCd9_VflRL3kW12VCoOlDPA2nc21jaa_vmv8ZCCFNBmXIJVrBmF370MdyRT53Z-TGPKoUv5iF0m5fibKqqtg8MMCNVG9J3eff-Q04Wc5jZTgq2a9mjRsuZUAcnmu6ZgO4aaCKPD1t2aI3pZpie5zk5RJ37ZezuYQa7zdRirq_8Qaa9acg-aVqLaGxFAJhcpOcck-zkaP52pxVCusLt2bVUSG6HVk9txwCoc8ZoGCXW27MN8SM3I5PwfD_3OXGvs4TR0j-9ylKSajwWYRclNDtJMSBhmtXu_wjrjDMZFG2kRow_p1xhZZ71DKlX2Efp6VAdSWYbPpguZv1qMYbBemC3DW2lhkOsk1_KkwICO3ZSySNEswsjDty3NuGUOZtyyvImbSZ5f3I7ZyMNvnL1xoYEteK6mBSB9H7Zr1E1yZr7K1eiXR2MQuxKaFYl6jikYuwpdyrD6lvOWCEKOBQ_yjaQ9lbySiOxbNykpOX6-Bbu6mVQIX08BEzg0Y8r0Bnce2KPWypMtyHW7KhVgok2aLIjFQGutG7pgeIXIK2mPIR5jxUWUUh3XDuuU21cDYbMb6wYNX_-sNHNsots-mA81kRPlSRWlXBkvsZffXo6bWhKQ\\", \\"proofPurpose\\": \\"assertionMethod\\", \\"type\\": \\"JsonWebSignature2020\\", \\"verificationMethod\\": \\"did:web:compliance.lab.gaia-x.eu\\"}, \\"type\\": [\\"VerifiablePresentation\\"], \\"@context\\": [\\"https://www.w3.org/2018/credentials/v1\\"], \\"verifiableCredential\\": {\\"credentialSubject\\": {\\"gax-trust-framework:registrationNumber\\": {\\"gax-trust-framework:local\\": {\\"@value\\": \\"0762747721\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"gax-trust-framework:RegistrationNumber\\"}, \\"gax-trust-framework:legalName\\": {\\"@value\\": \\"Gaia-X European Association for Data and Cloud AISBL\\", \\"@type\\": \\"xsd:string\\"}, \\"gax-trust-framework:headquarterAddress\\": {\\"vcard:country-name\\": {\\"@value\\": \\"BE\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"vcard:Address\\", \\"vcard:street-address\\": {\\"@value\\": \\"Avenue des Arts 6-9\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:locality\\": {\\"@value\\": \\"Br\\\\u00fcssel\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:postal-code\\": {\\"@value\\": \\"1210\\", \\"@type\\": \\"xsd:string\\"}}, \\"type\\": \\"merlot:MerlotOrganization\\", \\"gax-trust-framework:legalAddress\\": {\\"vcard:country-name\\": {\\"@value\\": \\"BE\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"vcard:Address\\", \\"vcard:street-address\\": {\\"@value\\": \\"Avenue des Arts 6-9\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:locality\\": {\\"@value\\": \\"Br\\\\u00fcssel\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:postal-code\\": {\\"@value\\": \\"1210\\", \\"@type\\": \\"xsd:string\\"}}, \\"merlot:orgaName\\": {\\"@value\\": \\"Gaia-X AISBL\\", \\"@type\\": \\"xsd:string\\"}, \\"id\\": \\"did:web:example.com:participant:someorga\\", \\"@context\\": {\\"merlot\\": \\"http://w3id.org/gaia-x/merlot#\\", \\"gax-trust-framework\\": \\"http://w3id.org/gaia-x/gax-trust-framework#\\", \\"rdf\\": \\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\\", \\"sh\\": \\"http://www.w3.org/ns/shacl#\\", \\"xsd\\": \\"http://www.w3.org/2001/XMLSchema#\\", \\"gax-validation\\": \\"http://w3id.org/gaia-x/validation#\\", \\"skos\\": \\"http://www.w3.org/2004/02/skos/core#\\", \\"vcard\\": \\"http://www.w3.org/2006/vcard/ns#\\"}, \\"merlot:termsAndConditions\\": {\\"gax-trust-framework:content\\": {\\"@value\\": \\"http://example.com\\", \\"@type\\": \\"xsd:anyURI\\"}, \\"@type\\": \\"gax-trust-framework:TermsAndConditions\\", \\"gax-trust-framework:hash\\": {\\"@value\\": \\"hash1234\\", \\"@type\\": \\"xsd:string\\"}}}, \\"issuanceDate\\": \\"2022-10-19T18:48:09Z\\", \\"type\\": [\\"VerifiableCredential\\"], \\"id\\": \\"https://www.example.org/legalPerson.json\\", \\"proof\\": {\\"created\\": \\"2023-08-30T08:58:34Z\\", \\"jws\\": \\"eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..yV2y2TdkrLpsrP1ZTmtEjazcRMtKKwEHviNx_cC3BxBM8R2DeAbBuxbgcO_3ZoUeuB-6laSe2RN6jIp5UMCVRzgFg1YIbNKMcyDfC2LhF0YaXxo9pB-L3qLdRJpve3-NBHj76dBUW4Q04S_4t_5M09p61fEuCRJIIrDzh2iKSLwzKrv2sT8hnMefN2P29sa5QlJrRu-kFHolq_ZmwsXzWMN3R8_8tbsS19eP1hIzkuzW1lla8jZot06Y6bFslr3S5CCbexABJb34puu2nbH2n4Qdc9BS31B34HnduC8AuKEbOfmWsGDSZT29QjL-VxUWN4lhqxb-DsiSpmDlEPt_UzJah5tvMSQzAlKpm2ZZdBuQb8Mk9-U9oRmrxm6xeOcXdcBMAHXEYlBMp6R8gEOyQ3uDMrR2x9xMTs4EeJgJlOSsyK7F5_EbMtqnLulKRD4RtNoZ_I8k0XcVZAVoBtxrEwWOE48AdW16yfemqEO8s8J_J9TrBaTTMKIMFqJjJ-HNc9n7E_saylVFRadHevbLLuBNDOjjwvI8E5r55iO2HTPxB1dSWcjidSacSCvo2zQxRLkbPQJmLp2S4SCMLbqwPdph8KH6tfAcgxH0k3sTmwvt2tTLBXCINPlnhv2ahuHzXWGpgegEyHLrtlUAwfeDilkc_lib_chWBVqqWxu-7Gw\\", \\"proofPurpose\\": \\"assertionMethod\\", \\"type\\": \\"JsonWebSignature2020\\", \\"verificationMethod\\": \\"did:web:compliance.lab.gaia-x.eu\\"}, \\"@context\\": [\\"https://www.w3.org/2018/credentials/v1\\"], \\"issuer\\": \\"did:web:example.com:participant:someorga\\"}}",
-                             "subjectId": "did:web:example.com:participant:someorga",
-                             "validators": [
-                                 "did:web:compliance.lab.gaia-x.eu"
-                             ],
-                             "sdHash": "8b143ff8e0cf8f22c366cea9e1d31d97f79aa29eee5741f048637a43b7f059b0",
-                             "id": "did:web:example.com:participant:someorga",
-                             "status": "active",
-                             "issuer": "did:web:example.com:participant:someorga",
-                             "validatorDids": [
-                                 "did:web:compliance.lab.gaia-x.eu"
-                             ],
-                             "uploadDatetime": "2023-08-30T08:58:35.894486Z",
-                             "statusDatetime": "2023-08-30T08:58:35.894486Z"
-                         },
-                         "content": "{\\"id\\": \\"http://example.edu/verifiablePresentation/self-description1\\", \\"proof\\": {\\"created\\": \\"2023-08-30T08:58:35Z\\", \\"jws\\": \\"eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..JENTxPd26Ke05vIjtCzMESUvla_iYqP00ppsJfKagE06-XegrCbgRFoty20Tf40tPCd9_VflRL3kW12VCoOlDPA2nc21jaa_vmv8ZCCFNBmXIJVrBmF370MdyRT53Z-TGPKoUv5iF0m5fibKqqtg8MMCNVG9J3eff-Q04Wc5jZTgq2a9mjRsuZUAcnmu6ZgO4aaCKPD1t2aI3pZpie5zk5RJ37ZezuYQa7zdRirq_8Qaa9acg-aVqLaGxFAJhcpOcck-zkaP52pxVCusLt2bVUSG6HVk9txwCoc8ZoGCXW27MN8SM3I5PwfD_3OXGvs4TR0j-9ylKSajwWYRclNDtJMSBhmtXu_wjrjDMZFG2kRow_p1xhZZ71DKlX2Efp6VAdSWYbPpguZv1qMYbBemC3DW2lhkOsk1_KkwICO3ZSySNEswsjDty3NuGUOZtyyvImbSZ5f3I7ZyMNvnL1xoYEteK6mBSB9H7Zr1E1yZr7K1eiXR2MQuxKaFYl6jikYuwpdyrD6lvOWCEKOBQ_yjaQ9lbySiOxbNykpOX6-Bbu6mVQIX08BEzg0Y8r0Bnce2KPWypMtyHW7KhVgok2aLIjFQGutG7pgeIXIK2mPIR5jxUWUUh3XDuuU21cDYbMb6wYNX_-sNHNsots-mA81kRPlSRWlXBkvsZffXo6bWhKQ\\", \\"proofPurpose\\": \\"assertionMethod\\", \\"type\\": \\"JsonWebSignature2020\\", \\"verificationMethod\\": \\"did:web:compliance.lab.gaia-x.eu\\"}, \\"type\\": [\\"VerifiablePresentation\\"], \\"@context\\": [\\"https://www.w3.org/2018/credentials/v1\\"], \\"verifiableCredential\\": {\\"credentialSubject\\": {\\"gax-trust-framework:registrationNumber\\": {\\"gax-trust-framework:local\\": {\\"@value\\": \\"0762747721\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"gax-trust-framework:RegistrationNumber\\"}, \\"gax-trust-framework:legalName\\": {\\"@value\\": \\"Gaia-X European Association for Data and Cloud AISBL\\", \\"@type\\": \\"xsd:string\\"}, \\"gax-trust-framework:headquarterAddress\\": {\\"vcard:country-name\\": {\\"@value\\": \\"BE\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"vcard:Address\\", \\"vcard:street-address\\": {\\"@value\\": \\"Avenue des Arts 6-9\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:locality\\": {\\"@value\\": \\"Br\\\\u00fcssel\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:postal-code\\": {\\"@value\\": \\"1210\\", \\"@type\\": \\"xsd:string\\"}}, \\"type\\": \\"merlot:MerlotOrganization\\", \\"gax-trust-framework:legalAddress\\": {\\"vcard:country-name\\": {\\"@value\\": \\"BE\\", \\"@type\\": \\"xsd:string\\"}, \\"@type\\": \\"vcard:Address\\", \\"vcard:street-address\\": {\\"@value\\": \\"Avenue des Arts 6-9\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:locality\\": {\\"@value\\": \\"Br\\\\u00fcssel\\", \\"@type\\": \\"xsd:string\\"}, \\"vcard:postal-code\\": {\\"@value\\": \\"1210\\", \\"@type\\": \\"xsd:string\\"}}, \\"merlot:orgaName\\": {\\"@value\\": \\"Gaia-X AISBL\\", \\"@type\\": \\"xsd:string\\"}, \\"id\\": \\"did:web:example.com:participant:someorga\\", \\"@context\\": {\\"merlot\\": \\"http://w3id.org/gaia-x/merlot#\\", \\"gax-trust-framework\\": \\"http://w3id.org/gaia-x/gax-trust-framework#\\", \\"rdf\\": \\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\\", \\"sh\\": \\"http://www.w3.org/ns/shacl#\\", \\"xsd\\": \\"http://www.w3.org/2001/XMLSchema#\\", \\"gax-validation\\": \\"http://w3id.org/gaia-x/validation#\\", \\"skos\\": \\"http://www.w3.org/2004/02/skos/core#\\", \\"vcard\\": \\"http://www.w3.org/2006/vcard/ns#\\"}, \\"merlot:termsAndConditions\\": {\\"gax-trust-framework:content\\": {\\"@value\\": \\"http://example.com\\", \\"@type\\": \\"xsd:anyURI\\"}, \\"@type\\": \\"gax-trust-framework:TermsAndConditions\\", \\"gax-trust-framework:hash\\": {\\"@value\\": \\"hash1234\\", \\"@type\\": \\"xsd:string\\"}}}, \\"issuanceDate\\": \\"2022-10-19T18:48:09Z\\", \\"type\\": [\\"VerifiableCredential\\"], \\"id\\": \\"https://www.example.org/legalPerson.json\\", \\"proof\\": {\\"created\\": \\"2023-08-30T08:58:34Z\\", \\"jws\\": \\"eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..yV2y2TdkrLpsrP1ZTmtEjazcRMtKKwEHviNx_cC3BxBM8R2DeAbBuxbgcO_3ZoUeuB-6laSe2RN6jIp5UMCVRzgFg1YIbNKMcyDfC2LhF0YaXxo9pB-L3qLdRJpve3-NBHj76dBUW4Q04S_4t_5M09p61fEuCRJIIrDzh2iKSLwzKrv2sT8hnMefN2P29sa5QlJrRu-kFHolq_ZmwsXzWMN3R8_8tbsS19eP1hIzkuzW1lla8jZot06Y6bFslr3S5CCbexABJb34puu2nbH2n4Qdc9BS31B34HnduC8AuKEbOfmWsGDSZT29QjL-VxUWN4lhqxb-DsiSpmDlEPt_UzJah5tvMSQzAlKpm2ZZdBuQb8Mk9-U9oRmrxm6xeOcXdcBMAHXEYlBMp6R8gEOyQ3uDMrR2x9xMTs4EeJgJlOSsyK7F5_EbMtqnLulKRD4RtNoZ_I8k0XcVZAVoBtxrEwWOE48AdW16yfemqEO8s8J_J9TrBaTTMKIMFqJjJ-HNc9n7E_saylVFRadHevbLLuBNDOjjwvI8E5r55iO2HTPxB1dSWcjidSacSCvo2zQxRLkbPQJmLp2S4SCMLbqwPdph8KH6tfAcgxH0k3sTmwvt2tTLBXCINPlnhv2ahuHzXWGpgegEyHLrtlUAwfeDilkc_lib_chWBVqqWxu-7Gw\\", \\"proofPurpose\\": \\"assertionMethod\\", \\"type\\": \\"JsonWebSignature2020\\", \\"verificationMethod\\": \\"did:web:compliance.lab.gaia-x.eu\\"}, \\"@context\\": [\\"https://www.w3.org/2018/credentials/v1\\"], \\"issuer\\": \\"did:web:example.com:participant:someorga\\"}}"
-                    }
-                ]
-            }
-            """;
+        GXFSCatalogListResponse<SelfDescriptionItem> sdItems = createMockSdItems();
 
-        mockUserResponse = StringEscapeUtils.unescapeJson(mockUserResponse);
-        if (mockUserResponse != null)
-            mockUserResponse = mockUserResponse.replace("\"{", "{").replace("}\"", "}");
-        GXFSCatalogListResponse<SelfDescriptionItem> sdItems = mapper.readValue(mockUserResponse, new TypeReference<>() {});
-
-        String mockQueryResponse = """
-            {
-                "totalCount": 1,
-                "items": [
-                    {
-                        "p.uri": "did:web:example.com:participant:someorga"
-                    }
-                ]
-            }
-            """;
-        mockQueryResponse = StringEscapeUtils.unescapeJson(mockQueryResponse);
-        if (mockQueryResponse != null)
-            mockQueryResponse = mockQueryResponse.replace("\"{", "{").replace("}\"", "}");
-        GXFSCatalogListResponse<GXFSQueryUriItem> uriItems = mapper.readValue(mockQueryResponse, new TypeReference<>() {});
+        GXFSQueryUriItem gxfsQueryUriItem = new GXFSQueryUriItem();
+        gxfsQueryUriItem.setUri("did:web:example.com:participant:someorga");
+        GXFSCatalogListResponse<GXFSQueryUriItem> uriItems = new GXFSCatalogListResponse<>();
+        uriItems.setTotalCount(1);
+        uriItems.setItems(List.of(gxfsQueryUriItem));
 
         lenient().when(gxfsCatalogService.getSortedParticipantUriPage(any(), any(), anyLong(), anyLong()))
             .thenReturn(uriItems);
@@ -291,9 +239,9 @@ class ParticipantServiceTests {
         lenient().when(gxfsCatalogService.getParticipantById(eq("did:web:example.com:participant:emptysignerconfig")))
             .thenReturn(participantItem);
         lenient().when(gxfsCatalogService.updateParticipant(any(), any()))
-            .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
+            .thenAnswer(i -> wrapCredentialSubjectInItem((List<PojoCredentialSubject>) i.getArguments()[0]));
         lenient().when(gxfsCatalogService.addParticipant(any(), any()))
-            .thenAnswer(i -> wrapCredentialSubjectInItem((MerlotOrganizationCredentialSubject) i.getArguments()[0]));
+            .thenAnswer(i -> wrapCredentialSubjectInItem((List<PojoCredentialSubject>) i.getArguments()[0]));
         lenient().when(gxfsCatalogService.getParticipantLegalNameByUri(eq("MerlotOrganization"), any()))
             .thenReturn(new GXFSCatalogListResponse<>());
 
@@ -327,8 +275,8 @@ class ParticipantServiceTests {
         assertThat(organizations.getContent(), not(empty()));
         assertEquals(1, organizations.getContent().size());
 
-        String id = organizations.getContent().get(0).getSelfDescription().getVerifiableCredential()
-            .getCredentialSubject().getId();
+        String id = organizations.getContent().get(0).getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class).getId();
         assertEquals("did:web:example.com:participant:someorga", id);
 
         String mailAddress = organizations.getContent().get(0).getMetadata().getMailAddress();
@@ -400,10 +348,10 @@ class ParticipantServiceTests {
 
         MerlotParticipantDto organization = participantService.getParticipantById("did:web:example.com:participant:someorga");
         assertThat(organization, isA(MerlotParticipantDto.class));
-        MerlotOrganizationCredentialSubject subject = (MerlotOrganizationCredentialSubject)
-                organization.getSelfDescription().getVerifiableCredential().getCredentialSubject();
+        MerlotLegalParticipantCredentialSubject subject = organization.getSelfDescription()
+                .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
         assertEquals("did:web:example.com:participant:someorga", subject.getId());
-        assertEquals("Gaia-X European Association for Data and Cloud AISBL", subject.getLegalName());
+        assertEquals(organizationLegalName, subject.getLegalName());
 
         String mailAddress = organization.getMetadata().getMailAddress();
         assertEquals("mymail@example.com", mailAddress);
@@ -438,8 +386,12 @@ class ParticipantServiceTests {
     void updateParticipantExistentAsParticipant() throws Exception {
 
         MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits();
-        MerlotOrganizationCredentialSubject editedCredentialSubject = (MerlotOrganizationCredentialSubject) participantDtoWithEdits.getSelfDescription()
-            .getVerifiableCredential().getCredentialSubject();
+        GxLegalParticipantCredentialSubject editedGxParticipantCs = participantDtoWithEdits.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
+        GxLegalRegistrationNumberCredentialSubject editedGxRegistrationNumberCs = participantDtoWithEdits.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalRegistrationNumberCredentialSubject.class);
+        MerlotLegalParticipantCredentialSubject editedMerlotParticipantCs = participantDtoWithEdits.getSelfDescription()
+                .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
         MerlotParticipantMetaDto editedMetadata = participantDtoWithEdits.getMetadata();
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:example.com:participant:someorga");
@@ -448,35 +400,39 @@ class ParticipantServiceTests {
         MerlotParticipantDto updatedParticipantDto = participantService.updateParticipant(participantDtoWithEdits, activeRole);
 
         // following attributes of the organization credential subject should have been updated
-        MerlotOrganizationCredentialSubject updatedCredentialSubject =
-            (MerlotOrganizationCredentialSubject) updatedParticipantDto.getSelfDescription().getVerifiableCredential()
-                .getCredentialSubject();
-        assertEquals(updatedCredentialSubject.getTermsAndConditions().getContent(),
-            editedCredentialSubject.getTermsAndConditions().getContent());
-        assertEquals(updatedCredentialSubject.getTermsAndConditions().getHash(),
-            editedCredentialSubject.getTermsAndConditions().getHash());
-        assertEquals(updatedCredentialSubject.getLegalAddress().getStreetAddress(),
-            editedCredentialSubject.getLegalAddress().getStreetAddress());
-        assertEquals(updatedCredentialSubject.getLegalAddress().getLocality(),
-            editedCredentialSubject.getLegalAddress().getLocality());
-        assertEquals(updatedCredentialSubject.getLegalAddress().getCountryName(),
-            editedCredentialSubject.getLegalAddress().getCountryName());
-        assertEquals(updatedCredentialSubject.getLegalAddress().getPostalCode(),
-            editedCredentialSubject.getLegalAddress().getPostalCode());
+        GxLegalParticipantCredentialSubject updatedGxParticipantCs = updatedParticipantDto.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
+        GxLegalRegistrationNumberCredentialSubject updatedGxRegistrationNumberCs = updatedParticipantDto.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalRegistrationNumberCredentialSubject.class);
+        MerlotLegalParticipantCredentialSubject updatedMerlotParticipantCs = updatedParticipantDto.getSelfDescription()
+                .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
+
+        assertEquals(updatedMerlotParticipantCs.getTermsAndConditions().getUrl(),
+                editedMerlotParticipantCs.getTermsAndConditions().getUrl());
+        assertEquals(updatedMerlotParticipantCs.getTermsAndConditions().getHash(),
+                editedMerlotParticipantCs.getTermsAndConditions().getHash());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getStreetAddress(),
+                editedGxParticipantCs.getLegalAddress().getStreetAddress());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getLocality(),
+                editedGxParticipantCs.getLegalAddress().getLocality());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getCountryCode(),
+                editedGxParticipantCs.getLegalAddress().getCountryCode());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getCountrySubdivisionCode(),
+                editedGxParticipantCs.getLegalAddress().getCountrySubdivisionCode());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getPostalCode(),
+                editedGxParticipantCs.getLegalAddress().getPostalCode());
 
         // following attributes of the organization credential subject should not have been updated
-        assertNotEquals(updatedCredentialSubject.getId(), editedCredentialSubject.getId());
-        assertNotEquals(updatedCredentialSubject.getId(),
-            editedCredentialSubject.getId());
-        assertNotEquals(updatedCredentialSubject.getOrgaName(),
-            editedCredentialSubject.getOrgaName());
-        assertNotEquals(updatedCredentialSubject.getLegalName(),
-            editedCredentialSubject.getLegalName());
-        assertNotEquals(updatedCredentialSubject.getRegistrationNumber().getLocal(),
-            editedCredentialSubject.getRegistrationNumber().getLocal());
-        assertNull(updatedCredentialSubject.getRegistrationNumber().getEuid());
-        assertNull(updatedCredentialSubject.getRegistrationNumber().getEori());
-        assertNull(updatedCredentialSubject.getRegistrationNumber().getVatId());
+        assertNotEquals(updatedGxParticipantCs.getId(), editedGxParticipantCs.getId());
+        assertNotEquals(updatedGxParticipantCs.getName(),
+                editedGxParticipantCs.getName());
+        assertNotEquals(updatedMerlotParticipantCs.getLegalName(),
+                editedMerlotParticipantCs.getLegalName());
+        assertNotEquals(updatedGxRegistrationNumberCs.getLeiCode(), editedGxRegistrationNumberCs.getLeiCode());
+        assertNotEquals(updatedGxRegistrationNumberCs.getEori(), editedGxRegistrationNumberCs.getEori());
+        assertNotEquals(updatedGxRegistrationNumberCs.getEuid(), editedGxRegistrationNumberCs.getEuid());
+        assertNotEquals(updatedGxRegistrationNumberCs.getTaxID(), editedGxRegistrationNumberCs.getTaxID());
+        assertNotEquals(updatedGxRegistrationNumberCs.getVatID(), editedGxRegistrationNumberCs.getVatID());
 
         // following metadata of the organization should have been updated
         MerlotParticipantMetaDto updatedMetadata = updatedParticipantDto.getMetadata();
@@ -500,9 +456,12 @@ class ParticipantServiceTests {
     void updateParticipantExistentAsFedAdmin() throws Exception {
 
         MerlotParticipantDto dtoWithEdits = getMerlotParticipantDtoWithEdits();
-        MerlotOrganizationCredentialSubject editedCredentialSubject =
-            (MerlotOrganizationCredentialSubject) dtoWithEdits.getSelfDescription().getVerifiableCredential()
-                .getCredentialSubject();
+        GxLegalParticipantCredentialSubject editedGxParticipantCs = dtoWithEdits.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
+        GxLegalRegistrationNumberCredentialSubject editedGxRegistrationNumberCs = dtoWithEdits.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalRegistrationNumberCredentialSubject.class);
+        MerlotLegalParticipantCredentialSubject editedMerlotParticipantCs = dtoWithEdits.getSelfDescription()
+                .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
         MerlotParticipantMetaDto editedMetadata = dtoWithEdits.getMetadata();
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:somefedorga");
@@ -511,38 +470,39 @@ class ParticipantServiceTests {
         MerlotParticipantDto participantDto = participantService.updateParticipant(dtoWithEdits, activeRole);
 
         // following attributes of the organization credential subject should have been updated
-        MerlotOrganizationCredentialSubject updatedCredentialSubject =
-            (MerlotOrganizationCredentialSubject) participantDto.getSelfDescription().getVerifiableCredential()
-                .getCredentialSubject();
-        assertEquals(updatedCredentialSubject.getTermsAndConditions().getContent(),
-            editedCredentialSubject.getTermsAndConditions().getContent());
-        assertEquals(updatedCredentialSubject.getTermsAndConditions().getHash(),
-            editedCredentialSubject.getTermsAndConditions().getHash());
-        assertEquals(updatedCredentialSubject.getLegalAddress().getStreetAddress(),
-            editedCredentialSubject.getLegalAddress().getStreetAddress());
-        assertEquals(updatedCredentialSubject.getLegalAddress().getLocality(),
-            editedCredentialSubject.getLegalAddress().getLocality());
-        assertEquals(updatedCredentialSubject.getLegalAddress().getCountryName(),
-            editedCredentialSubject.getLegalAddress().getCountryName());
-        assertEquals(updatedCredentialSubject.getLegalAddress().getPostalCode(),
-            editedCredentialSubject.getLegalAddress().getPostalCode());
-        assertEquals(updatedCredentialSubject.getOrgaName(),
-            editedCredentialSubject.getOrgaName());
-        assertEquals(updatedCredentialSubject.getLegalName(),
-            editedCredentialSubject.getLegalName());
-        assertEquals(updatedCredentialSubject.getRegistrationNumber().getLocal(),
-            editedCredentialSubject.getRegistrationNumber().getLocal());
-        assertEquals(updatedCredentialSubject.getRegistrationNumber().getEuid(),
-            editedCredentialSubject.getRegistrationNumber().getEuid());
-        assertEquals(updatedCredentialSubject.getRegistrationNumber().getEori(),
-            editedCredentialSubject.getRegistrationNumber().getEori());
-        assertEquals(updatedCredentialSubject.getRegistrationNumber().getVatId(),
-            editedCredentialSubject.getRegistrationNumber().getVatId());
+        GxLegalParticipantCredentialSubject updatedGxParticipantCs = participantDto.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
+        GxLegalRegistrationNumberCredentialSubject updatedGxRegistrationNumberCs = participantDto.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalRegistrationNumberCredentialSubject.class);
+        MerlotLegalParticipantCredentialSubject updatedMerlotParticipantCs = participantDto.getSelfDescription()
+                .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
+
+        assertEquals(updatedMerlotParticipantCs.getTermsAndConditions().getUrl(),
+                editedMerlotParticipantCs.getTermsAndConditions().getUrl());
+        assertEquals(updatedMerlotParticipantCs.getTermsAndConditions().getHash(),
+                editedMerlotParticipantCs.getTermsAndConditions().getHash());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getStreetAddress(),
+                editedGxParticipantCs.getLegalAddress().getStreetAddress());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getLocality(),
+                editedGxParticipantCs.getLegalAddress().getLocality());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getCountryCode(),
+                editedGxParticipantCs.getLegalAddress().getCountryCode());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getCountrySubdivisionCode(),
+                editedGxParticipantCs.getLegalAddress().getCountrySubdivisionCode());
+        assertEquals(updatedGxParticipantCs.getLegalAddress().getPostalCode(),
+                editedGxParticipantCs.getLegalAddress().getPostalCode());
+        assertEquals(updatedGxParticipantCs.getName(),
+                editedGxParticipantCs.getName());
+        assertEquals(updatedMerlotParticipantCs.getLegalName(),
+                editedMerlotParticipantCs.getLegalName());
+        assertEquals(updatedGxRegistrationNumberCs.getLeiCode(), editedGxRegistrationNumberCs.getLeiCode());
+        assertEquals(updatedGxRegistrationNumberCs.getEori(), editedGxRegistrationNumberCs.getEori());
+        assertEquals(updatedGxRegistrationNumberCs.getEuid(), editedGxRegistrationNumberCs.getEuid());
+        assertEquals(updatedGxRegistrationNumberCs.getTaxID(), editedGxRegistrationNumberCs.getTaxID());
+        assertEquals(updatedGxRegistrationNumberCs.getVatID(), editedGxRegistrationNumberCs.getVatID());
 
         // following attributes of the organization credential subject should not have been updated
-        assertNotEquals(updatedCredentialSubject.getId(), editedCredentialSubject.getId());
-        assertNotEquals(updatedCredentialSubject.getId(),
-            editedCredentialSubject.getId());
+        assertNotEquals(updatedGxParticipantCs.getId(), editedGxParticipantCs.getId());
 
         // following metadata of the organization should have been updated
         MerlotParticipantMetaDto updatedMetadata = participantDto.getMetadata();
@@ -563,12 +523,10 @@ class ParticipantServiceTests {
     }
 
     @Test
-    void updateParticipantNonExistent() {
+    void updateParticipantNonExistent() throws JsonProcessingException {
 
         MerlotParticipantDto dtoWithEdits = getMerlotParticipantDtoWithEdits();
         dtoWithEdits.setId("did:web:example.com:participant:someunknownorga");
-        dtoWithEdits.getSelfDescription().getVerifiableCredential().getCredentialSubject()
-                .setId("did:web:example.com:participant:someunknownorga");
 
         OrganizationRoleGrantedAuthority activeRole = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:someorga");
 
@@ -594,8 +552,7 @@ class ParticipantServiceTests {
     void getAllFederators() {
 
         MerlotParticipantMetaDto metaDto = new MerlotParticipantMetaDto();
-        String orgaId = "did:web:" + merlotDomain + ":participant:someorga";
-        metaDto.setOrgaId(orgaId);
+        metaDto.setOrgaId(id);
         metaDto.setMailAddress("mymail@example.com");
         metaDto.setMembershipClass(MembershipClass.FEDERATOR);
         List<MerlotParticipantMetaDto> list = new ArrayList<>();
@@ -606,22 +563,30 @@ class ParticipantServiceTests {
         List<MerlotParticipantDto> organizations = participantService.getFederators();
         assertThat(organizations, not(empty()));
         assertEquals(1, organizations.size());
-        assertEquals(orgaId,
-            organizations.get(0).getSelfDescription().getVerifiableCredential()
-                .getCredentialSubject().getId());
+        String resultId = organizations.get(0).getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class).getId();
+        assertEquals(id, resultId);
     }
 
     @Test
     void createParticipantWithValidRegistrationFormAsFederator() throws Exception {
         MerlotParticipantDto participantDto = participantService.createParticipant(getTestRegistrationFormContent(),
                 new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:example.com:participant:somefedorga"));
-        MerlotOrganizationCredentialSubject resultCredentialSubject = (MerlotOrganizationCredentialSubject)
-                participantDto.getSelfDescription().getVerifiableCredential().getCredentialSubject();
+        MerlotLegalParticipantCredentialSubject resultMerlotParticipantCs = participantDto.getSelfDescription()
+                        .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
+        GxLegalParticipantCredentialSubject resultGxParticipantCs = participantDto.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
+        GxLegalRegistrationNumberCredentialSubject resultGxRegistrationNumberCs = participantDto.getSelfDescription()
+                .findFirstCredentialSubjectByType(GxLegalRegistrationNumberCredentialSubject.class);
 
-        assertThat(resultCredentialSubject).usingRecursiveComparison().ignoringFields("id", "merlotId")
-                .isEqualTo(getExpectedCredentialSubject());
+        assertThat(resultMerlotParticipantCs).usingRecursiveComparison().ignoringFields("id")
+                .isEqualTo(getMerlotParticipantCs(id));
+        assertThat(resultGxParticipantCs).usingRecursiveComparison().ignoringFields("id", "legalRegistrationNumber")
+                .isEqualTo(getGxParticipantCs(id));
+        assertThat(resultGxRegistrationNumberCs).usingRecursiveComparison().ignoringFields("id")
+                .isEqualTo(getGxRegistrationNumberCs(id));
 
-        String id = resultCredentialSubject.getId();
+        String id = resultGxParticipantCs.getId();
         assertThat(id).isNotNull().isNotBlank();
 
         OrganizationMetadata metadataExpected = new OrganizationMetadata(id, mailAddress,
@@ -654,7 +619,11 @@ class ParticipantServiceTests {
         content.setOrganizationName("");
         content.setOrganizationLegalName("");
         content.setMailAddress("");
-        content.setRegistrationNumberLocal("");
+        content.setRegistrationNumberLeiCode("");
+        content.setRegistrationNumberEuid("");
+        content.setRegistrationNumberEori("");
+        content.setRegistrationNumberTaxID("");
+        content.setRegistrationNumberVatID("");
         content.setCountryCode("");
         content.setPostalCode("");
         content.setCity("");
@@ -680,7 +649,7 @@ class ParticipantServiceTests {
     @Test
     void getTrustedDids() {
 
-        String orgaId = "did:web:" + merlotDomain + "#someorga";
+        String orgaId = "did:web:" + merlotDomain + ":participant:someorga";
         lenient().when(organizationMetadataService.getParticipantIdsByMembershipClass(eq(MembershipClass.FEDERATOR))).thenReturn(List.of(orgaId));
 
         List<String> trustedDids = participantService.getTrustedDids();
@@ -769,29 +738,42 @@ class ParticipantServiceTests {
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
     }
 
-    private MerlotOrganizationCredentialSubject getTestEditedMerlotOrganizationCredentialSubject() {
-
-        MerlotOrganizationCredentialSubject credentialSubject = new MerlotOrganizationCredentialSubject();
+    private MerlotLegalParticipantCredentialSubject getTestEditedMerlotParticipantCs() {
+        MerlotLegalParticipantCredentialSubject credentialSubject = new MerlotLegalParticipantCredentialSubject();
         credentialSubject.setId("did:web:changedorga.example.com");
-        RegistrationNumber registrationNumber = new RegistrationNumber();
-        registrationNumber.setLocal("changedLocal");
-        registrationNumber.setEori("changedEori");
-        registrationNumber.setEuid("changedEuid");
-        registrationNumber.setVatId("changedVatId");
-        credentialSubject.setRegistrationNumber(registrationNumber);
-        VCard address = new VCard();
+        credentialSubject.setLegalName("changedLegalName");
+        ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
+        termsAndConditions.setUrl("http://changed.com");
+        termsAndConditions.setHash("changedHash");
+        credentialSubject.setTermsAndConditions(termsAndConditions);
+        return credentialSubject;
+    }
+
+    private GxLegalParticipantCredentialSubject getTestEditedGxParticipantCs() {
+
+        GxLegalParticipantCredentialSubject credentialSubject = new GxLegalParticipantCredentialSubject();
+        credentialSubject.setId("did:web:changedorga.example.com");
+        credentialSubject.setLegalRegistrationNumber(List.of(new NodeKindIRITypeId("did:web:changedorga.example.com-regId")));
+        GxVcard address = new GxVcard();
         address.setStreetAddress("changedAddress");
         address.setLocality("changedCity");
-        address.setCountryName("changedCountry");
+        address.setCountryCode("changedCountry");
+        address.setCountrySubdivisionCode("changedCountry-BE");
         address.setPostalCode("changedPostCode");
         credentialSubject.setLegalAddress(address);
         credentialSubject.setHeadquarterAddress(address);
-        credentialSubject.setOrgaName("changedOrgaName");
-        credentialSubject.setLegalName("changedLegalName");
-        TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent("http://changed.com");
-        termsAndConditions.setHash("changedHash");
-        credentialSubject.setTermsAndConditions(termsAndConditions);
+        credentialSubject.setName("changedOrgaName");
+        return credentialSubject;
+    }
+
+    private GxLegalRegistrationNumberCredentialSubject getTestEditedGxRegistrationNumberCs() {
+        GxLegalRegistrationNumberCredentialSubject credentialSubject = new GxLegalRegistrationNumberCredentialSubject();
+        credentialSubject.setId("did:web:changedorga.example.com-regId");
+        credentialSubject.setLeiCode("changedLeiCode");
+        credentialSubject.setEori("changedEori");
+        credentialSubject.setEuid("changedEuid");
+        credentialSubject.setTaxID("changedTaxId");
+        credentialSubject.setVatID("changedVatId");
         return credentialSubject;
     }
 
@@ -804,16 +786,16 @@ class ParticipantServiceTests {
         return new WebClientResponseException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "garbage", null, byteArray, null);
     }
 
-    private MerlotParticipantDto getMerlotParticipantDtoWithEdits() {
+    private MerlotParticipantDto getMerlotParticipantDtoWithEdits() throws JsonProcessingException {
 
         MerlotParticipantDto dtoWithEdits = new MerlotParticipantDto();
 
-        SelfDescription selfDescription = new SelfDescription();
-        SelfDescriptionVerifiableCredential verifiableCredential = new SelfDescriptionVerifiableCredential();
-        MerlotOrganizationCredentialSubject editedCredentialSubject = getTestEditedMerlotOrganizationCredentialSubject();
+        MerlotLegalParticipantCredentialSubject editedMerlotParticipantCs = getTestEditedMerlotParticipantCs();
+        GxLegalParticipantCredentialSubject editedGxParticipantCs = getTestEditedGxParticipantCs();
+        GxLegalRegistrationNumberCredentialSubject editedGxRegistrationNumberCs = getTestEditedGxRegistrationNumberCs();
 
-        verifiableCredential.setCredentialSubject(editedCredentialSubject);
-        selfDescription.setVerifiableCredential(verifiableCredential);
+        ExtendedVerifiablePresentation vp = createVpFromCsList(
+                List.of(editedGxParticipantCs, editedGxRegistrationNumberCs, editedMerlotParticipantCs), "did:web:someorga");
 
         String someOrgaId = "did:web:example.com:participant:someorga";
         MerlotParticipantMetaDto metaData = new MerlotParticipantMetaDto();
@@ -838,7 +820,7 @@ class ParticipantServiceTests {
         signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#changedsomemethod");
         metaData.setOrganisationSignerConfigDto(signerConfigDto);
 
-        dtoWithEdits.setSelfDescription(selfDescription);
+        dtoWithEdits.setSelfDescription(vp);
         dtoWithEdits.setId(someOrgaId);
         dtoWithEdits.setMetadata(metaData);
         return dtoWithEdits;

@@ -91,7 +91,6 @@ public class OrganizationMetadataService {
      * @return list of ids
      */
     public List<String> getInactiveParticipantsIds() {
-
         return repository.getOrgaIdByActive(false);
     }
 

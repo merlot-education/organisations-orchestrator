@@ -1,13 +1,16 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.RegistrationNumber;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.TermsAndConditions;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gax.datatypes.VCard;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotOrganizationCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.GxVcard;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.NodeKindIRITypeId;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalParticipantCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalRegistrationNumberCredentialSubject;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.datatypes.ParticipantTermsAndConditions;
+import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
+import eu.merloteducation.organisationsorchestrator.mappers.ParticipantCredentialMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
@@ -27,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,12 +42,19 @@ class OrganizationMapperTests {
     private InitialDataLoader initialDataLoader;
     @Autowired
     OrganizationMapper organizationMapper;
+
+    // TODO move this to its own test class
+    @Autowired
+    ParticipantCredentialMapper participantCredentialMapper;
+
     @Autowired
     PdfContentMapper pdfContentMapper;
     String mailAddress = "test@test.de";
     String organizationLegalName = "Organization Legal Name";
-    String registrationNumber = "DE123456789";
+    String organizationLegalForm = "LLC";
+    String registrationNumber = "894500MQZ65CN32S9A66";
     String countryCode = "DE";
+    String countrySubdivisionCode = "DE-BE";
     String street = "Street 123";
     String providerTncHash = "hash1234567890";
     String providerTncLink = "abc.de";
@@ -55,38 +66,57 @@ class OrganizationMapperTests {
 
     @Test
     void mapRegistrationFormToSelfDescriptionCorrectly() throws IOException {
-        MerlotOrganizationCredentialSubject expected = getExpectedCredentialSubject();
+        MerlotLegalParticipantCredentialSubject expectedMerlotParticipantCs = getExpectedMerlotParticipantCredentialSubject();
+        GxLegalParticipantCredentialSubject expectedGxParticipantCs = getExpectedGxParticipantCredentialSubject();
+        GxLegalRegistrationNumberCredentialSubject expectedGxRegistrationNumberCs = getExpectedRegistrationNumberCredentialSubject();
         PDAcroForm registrationForm = getTestRegistrationForm();
 
         RegistrationFormContent content = pdfContentMapper.getRegistrationFormContentFromRegistrationForm(registrationForm);
-        MerlotOrganizationCredentialSubject mapped = organizationMapper.getSelfDescriptionFromRegistrationForm(content);
-        assertThat(mapped).usingRecursiveComparison().isEqualTo(expected);
+        MerlotLegalParticipantCredentialSubject mappedMerlotParticipantCs =
+                participantCredentialMapper.getMerlotParticipantCsFromRegistrationForm(content);
+        GxLegalParticipantCredentialSubject mappedGxParticipantCs =
+                participantCredentialMapper.getLegalParticipantCsFromRegistrationForm(content);
+        GxLegalRegistrationNumberCredentialSubject mappedGxRegistrationNumberCs =
+                participantCredentialMapper.getLegalRegistrationNumberFromRegistrationForm(content);
+        assertThat(mappedMerlotParticipantCs).usingRecursiveComparison().isEqualTo(expectedMerlotParticipantCs);
+        assertThat(mappedGxParticipantCs).usingRecursiveComparison().ignoringFields("legalRegistrationNumber").isEqualTo(expectedGxParticipantCs);
+        assertThat(mappedGxRegistrationNumberCs).usingRecursiveComparison().isEqualTo(expectedGxRegistrationNumberCs);
     }
 
-    MerlotOrganizationCredentialSubject getExpectedCredentialSubject(){
-        MerlotOrganizationCredentialSubject expected = new MerlotOrganizationCredentialSubject();
-        expected.setOrgaName(organizationName);
+    MerlotLegalParticipantCredentialSubject getExpectedMerlotParticipantCredentialSubject(){
+        MerlotLegalParticipantCredentialSubject expected = new MerlotLegalParticipantCredentialSubject();
         expected.setLegalName(organizationLegalName);
 
-        RegistrationNumber registrationNumberObj = new RegistrationNumber();
-        registrationNumberObj.setType("gax-trust-framework:RegistrationNumber");
-        registrationNumberObj.setLocal(registrationNumber);
-        expected.setRegistrationNumber(registrationNumberObj);
+        ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
+        termsAndConditions.setUrl(providerTncLink);
+        termsAndConditions.setHash(providerTncHash);
+        expected.setTermsAndConditions(termsAndConditions);
+        expected.setLegalForm(organizationLegalForm);
 
-        VCard vCard = new VCard();
+        return expected;
+    }
+
+    GxLegalParticipantCredentialSubject getExpectedGxParticipantCredentialSubject(){
+        GxLegalParticipantCredentialSubject expected = new GxLegalParticipantCredentialSubject();
+        expected.setName(organizationName);
+
+        expected.setLegalRegistrationNumber(List.of(new NodeKindIRITypeId(orgaId + "-regId")));
+        GxVcard vCard = new GxVcard();
         vCard.setLocality(city);
         vCard.setPostalCode(postalCode);
-        vCard.setCountryName(countryCode);
+        vCard.setCountryCode(countryCode);
+        vCard.setCountrySubdivisionCode(countrySubdivisionCode);
         vCard.setStreetAddress(street);
-        vCard.setType("vcard:Address");
         expected.setLegalAddress(vCard);
         expected.setHeadquarterAddress(vCard);
 
-        TermsAndConditions termsAndConditions = new TermsAndConditions();
-        termsAndConditions.setContent(providerTncLink);
-        termsAndConditions.setHash(providerTncHash);
-        termsAndConditions.setType("gax-trust-framework:TermsAndConditions");
-        expected.setTermsAndConditions(termsAndConditions);
+        return expected;
+    }
+
+    GxLegalRegistrationNumberCredentialSubject getExpectedRegistrationNumberCredentialSubject(){
+        GxLegalRegistrationNumberCredentialSubject expected = new GxLegalRegistrationNumberCredentialSubject();
+
+        expected.setLeiCode(registrationNumber);
 
         return expected;
     }

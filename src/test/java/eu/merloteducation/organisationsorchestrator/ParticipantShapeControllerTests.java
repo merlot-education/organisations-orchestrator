@@ -1,8 +1,11 @@
 package eu.merloteducation.organisationsorchestrator;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
 import eu.merloteducation.authorizationlibrary.config.MerlotSecurityConfig;
+import eu.merloteducation.gxfscataloglibrary.service.GxdchService;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsWizardApiService;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
@@ -36,6 +39,9 @@ class ParticipantShapeControllerTests {
     private GxfsWizardApiService gxfsWizardApiService;
 
     @MockBean
+    private GxdchService gxdchService;
+
+    @MockBean
     private UserInfoOpaqueTokenIntrospector userInfoOpaqueTokenIntrospector;
 
     @MockBean
@@ -47,16 +53,25 @@ class ParticipantShapeControllerTests {
     @Autowired
     private MockMvc mvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     @BeforeEach
-    public void beforeEach()  {
-        lenient().when(gxfsWizardApiService.getShapeByName(any())).thenReturn("shape");
+    public void beforeEach() throws JsonProcessingException {
+        lenient().when(gxfsWizardApiService.getShapeByName(any(), any())).thenReturn("shape");
+        lenient().when(gxdchService.getGxTnCs()).thenReturn(objectMapper.readTree("""
+                {
+                    "version": "22.10",
+                    "text": "TnC"
+                }
+                """));
     }
 
     @Test
     void getParticipantShapeUnauthenticated() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                        .get("/shapes/merlotParticipant")
+                        .get("/shapes/merlot/participant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf()))
@@ -65,9 +80,62 @@ class ParticipantShapeControllerTests {
     }
 
     @Test
-    void getParticipantShapeAuthenticated() throws Exception {
+    void getGxParticipantShapeAuthenticated() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                        .get("/shapes/merlotParticipant")
+                        .get("/shapes/gx/participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                        )))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getGxRegistrationNumberShapeAuthenticated() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/shapes/gx/registrationnumber")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                        )))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getMerlotParticipantShapeAuthenticated() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/shapes/merlot/participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_OrgLegRep_20")
+                        )))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getGxTncUnauthenticated() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/shapes/gx/tnc")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getGxTncAuthenticated() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/shapes/gx/tnc")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf())

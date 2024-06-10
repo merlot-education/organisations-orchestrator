@@ -1,5 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import eu.merloteducation.gxfscataloglibrary.service.GxdchService;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsWizardApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,16 +12,41 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/shapes")
 public class ParticipantShapeController {
 
-    @Autowired
-    private GxfsWizardApiService gxfsWizardApiService;
+    private static final String ECOSYSTEM_MERLOT = "merlot";
+    private static final String ECOSYSTEM_GAIAX = "gx";
+
+    private final GxfsWizardApiService gxfsWizardApiService;
+
+    private final GxdchService gxdchService;
+
+    public ParticipantShapeController(@Autowired GxfsWizardApiService gxfsWizardApiService,
+                                      @Autowired GxdchService gxdchService) {
+        this.gxfsWizardApiService = gxfsWizardApiService;
+        this.gxdchService = gxdchService;
+    }
 
     /**
      * GET request for retrieving the merlot participant shape for the catalog.
      *
      * @return merlot participant shape
      */
-    @GetMapping("/merlotParticipant")
-    public String getShapeJson() {
-        return gxfsWizardApiService.getShapeByName("Merlot Organization.json");
+    @GetMapping("/merlot/participant")
+    public String getMerlotParticipantShape() {
+        return gxfsWizardApiService.getShapeByName(ECOSYSTEM_MERLOT, "Merlotlegalparticipant.json");
+    }
+
+    @GetMapping("/gx/participant")
+    public String getGxParticipantShape() {
+        return gxfsWizardApiService.getShapeByName(ECOSYSTEM_GAIAX, "Legalparticipant.json");
+    }
+
+    @GetMapping("/gx/registrationnumber")
+    public String getGxRegistrationNumberShape() {
+        return gxfsWizardApiService.getShapeByName(ECOSYSTEM_GAIAX, "Legalregistrationnumber.json");
+    }
+
+    @GetMapping("/gx/tnc")
+    public JsonNode getGxTermsAndConditions() {
+        return gxdchService.getGxTnCs();
     }
 }

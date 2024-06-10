@@ -11,7 +11,13 @@ public class RegistrationFormContent {
     private String city;
     private String postalCode;
     private String countryCode;
+    private String countrySubdivisionCode;
     private String providerTncLink;
     private String providerTncHash;
-    private String registrationNumberLocal;
+    private String registrationNumberTaxID;
+    private String registrationNumberEuid;
+    private String registrationNumberEori;
+    private String registrationNumberVatID;
+    private String registrationNumberLeiCode;
+    private String legalForm;
 }

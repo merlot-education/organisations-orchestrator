@@ -50,9 +50,9 @@ gxfscatalog:
   participants-uri: "${gxfscatalog.base-uri}/participants"
   selfdescriptions-uri: "${gxfscatalog.base-uri}/self-descriptions"
   query-uri: "${gxfscatalog.base-uri}/query"
-  private-key-path: ""
-  cert-path: ""
-  verification-method: "did:web:compliance.lab.gaia-x.eu"
+  private-key-path: "" #"/home/mbuskies/workspace/mpo/marketplace.dev.merlot-education.eu.prk"
+  cert-path: "" #"/home/mbuskies/workspace/mpo/marketplace.dev.merlot-education.eu.crt"
+  verification-method: "did:web:compliance.lab.gaia-x.eu" # "did:web:marketplace.dev.merlot-education.eu#JWK2020"
 
 gxfswizardapi:
   base-uri: "http://localhost:8085"
@@ -97,22 +97,14 @@ gxfscatalog-library:
   ignore-ssl: true
 
 gxdch-services:
+  # for local development skip te compliance check as it will inevitably fail
+  enforce-compliance: false
+  enforce-notary: true
   compliance-base-uris:
-    "https://compliance.lab.gaia-x.eu" #,
-    #"https://gx-compliance.aruba.it",
-    #"https://gx-compliance.gxdch.dih.telekom.com",
-  #"https://gx-compliance.airenetworks.es"
   registry-base-uris:
-    "https://registry.lab.gaia-x.eu" #,
-    #"https://gx-registry.aruba.it",
-    #"https://gx-registry.gxdch.dih.telekom.com",
-  #"https://gx-registry.airenetworks.es"
+    "https://registry.lab.gaia-x.eu/v1-staging"
   notary-base-uris:
-    "https://registrationnumber.notary.lab.gaia-x.eu" #,
-    #"https://gx-notary.aruba.it",
-    #"https://gx-notary.gxdch.dih.telekom.com",
-  #"https://gx-notary.airenetworks.es"
-  version: "v1-staging"
+    "https://registrationnumber.notary.lab.gaia-x.eu/v1-staging"
 
 daps-server:
   base-uri: http://localhost:4567

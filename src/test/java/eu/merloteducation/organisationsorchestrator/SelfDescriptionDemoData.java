@@ -36,9 +36,13 @@ class SelfDescriptionDemoData {
         List<ExtendedVerifiableCredential> vcList = new ArrayList<>();
         for (PojoCredentialSubject cs : csList) {
             CastableCredentialSubject ccs = CastableCredentialSubject.fromPojo(cs);
+            String vcId = cs.getId();  // set vc id to cs id
+            if (!vcId.contains("#")) {
+                vcId += "#" + cs.getType(); // add type if not existent yet
+            }
             VerifiableCredential vc = VerifiableCredential
                     .builder()
-                    .id(URI.create(cs.getId() + "#" + cs.getType()))
+                    .id(URI.create(vcId))
                     .issuanceDate(Date.from(Instant.now()))
                     .credentialSubject(ccs)
                     .issuer(URI.create(issuer))

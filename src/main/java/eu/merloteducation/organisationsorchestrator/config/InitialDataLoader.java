@@ -37,14 +37,16 @@ public class InitialDataLoader implements CommandLineRunner {
     private final File initialOrgaConnectorsResource;
     private final String merlotDomain;
 
+    private final int delayUpdateTime;
+
     private static final String DELAY_UPDATE_MSG = "Delaying update to avoid clearing house rate limiting...";
-    private static final int DELAY_UPDATE_TIME = 15000;
 
 
     public InitialDataLoader(@Autowired OrganizationQueryController organizationQueryController,
                              @Autowired ObjectMapper objectMapper,
                              @Value("${init-data.organisations:#{null}}") File initialOrgasFolder,
                              @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
+                             @Value("${gxdch-services.retry-delay:#{0}}") int delayUpdateTime,
                              @Value("${merlot-domain}") String merlotDomain) {
         this.organizationQueryController = organizationQueryController;
         this.objectMapper = objectMapper;
@@ -58,6 +60,7 @@ public class InitialDataLoader implements CommandLineRunner {
             }
         }
         this.initialOrgaConnectorsResource = initialOrgaConnectorsResource;
+        this.delayUpdateTime = delayUpdateTime;
         this.merlotDomain = merlotDomain;
     }
 
@@ -96,7 +99,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
         try {
             logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(DELAY_UPDATE_TIME);
+            Thread.sleep(delayUpdateTime);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
@@ -105,7 +108,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
         try {
             logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(DELAY_UPDATE_TIME);
+            Thread.sleep(delayUpdateTime);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
@@ -151,7 +154,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
         try {
             logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(DELAY_UPDATE_TIME);
+            Thread.sleep(delayUpdateTime);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
@@ -166,7 +169,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
         try {
             logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(DELAY_UPDATE_TIME);
+            Thread.sleep(delayUpdateTime);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
@@ -176,7 +179,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
         try {
             logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(DELAY_UPDATE_TIME);
+            Thread.sleep(delayUpdateTime);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }

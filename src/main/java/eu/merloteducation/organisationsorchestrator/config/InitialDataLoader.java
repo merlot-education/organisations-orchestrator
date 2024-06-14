@@ -8,6 +8,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
+import eu.merloteducation.modelslib.api.organization.ParticipantAgentSettingsDto;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.NoInitDataException;
 import org.slf4j.Logger;
@@ -37,6 +38,8 @@ public class InitialDataLoader implements CommandLineRunner {
     private final File initialOrgaConnectorsResource;
     private final String merlotDomain;
 
+    private final String ocmAgentDid;
+
     private final int delayUpdateTime;
 
     private static final String DELAY_UPDATE_MSG = "Delaying update to avoid clearing house rate limiting...";
@@ -47,6 +50,7 @@ public class InitialDataLoader implements CommandLineRunner {
                              @Value("${init-data.organisations:#{null}}") File initialOrgasFolder,
                              @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
                              @Value("${gxdch-services.retry-delay:#{0}}") int delayUpdateTime,
+                             @Value("${init-data.ocm-agent-did:#{null}") String ocmAgentDid,
                              @Value("${merlot-domain}") String merlotDomain) {
         this.organizationQueryController = organizationQueryController;
         this.objectMapper = objectMapper;
@@ -62,6 +66,7 @@ public class InitialDataLoader implements CommandLineRunner {
         this.initialOrgaConnectorsResource = initialOrgaConnectorsResource;
         this.delayUpdateTime = delayUpdateTime;
         this.merlotDomain = merlotDomain;
+        this.ocmAgentDid = ocmAgentDid;
     }
 
 
@@ -149,6 +154,10 @@ public class InitialDataLoader implements CommandLineRunner {
 
         // if connectors exist, add them on behalf of the participant
         participant.getMetadata().getConnectors().addAll(connectors);
+        // also set default OCM DID
+        ParticipantAgentSettingsDto agentSettingsDto = new ParticipantAgentSettingsDto();
+        agentSettingsDto.setAgentDid(ocmAgentDid);
+        participant.getMetadata().setOcmAgentSettings(Set.of(agentSettingsDto));
         OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
                 OrganizationRole.ORG_LEG_REP, participant.getId());
 

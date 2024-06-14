@@ -25,6 +25,9 @@ merlot-domain: "marketplace.dev.merlot-education.eu"
 gxfscatalog-library:
   ignore-ssl: false
 
+init-data:
+  ocm-agent-did: "dxmeeRVwfAQecNy1AXuws"
+
 db:
   encryption:
     key: ""

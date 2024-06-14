@@ -32,6 +32,14 @@ public interface OrganizationMapper {
     @Mapping(target = "scope", source = "scope")
     DapsCertificateDto omejdnCertificateToDapsCertificateDto(OmejdnConnectorCertificateDto dto);
 
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "agentDid", source = "agentDid")
+    ParticipantAgentSettingsDto agentSettingsToAgentSettingsDto(OcmAgentSettings settings);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "agentDid", source = "agentDid")
+    OcmAgentSettings agentSettingsDtoToAgentSettings(ParticipantAgentSettingsDto settings);
+
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "orgaId", source = "orgaId")
@@ -41,6 +49,7 @@ public interface OrganizationMapper {
     @Mapping(target = "connectors", expression = "java(connectorsEntityMapper(metadataDto.getConnectors(), metadataDto.getOrgaId()))")
     @Mapping(target = "organisationSignerConfig", source = "organisationSignerConfigDto")
     @Mapping(target = "dapsCertificates", source = "dapsCertificates")
+    @Mapping(target = "ocmAgentSettings", source = "ocmAgentSettings")
     OrganizationMetadata merlotParticipantMetaDtoToOrganizationMetadata(MerlotParticipantMetaDto metadataDto);
 
     @BeanMapping(ignoreByDefault = true)
@@ -51,7 +60,15 @@ public interface OrganizationMapper {
     @Mapping(target = "connectors", source = "connectors", qualifiedByName = "connectorsForDto")
     @Mapping(target = "organisationSignerConfigDto", source = "organisationSignerConfig")
     @Mapping(target = "dapsCertificates", source = "dapsCertificates")
+    @Mapping(target = "ocmAgentSettings", source = "ocmAgentSettings")
     MerlotParticipantMetaDto organizationMetadataToMerlotParticipantMetaDto(OrganizationMetadata metadata);
+
+
+    default ParticipantAgentDidsDto agentSettingsSetToDidDto(Set<ParticipantAgentSettingsDto> agentSettings) {
+        ParticipantAgentDidsDto dto = new ParticipantAgentDidsDto();
+        dto.setAgentDids(agentSettings.stream().map(ParticipantAgentSettingsDto::getAgentDid).collect(Collectors.toSet()));
+        return dto;
+    }
 
     @Named("connectorsForDto")
     default Set<OrganizationConnectorDto> connectorsDtoMapper(Set<OrganisationConnectorExtension> connectors) {
@@ -95,7 +112,6 @@ public interface OrganizationMapper {
 
     default void updateOrganizationMetadataWithMerlotParticipantMetaDto(MerlotParticipantMetaDto source,
                                                                         @MappingTarget OrganizationMetadata target) {
-
         target.setMailAddress(source.getMailAddress());
         target.setMembershipClass(source.getMembershipClass());
         target.setActive(source.isActive());
@@ -107,6 +123,11 @@ public interface OrganizationMapper {
         target.getConnectors().addAll(updatedConnectors);
         target.setOrganisationSignerConfig(
                 organisationSignerConfigDtoToOrganisationSignerConfig(source.getOrganisationSignerConfigDto()));
+        target.getOcmAgentSettings().clear();
+        if (source.getOcmAgentSettings() != null) {
+            target.getOcmAgentSettings().addAll(source.getOcmAgentSettings()
+                    .stream().map(this::agentSettingsDtoToAgentSettings).collect(Collectors.toSet()));
+        }
     }
 
     @Mapping(target = "privateKey", source = "privateKey")
@@ -119,6 +140,7 @@ public interface OrganizationMapper {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "connectors", source = "connectors")
+    @Mapping(target = "ocmAgentSettings", source = "ocmAgentSettings")
     void updateMerlotParticipantMetaDtoAsParticipant(MerlotParticipantMetaDto source,
                                                      @MappingTarget MerlotParticipantMetaDto target);
 

@@ -590,7 +590,7 @@ class ParticipantServiceTests {
         assertThat(id).isNotNull().isNotBlank();
 
         OrganizationMetadata metadataExpected = new OrganizationMetadata(id, mailAddress,
-                MembershipClass.PARTICIPANT, true);
+                MembershipClass.PARTICIPANT, true, Collections.emptySet());
 
         ArgumentCaptor<MerlotParticipantMetaDto> varArgs = ArgumentCaptor.forClass(MerlotParticipantMetaDto.class);
         verify(organizationMetadataService, times(1)).saveMerlotParticipantMeta(varArgs.capture());

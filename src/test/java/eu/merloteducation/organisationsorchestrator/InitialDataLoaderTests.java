@@ -117,6 +117,7 @@ class InitialDataLoaderTests {
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
                 0,
+                "123456",
                 "example.com");
         dataLoader.run();
 
@@ -138,6 +139,7 @@ class InitialDataLoaderTests {
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
                 0,
+                "123456",
                 "example.com");
         dataLoader.run();
         verify(organizationQueryController, never()).createOrganization(any(), any());

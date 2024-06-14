@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -61,9 +62,9 @@ class OrganizationMetadataServiceTests {
     void setUpData() {
 
         OrganizationMetadata metadata1 = new OrganizationMetadata(someOrgaId, "abd@de.fg", MembershipClass.FEDERATOR,
-            true);
+            true, Collections.emptySet());
         OrganizationMetadata metadata2 = new OrganizationMetadata(otherOrgaId, "hij@kl.mn", MembershipClass.PARTICIPANT,
-            false);
+            false, Collections.emptySet());
 
         List<IonosS3Bucket> buckets = List.of(
                 new IonosS3Bucket(null, "bucket1", "http://example.com"),

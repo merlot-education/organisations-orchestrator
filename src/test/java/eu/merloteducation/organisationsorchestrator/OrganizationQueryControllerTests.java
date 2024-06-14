@@ -23,6 +23,7 @@ import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
+import eu.merloteducation.modelslib.api.organization.ParticipantAgentDidsDto;
 import eu.merloteducation.organisationsorchestrator.auth.ParticipantAuthorityChecker;
 import eu.merloteducation.organisationsorchestrator.config.WebSecurityConfig;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
@@ -49,10 +50,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static eu.merloteducation.organisationsorchestrator.SelfDescriptionDemoData.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -124,6 +122,10 @@ class OrganizationQueryControllerTests {
                 .thenThrow(HttpClientErrorException.NotFound.class);
         lenient().when(participantService.updateParticipant(any(), any()))
                 .thenReturn(participantDto);
+        ParticipantAgentDidsDto agentDidsDto = new ParticipantAgentDidsDto();
+        agentDidsDto.setAgentDids(Set.of("123456"));
+        lenient().when(participantService.getAgentDidsByParticipantId(any()))
+                .thenReturn(agentDidsDto);
 
         GXFSCatalogListResponse<GXFSQueryLegalNameItem> legalNameResponse = new GXFSCatalogListResponse<>();
         GXFSQueryLegalNameItem item = new GXFSQueryLegalNameItem();
@@ -348,6 +350,17 @@ class OrganizationQueryControllerTests {
     void getTrustedDidsUnauthenticatedTest() throws Exception {
         mvc.perform(MockMvcRequestBuilders
                         .get("/trustedDids")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAgentDidsUnauthenticatedTest() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/organization/did:web:1234/agentDids")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf()))

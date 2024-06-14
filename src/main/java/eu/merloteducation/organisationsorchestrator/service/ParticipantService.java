@@ -18,15 +18,12 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
-import eu.merloteducation.modelslib.api.organization.MembershipClass;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.OrganisationSignerConfigDto;
+import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.modelslib.daps.OmejdnConnectorCertificateDto;
 import eu.merloteducation.modelslib.daps.OmejdnConnectorCertificateRequest;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.ParticipantCredentialMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
-import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -78,7 +75,14 @@ public class ParticipantService {
      * @return organization data
      */
     public MerlotParticipantDto getParticipantById(String id) throws JsonProcessingException {
-        // input sanitization, must be a did:web
+        MerlotParticipantMetaDto metaDto = getParticipantMetaById(id);
+        ExtendedVerifiablePresentation selfDescription = getParticipantSdById(id);
+
+        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription,
+            metaDto);
+    }
+
+    private MerlotParticipantMetaDto getParticipantMetaById(String id) {
         String regex = "did:web:[-.A-Za-z0-9:%#]*";
         if (!id.matches(regex)) {
             throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did:web.");
@@ -89,6 +93,14 @@ public class ParticipantService {
 
         if (metaDto == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be found.");
+        }
+        return metaDto;
+    }
+
+    private ExtendedVerifiablePresentation getParticipantSdById(String id) throws JsonProcessingException {
+        String regex = "did:web:[-.A-Za-z0-9:%#]*";
+        if (!id.matches(regex)) {
+            throw new IllegalArgumentException("Provided id is invalid. It has to be a valid did:web.");
         }
 
         // get on the participants endpoint of the gxfs catalog at the specified id to get all enrolled participants
@@ -103,10 +115,7 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No participant with this id was found.");
         }
 
-        ExtendedVerifiablePresentation selfDescription = response.getSelfDescription();
-
-        return organizationMapper.selfDescriptionAndMetadataToMerlotParticipantDto(selfDescription,
-            metaDto);
+        return response.getSelfDescription();
     }
 
     /**
@@ -200,6 +209,17 @@ public class ParticipantService {
             handleCatalogError(e);
         }
        return uriResponse;
+    }
+
+    /**
+     * Return the set of allowed OCM agent DIDs that can be used to log in for this participant.
+     *
+     * @param id id of the participant
+     * @return dto with set of whitelisted agent DIDs
+     */
+    public ParticipantAgentDidsDto getAgentDidsByParticipantId(String id) {
+        MerlotParticipantMetaDto metaDto = getParticipantMetaById(id);
+        return organizationMapper.agentSettingsSetToDidDto(metaDto.getOcmAgentSettings());
     }
 
     private void handleCatalogError(WebClientResponseException e)
@@ -392,6 +412,8 @@ public class ParticipantService {
 
             // update orga id with received did
             metaData.setOrgaId(didPrivateKeyDto.getDid());
+
+            metaData.setOcmAgentSettings(Collections.emptySet());
 
             // request a new DAPS certificate for organization and store it
             OmejdnConnectorCertificateDto omejdnCertificate

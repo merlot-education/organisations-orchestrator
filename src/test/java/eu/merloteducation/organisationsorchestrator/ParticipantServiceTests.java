@@ -30,6 +30,7 @@ import eu.merloteducation.modelslib.api.organization.*;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
+import eu.merloteducation.organisationsorchestrator.models.entities.OcmAgentSettings;
 import eu.merloteducation.organisationsorchestrator.models.entities.OrganizationMetadata;
 import eu.merloteducation.organisationsorchestrator.service.OmejdnConnectorApiClient;
 import eu.merloteducation.organisationsorchestrator.service.OrganizationMetadataService;
@@ -204,6 +205,9 @@ class ParticipantServiceTests {
         signerConfigDto.setMerlotVerificationMethod("did:web:example.com:participant:someorga#merlot");
         signerConfigDto.setVerificationMethod("did:web:example.com:participant:someorga#somemethod");
         metaDto.setOrganisationSignerConfigDto(signerConfigDto);
+        ParticipantAgentSettingsDto settings = new ParticipantAgentSettingsDto();
+        settings.setAgentDid("123456");
+        metaDto.setOcmAgentSettings(Set.of(settings));
         return metaDto;
     }
 
@@ -590,7 +594,7 @@ class ParticipantServiceTests {
         assertThat(id).isNotNull().isNotBlank();
 
         OrganizationMetadata metadataExpected = new OrganizationMetadata(id, mailAddress,
-                MembershipClass.PARTICIPANT, true);
+                MembershipClass.PARTICIPANT, true, Collections.emptySet());
 
         ArgumentCaptor<MerlotParticipantMetaDto> varArgs = ArgumentCaptor.forClass(MerlotParticipantMetaDto.class);
         verify(organizationMetadataService, times(1)).saveMerlotParticipantMeta(varArgs.capture());
@@ -736,6 +740,14 @@ class ParticipantServiceTests {
         ResponseStatusException e =
             assertThrows(ResponseStatusException.class, () -> participantService.createParticipant(registrationFormContent, activeRole));
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, e.getStatusCode());
+    }
+
+    @Test
+    void getAgentDidsFromParticipant() {
+        ParticipantAgentDidsDto didsDto = participantService.getAgentDidsByParticipantId("did:web:example.com:participant:someorga");
+        assertNotNull(didsDto);
+        assertFalse(didsDto.getAgentDids().isEmpty());
+        assertEquals("123456", didsDto.getAgentDids().iterator().next());
     }
 
     private MerlotLegalParticipantCredentialSubject getTestEditedMerlotParticipantCs() {

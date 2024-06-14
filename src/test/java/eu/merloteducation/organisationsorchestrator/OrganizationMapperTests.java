@@ -30,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA;
@@ -207,7 +208,7 @@ class OrganizationMapperTests {
         expected.setMembershipClass(MembershipClass.PARTICIPANT);
         expected.setActive(false);
 
-        OrganizationMetadata entity = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT, false);
+        OrganizationMetadata entity = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT, false, Collections.emptySet());
 
         MerlotParticipantMetaDto mapped = organizationMapper.organizationMetadataToMerlotParticipantMetaDto(entity);
         assertEquals(expected.getOrgaId(), mapped.getOrgaId());
@@ -230,7 +231,7 @@ class OrganizationMapperTests {
     @Test
     void updateOrganizationMetadataWithMerlotParticipantMetaDtoCorrectly() {
 
-        OrganizationMetadata expectedMetadata = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT, true);
+        OrganizationMetadata expectedMetadata = new OrganizationMetadata(orgaId, mailAddress, MembershipClass.PARTICIPANT, true, Collections.emptySet());
 
         MerlotParticipantMetaDto dto = new MerlotParticipantMetaDto();
         dto.setOrgaId("changedId");
@@ -238,7 +239,7 @@ class OrganizationMapperTests {
         dto.setMembershipClass(MembershipClass.PARTICIPANT);
         dto.setActive(true);
 
-        OrganizationMetadata targetMetadata = new OrganizationMetadata(orgaId, null, null, false);
+        OrganizationMetadata targetMetadata = new OrganizationMetadata(orgaId, null, null, false, Collections.emptySet());
 
         organizationMapper.updateOrganizationMetadataWithMerlotParticipantMetaDto(dto, targetMetadata);
         assertEquals(expectedMetadata.getOrgaId(), targetMetadata.getOrgaId());
@@ -246,7 +247,7 @@ class OrganizationMapperTests {
         assertEquals(expectedMetadata.getMembershipClass(), targetMetadata.getMembershipClass());
         assertEquals(expectedMetadata.isActive(), targetMetadata.isActive());
 
-        targetMetadata = new OrganizationMetadata(orgaId, null, null, false);
+        targetMetadata = new OrganizationMetadata(orgaId, null, null, false, Collections.emptySet());
         expectedMetadata.setMembershipClass(MembershipClass.FEDERATOR);
         dto.setMembershipClass(MembershipClass.FEDERATOR);
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
+import eu.merloteducation.modelslib.api.organization.ParticipantAgentDidsDto;
 import eu.merloteducation.modelslib.api.organization.views.OrganisationViews;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
@@ -113,7 +114,17 @@ public class OrganizationQueryController {
         } catch (HttpClientErrorException.NotFound | JsonProcessingException e) {
             throw new ResponseStatusException(NOT_FOUND, "No participant with this id was found.");
         }
+    }
 
+    /**
+     * GET endpoint for retrieving all whitelisted OCM agent DIDs that allow login for this participant.
+     *
+     * @return dto with list of whitelisted agents
+     */
+    @GetMapping("/organization/{orgaId}/agentDids")
+    @JsonView(OrganisationViews.PublicView.class)
+    public ParticipantAgentDidsDto getAgentDidsByParticipantId(@PathVariable(value = "orgaId") String orgaId) {
+        return participantService.getAgentDidsByParticipantId(orgaId);
     }
 
     /**

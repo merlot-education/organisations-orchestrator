@@ -3,6 +3,8 @@ package eu.merloteducation.organisationsorchestrator.models.entities;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,11 +39,17 @@ public class OrganizationMetadata {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<DapsCertificate> dapsCertificates;
 
-    public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass, boolean active) {
+    @Size(max=2)
+    @NotNull
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private Set<OcmAgentSettings> ocmAgentSettings;
+
+    public OrganizationMetadata(String orgaId, String mailAddress, MembershipClass membershipClass, boolean active, Set<OcmAgentSettings> ocmAgentSettings) {
 
         this.orgaId = orgaId;
         this.mailAddress = mailAddress;
         this.membershipClass = membershipClass;
         this.active = active;
+        this.ocmAgentSettings = ocmAgentSettings;
     }
 }

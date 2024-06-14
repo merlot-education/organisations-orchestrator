@@ -82,6 +82,7 @@ keycloak:
 init-data:
   organisations: "classpath:organisations/"
   connectors: "classpath:initial-orga-connectors.json"
+  ocm-agent-did: "123456"
 
 merlot-domain: "localhost"
 

@@ -59,6 +59,7 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                 participantDto.getMetadata().setConnectors(null);
                 participantDto.getMetadata().setOrganisationSignerConfigDto(null);
                 participantDto.getMetadata().setDapsCertificates(null);
+                participantDto.getMetadata().setOcmAgentSettings(null);
             }
 
             // try to also set the signedBy field
@@ -87,6 +88,7 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                 // always hide signer config and certificates in page/list view
                 p.getMetadata().setOrganisationSignerConfigDto(null);
                 p.getMetadata().setDapsCertificates(null);
+                p.getMetadata().setOcmAgentSettings(null);
             }
         } catch (ClassCastException ignored) {
             // if it's the wrong class, we don't want to modify it anyway

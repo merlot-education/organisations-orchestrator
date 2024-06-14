@@ -413,6 +413,8 @@ public class ParticipantService {
             // update orga id with received did
             metaData.setOrgaId(didPrivateKeyDto.getDid());
 
+            metaData.setOcmAgentSettings(Collections.emptySet());
+
             // request a new DAPS certificate for organization and store it
             OmejdnConnectorCertificateDto omejdnCertificate
                     = omejdnConnectorApiClient.addConnector(

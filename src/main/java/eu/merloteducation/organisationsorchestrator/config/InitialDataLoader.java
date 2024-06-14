@@ -158,6 +158,7 @@ public class InitialDataLoader implements CommandLineRunner {
         ParticipantAgentSettingsDto agentSettingsDto = new ParticipantAgentSettingsDto();
         agentSettingsDto.setAgentDid(ocmAgentDid);
         participant.getMetadata().setOcmAgentSettings(Set.of(agentSettingsDto));
+
         OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
                 OrganizationRole.ORG_LEG_REP, participant.getId());
 

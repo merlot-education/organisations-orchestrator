@@ -148,6 +148,7 @@ public interface OrganizationMapper {
     @Mapping(target = "mailAddress", source = "mailAddress")
     @Mapping(target = "membershipClass", source = "membershipClass")
     @Mapping(target = "active", source = "active")
+    @Mapping(target = "ocmAgentSettings", source = "ocmAgentSettings")
     void updateMerlotParticipantMetaDtoAsFedAdmin(MerlotParticipantMetaDto source,
                                                   @MappingTarget MerlotParticipantMetaDto target);
 

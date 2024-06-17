@@ -6,18 +6,20 @@ import lombok.Getter;
 public enum DocumentField {
     ORGANIZATIONNAME("OrganizationName"),
     ORGANIZATIONLEGALNAME("OrganizationLegalName"),
+    LEGALFORM("LegalForm"),
     MAILADDRESS("MailAddress"),
     STREET("Street"),
     CITY("City"),
     POSTALCODE("PostalCode"),
     COUNTRYCODE("CountryCode"),
+    COUNTRYSUBDIVISIONCODE("Country Subdivision Code"),
     TNCLINK("ProviderTncLink"),
     TNCHASH("ProviderTncHash"),
-    REGISTRATIONNUMBER_TAXID("RegistrationNumberTaxId"),
-    REGISTRATIONNUMBER_EUID("RegistrationNumberEuid"),
-    REGISTRATIONNUMBER_EORI("RegistrationNumberEori"),
-    REGISTRATIONNUMBER_VATID("RegistrationNumberVatId"),
-    REGISTRATIONNUMBER_LEICODE("RegistrationNumberLeiCode");
+    REGISTRATIONNUMBER_TAXID("RegistrationNumber"),
+    REGISTRATIONNUMBER_EUID("EUID"),
+    REGISTRATIONNUMBER_EORI("EORI"),
+    REGISTRATIONNUMBER_VATID("VatID"),
+    REGISTRATIONNUMBER_LEICODE("leiCode");
 
     private final String value;
 

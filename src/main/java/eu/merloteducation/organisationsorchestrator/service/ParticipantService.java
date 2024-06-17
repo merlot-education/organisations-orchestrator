@@ -173,7 +173,7 @@ public class ParticipantService {
                                 p.getSelfDescription()
                                         .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class);
                         if (legalParticipant != null) {
-                            return legalParticipant.getName();
+                            return legalParticipant.getName().toLowerCase();
                         }
                         return "";
                     }))

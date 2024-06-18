@@ -83,6 +83,7 @@ init-data:
   organisations: "classpath:organisations/"
   connectors: "classpath:initial-orga-connectors.json"
   ocm-agent-did: "123456"
+  gxdch-delay: 0
 
 merlot-domain: "localhost"
 
@@ -101,15 +102,11 @@ gxfscatalog-library:
 
 gxdch-services:
   # for local development skip te compliance check as it will inevitably fail
-  max-retries: 0
-  retry-delay: 0
   enforce-compliance: false
-  enforce-notary: true
+  enforce-notary: false
   compliance-base-uris:
   registry-base-uris:
-    "https://registry.lab.gaia-x.eu/v1-staging"
   notary-base-uris:
-    "https://registrationnumber.notary.lab.gaia-x.eu/v1-staging"
 
 daps-server:
   base-uri: http://localhost:4567

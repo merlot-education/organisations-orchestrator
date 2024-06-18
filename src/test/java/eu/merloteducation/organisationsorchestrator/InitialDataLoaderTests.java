@@ -18,6 +18,7 @@ import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,6 +49,9 @@ class InitialDataLoaderTests {
 
     @MockBean
     private OrganizationQueryController organizationQueryController;
+
+    @MockBean
+    private ParticipantService participantService;
 
     @Value("${init-data.organisations:#{null}}")
     private File initialOrgasResource;
@@ -111,8 +115,11 @@ class InitialDataLoaderTests {
                 .thenReturn(dto);
         when(organizationQueryController.updateOrganization(any(), any()))
                 .thenReturn(dto);
+        when(participantService.updateParticipant(any(), any()))
+                .thenReturn(dto);
         InitialDataLoader dataLoader = new InitialDataLoader(
                 organizationQueryController,
+                participantService,
                 new ObjectMapper(),
                 initialOrgasResource,
                 initialOrgaConnectorsResource,
@@ -125,7 +132,7 @@ class InitialDataLoaderTests {
         verify(organizationQueryController, times(3)).createOrganization(any(), any());
         // update example for adding connectors, update again for federator role
         // update example2 for adding connectors, update again for MERLOT signature
-        verify(organizationQueryController, times(5)).updateOrganization(any(), any());
+        verify(organizationQueryController, times(4)).updateOrganization(any(), any());
     }
 
     @Test
@@ -135,6 +142,7 @@ class InitialDataLoaderTests {
                 .thenReturn(new PageImpl<>(List.of(dto), Pageable.ofSize(1), 1));
         InitialDataLoader dataLoader = new InitialDataLoader(
                 organizationQueryController,
+                participantService,
                 new ObjectMapper(),
                 initialOrgasResource,
                 initialOrgaConnectorsResource,

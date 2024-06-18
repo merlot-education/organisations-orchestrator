@@ -11,6 +11,7 @@ import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.api.organization.ParticipantAgentSettingsDto;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.NoInitDataException;
+import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ public class InitialDataLoader implements CommandLineRunner {
     private static final String MERLOT_FED_DOC_FILENAME = "merlotRegistrationForm_MERLOT.pdf";
     private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
     private final OrganizationQueryController organizationQueryController;
+    private final ParticipantService participantService;
     private final ObjectMapper objectMapper;
     private File initialFederatorsFolder;
     private File initialParticipantsFolder;
@@ -46,13 +48,15 @@ public class InitialDataLoader implements CommandLineRunner {
 
 
     public InitialDataLoader(@Autowired OrganizationQueryController organizationQueryController,
+                             @Autowired ParticipantService participantService,
                              @Autowired ObjectMapper objectMapper,
                              @Value("${init-data.organisations:#{null}}") File initialOrgasFolder,
                              @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
-                             @Value("${gxdch-services.retry-delay:#{0}}") int delayUpdateTime,
+                             @Value("${init-data.gxdch-delay:#{0}}") int delayUpdateTime,
                              @Value("${init-data.ocm-agent-did:#{null}}") String ocmAgentDid,
                              @Value("${merlot-domain}") String merlotDomain) {
         this.organizationQueryController = organizationQueryController;
+        this.participantService = participantService;
         this.objectMapper = objectMapper;
         for (File file : initialOrgasFolder.listFiles()) {
             if (!file.isFile() && file.getName().equals("federators")) {
@@ -97,26 +101,16 @@ public class InitialDataLoader implements CommandLineRunner {
 
     private void onboardMerlotFederation(OrganizationRoleGrantedAuthority merlotFederationRole) throws Exception {
         MultipartFile merlotFederationPdf = getMerlotFederationDocument();
+        // onboard merlot as merlot federation
         MerlotParticipantDto participant = organizationQueryController
                 .createOrganization(new MultipartFile[]{merlotFederationPdf}, merlotFederationRole);
+        delayClearingHouse();
+
         // set federator role for MERLOT federation
         participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
-
-        try {
-            logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(delayUpdateTime);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
-
-        organizationQueryController.updateOrganization(participant, merlotFederationRole);
-
-        try {
-            logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(delayUpdateTime);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
+        // update membership class for this initial orga using service as federators cannot edit themselves
+        participantService.updateParticipant(participant, merlotFederationRole);
+        delayClearingHouse();
     }
 
     private void onboardOtherOrganisations(OrganizationRoleGrantedAuthority merlotFederationRole) throws Exception {
@@ -161,38 +155,20 @@ public class InitialDataLoader implements CommandLineRunner {
 
         OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
                 OrganizationRole.ORG_LEG_REP, participant.getId());
-
-        try {
-            logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(delayUpdateTime);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
+        delayClearingHouse();
 
         // update with the role of the participant in order to update the connector data
         organizationQueryController.updateOrganization(participant, internalRoleOrgLegRep);
+        delayClearingHouse();
 
         if (isFederator) {
             // set federator role for initial organisations
             participant.getMetadata().setMembershipClass(MembershipClass.FEDERATOR);
         }
 
-        try {
-            logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(delayUpdateTime);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
-
         // reset signature to MERLOT Federation again
         organizationQueryController.updateOrganization(participant, merlotFederationRole);
-
-        try {
-            logger.info(DELAY_UPDATE_MSG);
-            Thread.sleep(delayUpdateTime);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
+        delayClearingHouse();
     }
 
     private MultipartFile getMerlotFederationDocument() {
@@ -221,5 +197,14 @@ public class InitialDataLoader implements CommandLineRunner {
         }
 
         return orgaPdfs;
+    }
+
+    private void delayClearingHouse() {
+        try {
+            logger.info(DELAY_UPDATE_MSG);
+            Thread.sleep(delayUpdateTime);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

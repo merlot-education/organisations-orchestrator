@@ -178,7 +178,7 @@ class OrganizationQueryControllerTests {
     @Test
     void updateOrganizationAuthorizedAsFedAdminExistent() throws Exception {
 
-        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits("did:web:someorga.example.com");
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits("did:web:somethirdorga.example.com");
         mvc.perform(MockMvcRequestBuilders
                 .put("/organization")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -215,6 +215,27 @@ class OrganizationQueryControllerTests {
                 )))
             .andDo(print())
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateOrganizationAsFederatorWithSameId() throws Exception {
+
+        MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits("did:web:someorga.example.com");
+
+        mvc.perform(MockMvcRequestBuilders
+                        .put("/organization")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectAsJsonString(participantDtoWithEdits))
+                        .header("Active-Role", "FedAdmin_did:web:someorga.example.com")
+                        .with(csrf())
+                        .with(jwt().authorities(
+                                new OrganizationRoleGrantedAuthority(OrganizationRole.ORG_LEG_REP, "did:web:someotherorga.example.com"),
+                                new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, "did:web:someorga.example.com"),
+                                new SimpleGrantedAuthority("ROLE_some_other_role")
+                        )))
+                .andDo(print())
+                .andExpect(status().isForbidden());
     }
 
     @Test

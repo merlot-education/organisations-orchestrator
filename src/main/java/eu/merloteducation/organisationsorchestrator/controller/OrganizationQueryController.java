@@ -92,7 +92,7 @@ public class OrganizationQueryController {
     @PutMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
     @PreAuthorize("@participantAuthorityChecker.representsParticipantFromDto(#activeRole, #participantDtoWithEdits)" +
-            " or #activeRole.isFedAdmin()")
+            " or @participantAuthorityChecker.isFedAdminForDifferentParticipant(#activeRole, #participantDtoWithEdits)")
     public MerlotParticipantDto updateOrganization(
         @Valid @RequestBody MerlotParticipantDto participantDtoWithEdits,
         @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole)

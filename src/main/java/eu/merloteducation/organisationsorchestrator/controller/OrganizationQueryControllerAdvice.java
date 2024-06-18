@@ -52,6 +52,7 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
             if (!isFedAdmin && !representsOrganization) {
                 // hide email address if we are not a federator admin and also not representing
                 participantDto.getMetadata().setMailAddress(null);
+                participantDto.getMetadata().setOcmAgentSettings(null);
             }
 
             if (!representsOrganization) {
@@ -59,7 +60,6 @@ public class OrganizationQueryControllerAdvice extends AbstractMappingJacksonRes
                 participantDto.getMetadata().setConnectors(null);
                 participantDto.getMetadata().setOrganisationSignerConfigDto(null);
                 participantDto.getMetadata().setDapsCertificates(null);
-                participantDto.getMetadata().setOcmAgentSettings(null);
             }
 
             // try to also set the signedBy field

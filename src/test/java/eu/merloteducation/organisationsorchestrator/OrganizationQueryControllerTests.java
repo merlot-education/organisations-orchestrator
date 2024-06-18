@@ -1,24 +1,14 @@
 package eu.merloteducation.organisationsorchestrator;
 
-import com.danubetech.verifiablecredentials.VerifiableCredential;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.merloteducation.authorizationlibrary.authorization.*;
 import eu.merloteducation.authorizationlibrary.config.InterceptorConfig;
 import eu.merloteducation.authorizationlibrary.config.MerlotSecurityConfig;
-import eu.merloteducation.gxfscataloglibrary.models.credentials.CastableCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiableCredential;
 import eu.merloteducation.gxfscataloglibrary.models.credentials.ExtendedVerifiablePresentation;
 import eu.merloteducation.gxfscataloglibrary.models.query.GXFSQueryLegalNameItem;
 import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.GXFSCatalogListResponse;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.PojoCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.GxVcard;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.datatypes.NodeKindIRITypeId;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalParticipantCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.gx.participants.GxLegalRegistrationNumberCredentialSubject;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.datatypes.ParticipantTermsAndConditions;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.gxfscataloglibrary.service.GxfsCatalogService;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
@@ -47,9 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.*;
 
 import static eu.merloteducation.organisationsorchestrator.SelfDescriptionDemoData.*;
@@ -360,7 +348,7 @@ class OrganizationQueryControllerTests {
     @Test
     void getAgentDidsUnauthenticatedTest() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                        .get("/organization/did:web:1234/agentDids")
+                        .get("/organization/agentDids/did:web:1234")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf()))

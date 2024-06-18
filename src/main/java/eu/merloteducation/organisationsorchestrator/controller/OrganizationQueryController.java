@@ -121,7 +121,7 @@ public class OrganizationQueryController {
      *
      * @return dto with list of whitelisted agents
      */
-    @GetMapping("/organization/{orgaId}/agentDids")
+    @GetMapping("/organization/agentDids/{orgaId}")
     @JsonView(OrganisationViews.PublicView.class)
     public ParticipantAgentDidsDto getAgentDidsByParticipantId(@PathVariable(value = "orgaId") String orgaId) {
         return participantService.getAgentDidsByParticipantId(orgaId);

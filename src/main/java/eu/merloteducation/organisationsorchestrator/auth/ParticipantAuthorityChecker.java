@@ -9,6 +9,14 @@ import org.springframework.stereotype.Component;
 public class ParticipantAuthorityChecker {
 
     public boolean representsParticipantFromDto(OrganizationRoleGrantedAuthority activeRole, MerlotParticipantDto dto) {
+        return activeRole.isRepresentative() && roleIdEqualsDtoId(activeRole, dto);
+    }
+
+    public boolean isFedAdminForDifferentParticipant(OrganizationRoleGrantedAuthority activeRole, MerlotParticipantDto dto) {
+        return activeRole.isFedAdmin() && !roleIdEqualsDtoId(activeRole, dto);
+    }
+
+    private boolean roleIdEqualsDtoId(OrganizationRoleGrantedAuthority activeRole, MerlotParticipantDto dto) {
         return activeRole.getOrganizationId()
                 .equals(dto.getSelfDescription()
                         .findFirstCredentialSubjectByType(GxLegalParticipantCredentialSubject.class).getId())

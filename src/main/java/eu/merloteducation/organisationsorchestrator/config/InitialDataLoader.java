@@ -50,7 +50,7 @@ public class InitialDataLoader implements CommandLineRunner {
                              @Value("${init-data.organisations:#{null}}") File initialOrgasFolder,
                              @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
                              @Value("${gxdch-services.retry-delay:#{0}}") int delayUpdateTime,
-                             @Value("${init-data.ocm-agent-did:#{null}") String ocmAgentDid,
+                             @Value("${init-data.ocm-agent-did:#{null}}") String ocmAgentDid,
                              @Value("${merlot-domain}") String merlotDomain) {
         this.organizationQueryController = organizationQueryController;
         this.objectMapper = objectMapper;

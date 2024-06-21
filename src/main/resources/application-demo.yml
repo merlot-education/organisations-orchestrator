@@ -26,7 +26,7 @@ gxfscatalog-library:
   ignore-ssl: false
 
 init-data:
-  ocm-agent-did: "7KuDTpQh3GJ7Gp6kErpWvM"
+  ocm-agent-did: "UaT2udeT53Tr1n6itV46Z"
   gxdch-delay: 15000
 
 db:

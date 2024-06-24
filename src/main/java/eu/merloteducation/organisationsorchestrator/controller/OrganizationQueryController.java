@@ -92,7 +92,7 @@ public class OrganizationQueryController {
     @PutMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
     @PreAuthorize("@participantAuthorityChecker.representsParticipantFromDto(#activeRole, #participantDtoWithEdits)" +
-            " or #activeRole.isFedAdmin()")
+            " or @participantAuthorityChecker.isFedAdminForDifferentParticipant(#activeRole, #participantDtoWithEdits)")
     public MerlotParticipantDto updateOrganization(
         @Valid @RequestBody MerlotParticipantDto participantDtoWithEdits,
         @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole)
@@ -121,7 +121,7 @@ public class OrganizationQueryController {
      *
      * @return dto with list of whitelisted agents
      */
-    @GetMapping("/organization/{orgaId}/agentDids")
+    @GetMapping("/organization/agentDids/{orgaId}")
     @JsonView(OrganisationViews.PublicView.class)
     public ParticipantAgentDidsDto getAgentDidsByParticipantId(@PathVariable(value = "orgaId") String orgaId) {
         return participantService.getAgentDidsByParticipantId(orgaId);

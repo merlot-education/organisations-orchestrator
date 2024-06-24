@@ -26,7 +26,8 @@ gxfscatalog-library:
   ignore-ssl: false
 
 init-data:
-  ocm-agent-did: "dxmeeRVwfAQecNy1AXuws"
+  ocm-agent-did: "UaT2udeT53Tr1n6itV46Z"
+  gxdch-delay: 15000
 
 db:
   encryption:
@@ -36,8 +37,6 @@ daps-server:
   base-uri: http://daps-server.merlot.svc.cluster.local:4567
 
 gxdch-services:
-  max-retries: 1
-  retry-delay: 15000
   enforce-compliance: true
   enforce-notary: true
   compliance-base-uris:

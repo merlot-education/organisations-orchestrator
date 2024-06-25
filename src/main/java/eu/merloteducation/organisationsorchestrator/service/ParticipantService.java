@@ -437,7 +437,7 @@ public class ParticipantService {
         // set credential subject id to did from metadata (self-assigned or received from did service)
         String[] orgaIdSplit = metaDataDto.getOrgaId().split(":");
         String orgaUuid = orgaIdSplit[orgaIdSplit.length-1];
-        String registrationNumberId = "urn:uuid:" + orgaUuid + "#registrationNumber";
+        String registrationNumberId = "urn:uuid:" + orgaUuid;
         merlotParticipantCs.setId(metaDataDto.getOrgaId());
         participantCs.setId(metaDataDto.getOrgaId());
         registrationNumberCs.setId(registrationNumberId);

@@ -14,8 +14,6 @@ public class RegistrationFormContent {
     private String countrySubdivisionCode;
     private String providerTncLink;
     private String providerTncHash;
-    private String registrationNumberTaxID;
-    private String registrationNumberEuid;
     private String registrationNumberEori;
     private String registrationNumberVatID;
     private String registrationNumberLeiCode;

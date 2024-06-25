@@ -15,8 +15,6 @@ public enum DocumentField {
     COUNTRYSUBDIVISIONCODE("Country Subdivision Code"),
     TNCLINK("ProviderTncLink"),
     TNCHASH("ProviderTncHash"),
-    REGISTRATIONNUMBER_TAXID("RegistrationNumber"),
-    REGISTRATIONNUMBER_EUID("EUID"),
     REGISTRATIONNUMBER_EORI("EORI"),
     REGISTRATIONNUMBER_VATID("VatID"),
     REGISTRATIONNUMBER_LEICODE("leiCode");

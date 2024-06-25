@@ -9,6 +9,7 @@ import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.part
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantMetaDto;
 import eu.merloteducation.organisationsorchestrator.config.InitialDataLoader;
+import eu.merloteducation.organisationsorchestrator.mappers.DocumentField;
 import eu.merloteducation.organisationsorchestrator.mappers.OrganizationMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.ParticipantCredentialMapper;
 import eu.merloteducation.organisationsorchestrator.mappers.PdfContentMapper;
@@ -22,6 +23,8 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDChoice;
+import org.apache.pdfbox.pdmodel.interactive.form.PDListBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,61 +141,85 @@ class OrganizationMapperTests {
         String defaultAppearance = "/Helv 12 Tf 0 0 1 rg";
 
         PDTextField textField = new PDTextField(form);
-        textField.setPartialName("MailAddress");
+        textField.setPartialName(DocumentField.MAILADDRESS.getValue());
         textField.setDefaultAppearance(defaultAppearance);
         form.getFields().add(textField);
         textField.setValue(mailAddress);
 
         PDTextField textField1 = new PDTextField(form);
-        textField1.setPartialName("OrganizationLegalName");
+        textField1.setPartialName(DocumentField.ORGANIZATIONLEGALNAME.getValue());
         form.getFields().add(textField1);
         textField1.setDefaultAppearance(defaultAppearance);
         textField1.setValue(organizationLegalName);
 
-        PDTextField textField2 = new PDTextField(form);
-        textField2.setPartialName("RegistrationNumber");
-        form.getFields().add(textField2);
-        textField2.setDefaultAppearance(defaultAppearance);
-        textField2.setValue(registrationNumber);
+        PDTextField textFieldLeiCode = new PDTextField(form);
+        textFieldLeiCode.setPartialName(DocumentField.REGISTRATIONNUMBER_LEICODE.getValue());
+        form.getFields().add(textFieldLeiCode);
+        textFieldLeiCode.setDefaultAppearance(defaultAppearance);
+        textFieldLeiCode.setValue(registrationNumber);
+
+        PDTextField textFieldVatId = new PDTextField(form);
+        textFieldVatId.setPartialName(DocumentField.REGISTRATIONNUMBER_VATID.getValue());
+        form.getFields().add(textFieldVatId);
+        textFieldVatId.setDefaultAppearance(defaultAppearance);
+        textFieldVatId.setValue("");
+
+        PDTextField textFieldEori = new PDTextField(form);
+        textFieldEori.setPartialName(DocumentField.REGISTRATIONNUMBER_EORI.getValue());
+        form.getFields().add(textFieldEori);
+        textFieldEori.setDefaultAppearance(defaultAppearance);
+        textFieldEori.setValue("");
 
         PDTextField textField3 = new PDTextField(form);
-        textField3.setPartialName("CountryCode");
+        textField3.setPartialName(DocumentField.COUNTRYCODE.getValue());
         form.getFields().add(textField3);
         textField3.setDefaultAppearance(defaultAppearance);
         textField3.setValue(countryCode);
 
+        PDTextField textFieldCountrySubCode = new PDTextField(form);
+        textFieldCountrySubCode.setPartialName(DocumentField.COUNTRYSUBDIVISIONCODE.getValue());
+        form.getFields().add(textFieldCountrySubCode);
+        textFieldCountrySubCode.setDefaultAppearance(defaultAppearance);
+        textFieldCountrySubCode.setValue(countrySubdivisionCode);
+
         PDTextField textField4 = new PDTextField(form);
-        textField4.setPartialName("OrganizationName");
+        textField4.setPartialName(DocumentField.ORGANIZATIONNAME.getValue());
         form.getFields().add(textField4);
         textField4.setDefaultAppearance(defaultAppearance);
         textField4.setValue(organizationName);
 
+        PDListBox choicelegalForm = new PDListBox(form);
+        choicelegalForm.setPartialName(DocumentField.LEGALFORM.getValue());
+        form.getFields().add(choicelegalForm);
+        choicelegalForm.setDefaultAppearance(defaultAppearance);
+        choicelegalForm.setValue(organizationLegalForm);
+
         PDTextField textField5 = new PDTextField(form);
-        textField5.setPartialName("PostalCode");
+        textField5.setPartialName(DocumentField.POSTALCODE.getValue());
         form.getFields().add(textField5);
         textField5.setDefaultAppearance(defaultAppearance);
         textField5.setValue(postalCode);
 
         PDTextField textField7 = new PDTextField(form);
-        textField7.setPartialName("City");
+        textField7.setPartialName(DocumentField.CITY.getValue());
         form.getFields().add(textField7);
         textField7.setDefaultAppearance(defaultAppearance);
         textField7.setValue(city);
 
         PDTextField textField8 = new PDTextField(form);
-        textField8.setPartialName("ProviderTncLink");
+        textField8.setPartialName(DocumentField.TNCLINK.getValue());
         form.getFields().add(textField8);
         textField8.setDefaultAppearance(defaultAppearance);
         textField8.setValue(providerTncLink);
 
         PDTextField textField9 = new PDTextField(form);
-        textField9.setPartialName("Street");
+        textField9.setPartialName(DocumentField.STREET.getValue());
         form.getFields().add(textField9);
         textField9.setDefaultAppearance(defaultAppearance);
         textField9.setValue(street);
 
         PDTextField textField10 = new PDTextField(form);
-        textField10.setPartialName("ProviderTncHash");
+        textField10.setPartialName(DocumentField.TNCHASH.getValue());
         form.getFields().add(textField10);
         textField10.setDefaultAppearance(defaultAppearance);
         textField10.setValue(providerTncHash);

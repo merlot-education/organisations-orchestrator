@@ -27,7 +27,7 @@ gxfscatalog-library:
 
 init-data:
   ocm-agent-did: "K8j8nFTijJTCsFwrRNE3Df"
-  gxdch-delay: 15000
+  gxdch-delay: 20000
 
 db:
   encryption:

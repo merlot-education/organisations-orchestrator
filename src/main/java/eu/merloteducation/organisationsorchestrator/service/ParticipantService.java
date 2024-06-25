@@ -504,16 +504,12 @@ public class ParticipantService {
 
         String leiCode = registrationFormContent.getRegistrationNumberLeiCode();
         String eori = registrationFormContent.getRegistrationNumberEori();
-        String euid = registrationFormContent.getRegistrationNumberEuid();
         String vatId = registrationFormContent.getRegistrationNumberVatID();
-        String taxId = registrationFormContent.getRegistrationNumberTaxID();
 
         boolean registrationNumberMissing =
                 (leiCode == null || leiCode.isBlank())
                 && (eori == null || eori.isBlank())
-                && (euid == null || euid.isBlank())
-                && (vatId == null || vatId.isBlank())
-                && (taxId == null || taxId.isBlank());
+                && (vatId == null || vatId.isBlank());
 
         if (anyFieldEmptyOrBlank || registrationNumberMissing) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

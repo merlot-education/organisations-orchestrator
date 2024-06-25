@@ -135,9 +135,7 @@ class ParticipantServiceTests {
         content.setMailAddress(mailAddress);
         content.setRegistrationNumberLeiCode(registrationNumber);
         content.setRegistrationNumberVatID("");
-        content.setRegistrationNumberTaxID("");
         content.setRegistrationNumberEori("");
-        content.setRegistrationNumberEuid("");
         content.setCountryCode(countryCode);
         content.setCountrySubdivisionCode(countrySubdivisionCode);
         content.setPostalCode(postalCode);
@@ -624,9 +622,7 @@ class ParticipantServiceTests {
         content.setOrganizationLegalName("");
         content.setMailAddress("");
         content.setRegistrationNumberLeiCode("");
-        content.setRegistrationNumberEuid("");
         content.setRegistrationNumberEori("");
-        content.setRegistrationNumberTaxID("");
         content.setRegistrationNumberVatID("");
         content.setCountryCode("");
         content.setPostalCode("");

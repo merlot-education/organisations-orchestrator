@@ -30,8 +30,6 @@ public interface ParticipantCredentialMapper {
     @Mapping(target = "headquarterAddress.postalCode", source = "content.postalCode")
     GxLegalParticipantCredentialSubject getLegalParticipantCsFromRegistrationForm(RegistrationFormContent content);
 
-    @Mapping(target = "taxID", source = "content.registrationNumberTaxID", qualifiedByName = "emptyStringToNullMapper")
-    @Mapping(target = "euid", source = "content.registrationNumberEuid", qualifiedByName = "emptyStringToNullMapper")
     @Mapping(target = "eori", source = "content.registrationNumberEori", qualifiedByName = "emptyStringToNullMapper")
     @Mapping(target = "vatID", source = "content.registrationNumberVatID", qualifiedByName = "emptyStringToNullMapper")
     @Mapping(target = "leiCode", source = "content.registrationNumberLeiCode", qualifiedByName = "emptyStringToNullMapper")

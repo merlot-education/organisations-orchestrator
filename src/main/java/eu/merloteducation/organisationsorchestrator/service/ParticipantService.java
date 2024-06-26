@@ -40,6 +40,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 @Service
@@ -463,7 +464,7 @@ public class ParticipantService {
                     List.of(participantCs, registrationNumberCs, merlotParticipantCs),
                     activeRoleSignerConfig.getMerlotVerificationMethod());
         } catch (CredentialPresentationException | CredentialSignatureException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sign participant credential subject.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (WebClientResponseException e) {
             handleCatalogError(e);
         }

@@ -3,7 +3,8 @@ cors:
     origins: >
       https://marketplace.dev.merlot-education.eu,
       https://api.dev.merlot-education.eu,
-      https://cif.dev.merlot-education.eu
+      https://cif.dev.merlot-education.eu,
+      https://occ.dev.merlot-education.eu
     patterns:
 
 spring:

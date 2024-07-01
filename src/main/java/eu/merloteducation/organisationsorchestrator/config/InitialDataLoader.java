@@ -1,14 +1,9 @@
 package eu.merloteducation.organisationsorchestrator.config;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRole;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
-import eu.merloteducation.gxfscataloglibrary.models.selfdescriptions.merlot.participants.MerlotLegalParticipantCredentialSubject;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
-import eu.merloteducation.modelslib.api.organization.ParticipantAgentSettingsDto;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.NoInitDataException;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
@@ -33,31 +28,21 @@ public class InitialDataLoader implements CommandLineRunner {
     private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
     private final OrganizationQueryController organizationQueryController;
     private final ParticipantService participantService;
-    private final ObjectMapper objectMapper;
     private File initialFederatorsFolder;
     private File initialParticipantsFolder;
     private File merlotFederationRegistrationFormFile;
-    private final File initialOrgaConnectorsResource;
-    private final String merlotDomain;
-
-    private final String ocmAgentDid;
-
+    private final String merlotFederationDid;
     private final int delayUpdateTime;
-
     private static final String DELAY_UPDATE_MSG = "Delaying update to avoid clearing house rate limiting...";
 
 
     public InitialDataLoader(@Autowired OrganizationQueryController organizationQueryController,
                              @Autowired ParticipantService participantService,
-                             @Autowired ObjectMapper objectMapper,
                              @Value("${init-data.organisations:#{null}}") File initialOrgasFolder,
-                             @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
                              @Value("${init-data.gxdch-delay:#{0}}") int delayUpdateTime,
-                             @Value("${init-data.ocm-agent-did:#{null}}") String ocmAgentDid,
-                             @Value("${merlot-domain}") String merlotDomain) {
+                             @Value("${merlot-federation-did}") String merlotFederationDid) {
         this.organizationQueryController = organizationQueryController;
         this.participantService = participantService;
-        this.objectMapper = objectMapper;
         for (File file : initialOrgasFolder.listFiles()) {
             if (!file.isFile() && file.getName().equals("federators")) {
                 this.initialFederatorsFolder = file;
@@ -67,10 +52,8 @@ public class InitialDataLoader implements CommandLineRunner {
                 this.merlotFederationRegistrationFormFile = file;
             }
         }
-        this.initialOrgaConnectorsResource = initialOrgaConnectorsResource;
         this.delayUpdateTime = delayUpdateTime;
-        this.merlotDomain = merlotDomain;
-        this.ocmAgentDid = ocmAgentDid;
+        this.merlotFederationDid = merlotFederationDid;
     }
 
 
@@ -79,8 +62,7 @@ public class InitialDataLoader implements CommandLineRunner {
         try {
             // MERLOT federation
             OrganizationRoleGrantedAuthority merlotFederationRole
-                    = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN,
-                            "did:web:" + merlotDomain + ":participant:df15587a-0760-32b5-9c42-bb7be66e8076");
+                    = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, merlotFederationDid);
 
             if (!organizationQueryController.getAllOrganizations(0, 1, merlotFederationRole).getContent().isEmpty()) {
                 logger.info("Database will not be reinitialised since organisations exist.");
@@ -117,48 +99,21 @@ public class InitialDataLoader implements CommandLineRunner {
         List<MultipartFile> participantPdfs = getOrganisationDocuments(initialParticipantsFolder);
         List<MultipartFile> federatorPdfs = getOrganisationDocuments(initialFederatorsFolder);
 
-        // check if we have initial data for connectors
-        Map<String, Set<OrganizationConnectorDto>> initialOrgaConnectors = Collections.emptyMap();
-        if (initialOrgaConnectorsResource != null) {
-            initialOrgaConnectors =
-                    objectMapper.readValue(initialOrgaConnectorsResource, new TypeReference<>(){});
-        }
-
         for (MultipartFile orgaPdf : participantPdfs) {
-            importOrganisation(merlotFederationRole, orgaPdf, initialOrgaConnectors, false);
+            importOrganisation(merlotFederationRole, orgaPdf, false);
         }
 
         for (MultipartFile orgaPdf : federatorPdfs) {
-            importOrganisation(merlotFederationRole, orgaPdf, initialOrgaConnectors, true);
+            importOrganisation(merlotFederationRole, orgaPdf, true);
         }
     }
 
     private void importOrganisation(OrganizationRoleGrantedAuthority merlotFederationRole,
                                     MultipartFile orgaPdf,
-                                    Map<String, Set<OrganizationConnectorDto>> connectorMap,
                                     boolean isFederator) throws Exception {
         MerlotParticipantDto participant = organizationQueryController
                 .createOrganization(new MultipartFile[]{orgaPdf}, merlotFederationRole);
 
-        MerlotLegalParticipantCredentialSubject cs = participant.getSelfDescription()
-                .findFirstCredentialSubjectByType(MerlotLegalParticipantCredentialSubject.class);
-        // add initial connectors as well
-        String orgaLegalName = cs == null ? "" : cs.getLegalName();
-        Set<OrganizationConnectorDto> connectors = connectorMap.getOrDefault(orgaLegalName, Collections.emptySet());
-
-        // if connectors exist, add them on behalf of the participant
-        participant.getMetadata().getConnectors().addAll(connectors);
-        // also set default OCM DID
-        ParticipantAgentSettingsDto agentSettingsDto = new ParticipantAgentSettingsDto();
-        agentSettingsDto.setAgentDid(ocmAgentDid);
-        participant.getMetadata().setOcmAgentSettings(Set.of(agentSettingsDto));
-
-        OrganizationRoleGrantedAuthority internalRoleOrgLegRep = new OrganizationRoleGrantedAuthority(
-                OrganizationRole.ORG_LEG_REP, participant.getId());
-        delayClearingHouse();
-
-        // update with the role of the participant in order to update the connector data
-        organizationQueryController.updateOrganization(participant, internalRoleOrgLegRep);
         delayClearingHouse();
 
         if (isFederator) {

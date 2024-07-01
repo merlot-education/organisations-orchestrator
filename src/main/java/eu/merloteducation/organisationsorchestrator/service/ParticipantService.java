@@ -1,6 +1,7 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
@@ -29,6 +30,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +40,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -54,19 +58,37 @@ public class ParticipantService {
     private final OrganizationMetadataService organizationMetadataService;
     private final OutgoingMessageService outgoingMessageService;
     private final OmejdnConnectorApiClient omejdnConnectorApiClient;
+    private final ObjectMapper objectMapper;
+    private final Map<String, Set<OrganizationConnectorDto>> initialOrgaConnectors;
+    private final String ocmAgentDid;
 
     public ParticipantService(@Autowired OrganizationMapper organizationMapper,
                               @Autowired ParticipantCredentialMapper participantCredentialMapper,
                               @Autowired GxfsCatalogService gxfsCatalogService,
                               @Autowired OrganizationMetadataService organizationMetadataService,
                               @Autowired OutgoingMessageService outgoingMessageService,
-                              @Autowired OmejdnConnectorApiClient omejdnConnectorApiClient) {
+                              @Autowired OmejdnConnectorApiClient omejdnConnectorApiClient,
+                              @Autowired ObjectMapper objectMapper,
+                              @Value("${init-data.connectors:#{null}}") File initialOrgaConnectorsResource,
+                              @Value("${init-data.ocm-agent-did:#{null}}") String ocmAgentDid) {
         this.organizationMapper = organizationMapper;
         this.participantCredentialMapper = participantCredentialMapper;
         this.gxfsCatalogService = gxfsCatalogService;
         this.organizationMetadataService = organizationMetadataService;
         this.outgoingMessageService = outgoingMessageService;
         this.omejdnConnectorApiClient = omejdnConnectorApiClient;
+        this.objectMapper = objectMapper;
+        Map<String, Set<OrganizationConnectorDto>> foundInitialOrgaConnectors = Collections.emptyMap();
+        if (initialOrgaConnectorsResource != null) {
+            try {
+                foundInitialOrgaConnectors =
+                        this.objectMapper.readValue(initialOrgaConnectorsResource, new TypeReference<>(){});
+            } catch (IOException ignored) {
+                // ignore, keep empty map
+            }
+        }
+        this.initialOrgaConnectors = foundInitialOrgaConnectors;
+        this.ocmAgentDid = ocmAgentDid;
     }
 
     /**
@@ -414,14 +436,24 @@ public class ParticipantService {
             // update orga id with received did
             metaData.setOrgaId(didPrivateKeyDto.getDid());
 
-            metaData.setOcmAgentSettings(Collections.emptySet());
-
             // request a new DAPS certificate for organization and store it
             OmejdnConnectorCertificateDto omejdnCertificate
                     = omejdnConnectorApiClient.addConnector(
                     new OmejdnConnectorCertificateRequest(metaData.getOrgaId()));
             metaData.setDapsCertificates(
                     List.of(organizationMapper.omejdnCertificateToDapsCertificateDto(omejdnCertificate)));
+
+            // if initial connectors are defined, add them to the participant
+            Set<OrganizationConnectorDto> connectors = initialOrgaConnectors.getOrDefault(merlotParticipantCs.getLegalName(),
+                    Collections.emptySet());
+            metaData.setConnectors(new HashSet<>());
+            metaData.getConnectors().addAll(connectors);
+
+            // also set default OCM DID
+            ParticipantAgentSettingsDto agentSettingsDto = new ParticipantAgentSettingsDto();
+            agentSettingsDto.setAgentDid(ocmAgentDid);
+            metaData.setOcmAgentSettings(Set.of(agentSettingsDto));
+
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid registration form file.");
         }

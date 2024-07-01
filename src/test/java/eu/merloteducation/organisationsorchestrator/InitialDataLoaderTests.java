@@ -120,19 +120,16 @@ class InitialDataLoaderTests {
         InitialDataLoader dataLoader = new InitialDataLoader(
                 organizationQueryController,
                 participantService,
-                new ObjectMapper(),
                 initialOrgasResource,
-                initialOrgaConnectorsResource,
                 0,
-                "123456",
-                "example.com");
+                "did:web:example.com:participant:123");
         dataLoader.run();
 
         // create MERLOT fed, create example, create example 2
         verify(organizationQueryController, times(3)).createOrganization(any(), any());
         // update example for adding connectors, update again for federator role
         // update example2 for adding connectors, update again for MERLOT signature
-        verify(organizationQueryController, times(4)).updateOrganization(any(), any());
+        verify(organizationQueryController, times(2)).updateOrganization(any(), any());
     }
 
     @Test
@@ -143,12 +140,9 @@ class InitialDataLoaderTests {
         InitialDataLoader dataLoader = new InitialDataLoader(
                 organizationQueryController,
                 participantService,
-                new ObjectMapper(),
                 initialOrgasResource,
-                initialOrgaConnectorsResource,
                 0,
-                "123456",
-                "example.com");
+                "did:web:example.com:participant:123");
         dataLoader.run();
         verify(organizationQueryController, never()).createOrganization(any(), any());
         verify(organizationQueryController, never()).updateOrganization(any(), any());

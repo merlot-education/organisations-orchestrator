@@ -21,6 +21,7 @@ spring:
 jwt-auth-converter: ssiJwtAuthConverter
 
 merlot-domain: "marketplace.dev.merlot-education.eu"
+merlot-federation-did: "did:web:marketplace.dev.merlot-education.eu:participant:df15587a-0760-32b5-9c42-bb7be66e8076"
 
 gxfscatalog-library:
   ignore-ssl: false

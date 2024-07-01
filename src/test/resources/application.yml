@@ -51,6 +51,7 @@ gxfswizardapi:
   base-uri: "http://localhost:8085"
 
 merlot-domain: "example.com"
+merlot-federation-did: "did:web:localhost:participant:df15587a-0760-32b5-9c42-bb7be66e8076"
 
 init-data:
   organisations: "classpath:organisations/"

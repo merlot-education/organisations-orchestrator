@@ -57,6 +57,7 @@ class SelfDescriptionDemoData {
         MerlotLegalParticipantCredentialSubject expected = new MerlotLegalParticipantCredentialSubject();
         expected.setId(id);
         expected.setLegalName("MyOrga");
+        expected.setLegalForm("LLC");
 
         ParticipantTermsAndConditions termsAndConditions = new ParticipantTermsAndConditions();
         termsAndConditions.setUrl("http://example.com");

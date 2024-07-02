@@ -12,7 +12,7 @@ public class ParticipantAuthorityChecker {
         return activeRole.isRepresentative() && roleIdEqualsDtoId(activeRole, dto);
     }
 
-    public boolean isFedAdminForDifferentParticipant(OrganizationRoleGrantedAuthority activeRole, MerlotParticipantDto dto) {
+    public boolean isFedAdminOfDifferentParticipant(OrganizationRoleGrantedAuthority activeRole, MerlotParticipantDto dto) {
         return activeRole.isFedAdmin() && !roleIdEqualsDtoId(activeRole, dto);
     }
 

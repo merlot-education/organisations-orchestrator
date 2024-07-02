@@ -467,7 +467,7 @@ public class ParticipantService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Participant could not be created.");
         }
 
-        // set credential subject id to did from metadata (self-assigned or received from did service)
+        // set credential subject id to did from metadata (received from did service)
         String[] orgaIdSplit = metaDataDto.getOrgaId().split(":");
         String orgaUuid = orgaIdSplit[orgaIdSplit.length-1];
         String registrationNumberId = "urn:uuid:" + orgaUuid;

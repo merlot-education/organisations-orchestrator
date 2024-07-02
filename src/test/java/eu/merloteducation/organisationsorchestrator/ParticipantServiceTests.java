@@ -102,6 +102,7 @@ class ParticipantServiceTests {
     String mailAddress = "test@test.de";
 
     String organizationLegalName = "MyOrga";
+    String organizationLegalForm = "LLC";
 
     String registrationNumber = "0110";
 
@@ -132,6 +133,7 @@ class ParticipantServiceTests {
         RegistrationFormContent content = new RegistrationFormContent();
         content.setOrganizationName(organizationName);
         content.setOrganizationLegalName(organizationLegalName);
+        content.setLegalForm(organizationLegalForm);
         content.setMailAddress(mailAddress);
         content.setRegistrationNumberLeiCode(registrationNumber);
         content.setRegistrationNumberVatID("");

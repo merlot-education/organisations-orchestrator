@@ -92,7 +92,6 @@ class OrganizationQueryControllerTests {
         participantDto.setId("did:web:example.com:participant:someid");
         participantDto.setMetadata(new MerlotParticipantMetaDto());
         participantDto.getMetadata().setMembershipClass(MembershipClass.PARTICIPANT);
-        participantDto.setSelfDescription(new ExtendedVerifiablePresentation());
         ExtendedVerifiablePresentation vp = new ExtendedVerifiablePresentation();
         LdProof proof = new LdProof();
         proof.setJsonObjectKeyValue("verificationMethod", "did:web:somemethod.com#1234");
@@ -196,7 +195,7 @@ class OrganizationQueryControllerTests {
     }
 
     @Test
-    void updateOrganizationAuthorizedAsFedAdminExistentInconsistentId() throws Exception {
+    void updateOrganizationAuthorizedAsOrgLegRepExistentInconsistentId() throws Exception {
 
         MerlotParticipantDto participantDtoWithEdits = getMerlotParticipantDtoWithEdits("did:web:someorga.example.com");
         participantDtoWithEdits.setId("did:web:somethirdorga.example.com");

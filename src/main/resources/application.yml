@@ -52,9 +52,9 @@ gxfscatalog:
   participants-uri: "${gxfscatalog.base-uri}/participants"
   selfdescriptions-uri: "${gxfscatalog.base-uri}/self-descriptions"
   query-uri: "${gxfscatalog.base-uri}/query"
-  private-key-path: "" #"/home/mbuskies/workspace/mpo/marketplace.dev.merlot-education.eu.prk"
-  cert-path: "" #"/home/mbuskies/workspace/mpo/marketplace.dev.merlot-education.eu.crt"
-  verification-method: "did:web:compliance.lab.gaia-x.eu" # "did:web:marketplace.dev.merlot-education.eu#JWK2020"
+  private-key-path: ""
+  cert-path: ""
+  verification-method: "did:web:compliance.lab.gaia-x.eu"
 
 gxfswizardapi:
   base-uri: "http://localhost:8085"

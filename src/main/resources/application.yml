@@ -60,6 +60,7 @@ server:
     context-path: /api
   error:
     include-stacktrace: "never"
+    include-message: "always"
 
 gxfscatalog:
   base-uri: "http://localhost:8081"

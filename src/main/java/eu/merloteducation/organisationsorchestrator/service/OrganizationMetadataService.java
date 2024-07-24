@@ -31,11 +31,14 @@ import java.util.List;
 
 @Service
 public class OrganizationMetadataService {
-    @Autowired
-    private OrganizationMetadataRepository repository;
+    private final OrganizationMetadataRepository repository;
+    private final OrganizationMapper mapper;
 
-    @Autowired
-    private OrganizationMapper mapper;
+    public OrganizationMetadataService(@Autowired OrganizationMetadataRepository repository,
+                                       @Autowired OrganizationMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
+    }
 
     /**
      * Given a participant's id, return its metadata.

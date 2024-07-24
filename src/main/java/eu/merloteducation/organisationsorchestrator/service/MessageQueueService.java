@@ -17,25 +17,25 @@
 package eu.merloteducation.organisationsorchestrator.service;
 
 import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
-import eu.merloteducation.modelslib.api.organization.OrganizationConnectorDto;
 import eu.merloteducation.modelslib.api.organization.OrganizationConnectorTransferDto;
 import eu.merloteducation.modelslib.queue.ConnectorDetailsRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.merloteducation.organisationsorchestrator.config.MessageQueueConfig;
 
 @Service
+@Slf4j
 public class MessageQueueService {
-    @Autowired
-    ParticipantService participantService;
+    private final ParticipantService participantService;
+    private final OrganizationMetadataService organizationMetadataService;
 
-    @Autowired
-    OrganizationMetadataService organizationMetadataService;
-
-    private final Logger logger = LoggerFactory.getLogger(MessageQueueService.class);
+    public MessageQueueService(@Autowired ParticipantService participantService,
+                               @Autowired OrganizationMetadataService organizationMetadataService) {
+        this.participantService = participantService;
+        this.organizationMetadataService = organizationMetadataService;
+    }
 
     /**
      * Listen to requests of organization details on the message bus and return the organization.
@@ -44,13 +44,13 @@ public class MessageQueueService {
      * @return organization details
      */
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATION_REQUEST_QUEUE)
-    public MerlotParticipantDto organizationRequest(String orgaId) throws Exception {
+    public MerlotParticipantDto organizationRequest(String orgaId) {
 
-        logger.info("Organization request message: {}", orgaId);
+        log.info("Organization request message: {}", orgaId);
         try {
             return participantService.getParticipantById(orgaId);
         } catch (Exception e) {
-            logger.error("Failed to find participant with this id, error: {}", e.getMessage());
+            log.error("Failed to find participant with this id, error: {}", e.getMessage());
             return null;
         }
     }
@@ -64,13 +64,13 @@ public class MessageQueueService {
     @RabbitListener(queues = MessageQueueConfig.ORGANIZATIONCONNECTOR_REQUEST_QUEUE)
     public OrganizationConnectorTransferDto organizationConnectorRequest(ConnectorDetailsRequest connectorDetailsRequest) {
 
-        logger.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
+        log.info("Organization Connector request message: {}", connectorDetailsRequest.getOrgaId());
 
         OrganizationConnectorTransferDto connectorDto = organizationMetadataService.getConnectorForParticipant(
             connectorDetailsRequest.getOrgaId(), connectorDetailsRequest.getConnectorId());
 
         if (connectorDto == null) {
-            logger.error("Connector for Participant with id {} could not be found",
+            log.error("Connector for Participant with id {} could not be found",
                 connectorDetailsRequest.getOrgaId());
         }
 

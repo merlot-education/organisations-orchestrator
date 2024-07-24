@@ -51,11 +51,14 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @Slf4j
 public class OrganizationQueryController {
 
-    @Autowired
-    private ParticipantService participantService;
+    private final ParticipantService participantService;
+    private final PdfContentMapper pdfContentMapper;
 
-    @Autowired
-    private PdfContentMapper pdfContentMapper;
+    public OrganizationQueryController(@Autowired ParticipantService participantService,
+                                       @Autowired PdfContentMapper pdfContentMapper) {
+        this.participantService = participantService;
+        this.pdfContentMapper = pdfContentMapper;
+    }
 
     /**
      * GET endpoint for retrieving all enrolled organizations.
@@ -103,7 +106,7 @@ public class OrganizationQueryController {
      * PUT endpoint for updating an organization.
      *
      * @return updated organization
-     * @throws Exception exception during participant update
+     * @throws JsonProcessingException exception during participant update
      */
     @PutMapping("/organization")
     @JsonView(OrganisationViews.PublicView.class)
@@ -111,8 +114,7 @@ public class OrganizationQueryController {
             " or @participantAuthorityChecker.isFedAdminOfDifferentParticipant(#activeRole, #participantDtoWithEdits)")
     public MerlotParticipantDto updateOrganization(
         @Valid @RequestBody MerlotParticipantDto participantDtoWithEdits,
-        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole)
-        throws Exception {
+        @RequestHeader("Active-Role") OrganizationRoleGrantedAuthority activeRole) throws JsonProcessingException {
         return participantService.updateParticipant(participantDtoWithEdits, activeRole);
     }
 

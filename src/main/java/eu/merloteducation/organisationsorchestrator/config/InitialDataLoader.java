@@ -16,6 +16,7 @@
 
 package eu.merloteducation.organisationsorchestrator.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRole;
 import eu.merloteducation.authorizationlibrary.authorization.OrganizationRoleGrantedAuthority;
 import eu.merloteducation.modelslib.api.organization.MembershipClass;
@@ -23,8 +24,7 @@ import eu.merloteducation.modelslib.api.organization.MerlotParticipantDto;
 import eu.merloteducation.organisationsorchestrator.controller.OrganizationQueryController;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.NoInitDataException;
 import eu.merloteducation.organisationsorchestrator.service.ParticipantService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -38,10 +38,10 @@ import java.io.IOException;
 import java.util.*;
 
 @Component
+@Slf4j
 public class InitialDataLoader implements CommandLineRunner {
 
     private static final String MERLOT_FED_DOC_FILENAME = "merlotRegistrationForm_MERLOT.pdf";
-    private final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
     private final OrganizationQueryController organizationQueryController;
     private final ParticipantService participantService;
     private File initialFederatorsFolder;
@@ -81,10 +81,10 @@ public class InitialDataLoader implements CommandLineRunner {
                     = new OrganizationRoleGrantedAuthority(OrganizationRole.FED_ADMIN, merlotFederationDid);
 
             if (!organizationQueryController.getAllOrganizations(0, 1, merlotFederationRole).getContent().isEmpty()) {
-                logger.info("Database will not be reinitialised since organisations exist.");
+                log.info("Database will not be reinitialised since organisations exist.");
                 return;
             }
-            logger.info("Initializing database since no organisations were found.");
+            log.info("Initializing database since no organisations were found.");
 
             // onboard MERLOT federation first to get key for further signatures
             onboardMerlotFederation(merlotFederationRole);
@@ -93,11 +93,11 @@ public class InitialDataLoader implements CommandLineRunner {
             onboardOtherOrganisations(merlotFederationRole);
 
         } catch (Exception e) {
-            logger.warn("Failed to import initial participant dataset. {}", e.getMessage());
+            log.warn("Failed to import initial participant dataset. {}", e.getMessage());
         }
     }
 
-    private void onboardMerlotFederation(OrganizationRoleGrantedAuthority merlotFederationRole) throws Exception {
+    private void onboardMerlotFederation(OrganizationRoleGrantedAuthority merlotFederationRole) throws JsonProcessingException {
         MultipartFile merlotFederationPdf = getMerlotFederationDocument();
         // onboard merlot as merlot federation
         MerlotParticipantDto participant = organizationQueryController
@@ -111,7 +111,7 @@ public class InitialDataLoader implements CommandLineRunner {
         delayClearingHouse();
     }
 
-    private void onboardOtherOrganisations(OrganizationRoleGrantedAuthority merlotFederationRole) throws Exception {
+    private void onboardOtherOrganisations(OrganizationRoleGrantedAuthority merlotFederationRole) throws JsonProcessingException {
         List<MultipartFile> participantPdfs = getOrganisationDocuments(initialParticipantsFolder);
         List<MultipartFile> federatorPdfs = getOrganisationDocuments(initialFederatorsFolder);
 
@@ -126,7 +126,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
     private void importOrganisation(OrganizationRoleGrantedAuthority merlotFederationRole,
                                     MultipartFile orgaPdf,
-                                    boolean isFederator) throws Exception {
+                                    boolean isFederator) throws JsonProcessingException {
         MerlotParticipantDto participant = organizationQueryController
                 .createOrganization(new MultipartFile[]{orgaPdf}, merlotFederationRole);
 
@@ -159,7 +159,7 @@ public class InitialDataLoader implements CommandLineRunner {
                 MultipartFile file = new MockMultipartFile("formular", input.readAllBytes());
                 orgaPdfs.add(file);
             } catch (IOException e) {
-                logger.warn("Failed to read file {}: {}", orgaPdf.getName(), e.getMessage());
+                log.warn("Failed to read file {}: {}", orgaPdf.getName(), e.getMessage());
             }
         }
 
@@ -172,7 +172,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
     private void delayClearingHouse() {
         try {
-            logger.info(DELAY_UPDATE_MSG);
+            log.info(DELAY_UPDATE_MSG);
             Thread.sleep(delayUpdateTime);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();

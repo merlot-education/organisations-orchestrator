@@ -19,20 +19,21 @@ package eu.merloteducation.organisationsorchestrator.service;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyCreateRequest;
 import eu.merloteducation.modelslib.api.did.ParticipantDidPrivateKeyDto;
 import eu.merloteducation.organisationsorchestrator.config.MessageQueueConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class OutgoingMessageService {
 
-    @Autowired
-    RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
-    private final Logger logger = LoggerFactory.getLogger(OutgoingMessageService.class);
+    public OutgoingMessageService(@Autowired RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     /**
      * Send an organization membership revoked message to the message bus.
@@ -40,7 +41,7 @@ public class OutgoingMessageService {
      * @param orgaId id of the organization whose membership has been revoked
      */
     public void sendOrganizationMembershipRevokedMessage(String orgaId) {
-        logger.info("Sending organization membership revocation message for organization with id {}", orgaId);
+        log.info("Sending organization membership revocation message for organization with id {}", orgaId);
 
         rabbitTemplate.convertAndSend(
             MessageQueueConfig.ORCHESTRATOR_EXCHANGE,
@@ -50,7 +51,7 @@ public class OutgoingMessageService {
     }
 
     public ParticipantDidPrivateKeyDto requestNewDidPrivateKey(ParticipantDidPrivateKeyCreateRequest request) {
-        logger.info("Requesting a new DID and private key for subject {}", request.getSubject());
+        log.info("Requesting a new DID and private key for subject {}", request.getSubject());
 
         return rabbitTemplate.convertSendAndReceiveAsType(
                 MessageQueueConfig.DID_SERVICE_EXCHANGE,

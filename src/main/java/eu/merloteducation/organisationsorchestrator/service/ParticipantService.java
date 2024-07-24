@@ -43,8 +43,7 @@ import eu.merloteducation.organisationsorchestrator.mappers.ParticipantCredentia
 import eu.merloteducation.organisationsorchestrator.models.RegistrationFormContent;
 import eu.merloteducation.organisationsorchestrator.models.exceptions.ParticipantConflictException;
 import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -60,13 +59,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 @Service
+@Slf4j
 public class ParticipantService {
-
-    private final Logger logger = LoggerFactory.getLogger(ParticipantService.class);
 
     private final OrganizationMapper organizationMapper;
     private final ParticipantCredentialMapper participantCredentialMapper;
@@ -264,8 +261,7 @@ public class ParticipantService {
     private void handleCatalogError(WebClientResponseException e)
         throws ResponseStatusException, JsonProcessingException {
 
-        logger.warn("Error in communication with catalog: {}", e.getResponseBodyAsString());
-        ObjectMapper objectMapper = new ObjectMapper();
+        log.warn("Error in communication with catalog: {}", e.getResponseBodyAsString());
         JsonNode errorMessage = objectMapper.readTree(e.getResponseBodyAsString());
         throw new ResponseStatusException(e.getStatusCode(),
                 errorMessage.get("message") == null ? "Unknown Error" : errorMessage.get("message").asText());

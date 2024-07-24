@@ -101,7 +101,7 @@ public class OrganizationMetadataService {
 
         List<OrganizationMetadata> orgaMetadataList = repository.findByMembershipClass(membershipClass);
         return orgaMetadataList.stream()
-            .map(orgaMetadata -> mapper.organizationMetadataToMerlotParticipantMetaDto(orgaMetadata)).toList();
+            .map(mapper::organizationMetadataToMerlotParticipantMetaDto).toList();
     }
 
     /**
